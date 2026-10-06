@@ -3,12 +3,12 @@ import type { ReactNode } from "react";
 import { POLICY_FACTS as F } from "@/lib/policy-facts";
 
 export const FAQ_GROUPS: { id: string; items: string[] }[] = [
-  { id: "orders", items: ["place", "account", "unique", "float", "change", "noEmail"] },
-  { id: "delivery", items: ["how", "time", "requirements", "protection", "expired", "safety"] },
-  { id: "returns", items: ["when", "withdrawal", "refund", "account"] },
+  { id: "orders", items: ["place", "account", "limits", "change", "noEmail"] },
+  { id: "delivery", items: ["how", "time", "region", "language", "redeem", "safety"] },
+  { id: "returns", items: ["when", "notWorking", "withdrawal", "refund"] },
   { id: "payment", items: ["methods", "safe", "currencies", F.vatRegistered ? "vatYes" : "vatNo", "when"] },
-  { id: "items", items: ["what", "store", "rarity", "affiliation"] },
-  { id: "account", items: ["who", "steam", "password", "delete"] },
+  { id: "products", items: ["what", "subscriptions", "giftCards", "affiliation"] },
+  { id: "account", items: ["who", "password", "delete"] },
 ];
 
 export const FAQ_VALUES = {
@@ -19,12 +19,15 @@ export const FAQ_VALUES = {
   refundDays: F.refundDays,
   refundMethod: F.refundMethod,
   maxItems: F.maxItemsPerOrder,
+  maxValue: F.maxOrderValue,
+  cardLimit: F.cardLimitPerItem,
+  cardLimit24h: F.cardLimit24h,
+  cardValue24h: F.cardValue24h,
   restricted: F.restrictedCountries,
-  method: F.deliveryMethod,
   usual: F.deliveryUsual,
   deadlineHours: F.deliveryDeadlineHours,
-  protectionDays: F.tradeProtectionDays,
-  holdDays: F.tradeHoldMaxDays,
+  claimDays: F.guaranteeClaimDays,
+  reviewDays: F.guaranteeReviewDays,
   cancelBefore: F.cancelBefore,
   cardMethods: F.cardMethods,
   currencies: F.currencies,
@@ -38,6 +41,7 @@ export const faqLinkTags = {
   warranty: (chunks: ReactNode) => <Link href="/policies/warranty">{chunks}</Link>,
   privacy: (chunks: ReactNode) => <Link href="/policies/privacy">{chunks}</Link>,
   policies: (chunks: ReactNode) => <Link href="/policies">{chunks}</Link>,
+  howto: (chunks: ReactNode) => <Link href="/how-it-works">{chunks}</Link>,
 };
 
 export const faqPlainTags = {
@@ -45,4 +49,5 @@ export const faqPlainTags = {
   warranty: (chunks: string) => chunks,
   privacy: (chunks: string) => chunks,
   policies: (chunks: string) => chunks,
+  howto: (chunks: string) => chunks,
 };

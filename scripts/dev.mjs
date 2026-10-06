@@ -12,7 +12,6 @@ function killPort(port) {
       console.log(`  killed process on :${port}`);
     }
   } catch {
-    // nothing on that port
   }
 }
 
@@ -32,7 +31,6 @@ function readDatabaseUrl() {
         return val;
       }
     } catch {
-      // file missing, skip
     }
   }
   return "";
@@ -94,7 +92,6 @@ if (db) {
     }
   });
 
-  // If prisma dev doesn't print a ready message, start Next after a timeout
   setTimeout(() => startNext(), 5000);
 
   db.on("exit", (code) => {

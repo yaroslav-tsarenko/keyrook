@@ -68,7 +68,7 @@ export function MobileMenu({ open, onClose, categories, activeSlug = null, activ
             </nav>
           ) : (
             <div className="animate-fade-in px-4">
-              <nav aria-label="Weapon types">
+              <nav aria-label="Product types">
                 {NAV_CATEGORIES.map((cat) => {
                   const node = findCategory(categories, cat.slug);
                   const total = node ? subtreeCount(node) : null;
@@ -84,7 +84,7 @@ export function MobileMenu({ open, onClose, categories, activeSlug = null, activ
                     </>
                   );
                   return node?.children?.length ? (
-                    <button key={cat.slug} type="button" onClick={() => setPanel(cat.slug)} aria-current={current} className={typeRow} aria-label={`${cat.name}, show weapons`}>
+                    <button key={cat.slug} type="button" onClick={() => setPanel(cat.slug)} aria-current={current} className={typeRow} aria-label={`${cat.name}, show platforms`}>
                       {label}
                     </button>
                   ) : (
@@ -94,7 +94,7 @@ export function MobileMenu({ open, onClose, categories, activeSlug = null, activ
                   );
                 })}
                 <Link href="/catalog" onClick={close} className={`${row} font-semibold`}>
-                  All skins
+                  All products
                   <ChevronRight size={18} aria-hidden="true" className="text-ink-muted" />
                 </Link>
               </nav>
@@ -104,10 +104,7 @@ export function MobileMenu({ open, onClose, categories, activeSlug = null, activ
                 {user ? (
                   <>
                     <Link href="/account/orders" onClick={close} className={row}>
-                      My purchases
-                    </Link>
-                    <Link href="/account/steam" onClick={close} className={row}>
-                      Trade URL
+                      Orders and keys
                     </Link>
                     <Link href="/account/wishlist" onClick={close} className={row}>
                       Saved
@@ -123,11 +120,11 @@ export function MobileMenu({ open, onClose, categories, activeSlug = null, activ
                   </>
                 ) : (
                   <div className="flex flex-col gap-3 py-3">
-                    <Button as="a" href="/api/auth/steam?next=%2Faccount" variant="steam" fullWidth>
-                      Sign in through Steam
+                    <Button as="a" href="/auth/login?next=%2Faccount" fullWidth>
+                      Sign in
                     </Button>
-                    <Link href="/auth/login" onClick={close} className="min-h-11 py-2 text-ui-md font-semibold text-ink">
-                      Sign in with email
+                    <Link href="/auth/register" onClick={close} className="min-h-11 py-2 text-ui-md font-semibold text-ink">
+                      Create an account
                     </Link>
                   </div>
                 )}

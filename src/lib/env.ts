@@ -27,16 +27,31 @@ export function mockPaymentsAllowed(): boolean {
   return process.env.NODE_ENV !== "production" && (flag === "true" || flag === "1");
 }
 
+const baseUrl = (fallback: string) =>
+  z
+    .string()
+    .optional()
+    .transform((v) => (v && v.trim() ? v.trim() : fallback))
+    .pipe(z.string().url())
+    .transform((v) => v.replace(/\/+$/, "").replace(/\/v[12]$/, ""));
+
 const shape = {
-  SIH_API_KEY: z.string().min(1, "SIH_API_KEY is required"),
-  SIH_API_BASE: z.string().url().default("https://api.sih.market/api/v1"),
-  SIH_APP_ID: num(catalogConfig.appId),
-  SIH_WEBHOOK_SECRET: z.string().min(1, "SIH_WEBHOOK_SECRET is required"),
-  SIH_TEST_MODE: bool(false),
-  SIH_PRICE_TOLERANCE: num(catalogConfig.pricing.priceTolerance),
-  SIH_MARGIN: num(catalogConfig.pricing.margin),
-  SIH_MIN_MARGIN_ABS: num(catalogConfig.pricing.minMarginAbs),
-  SIH_LOW_BALANCE_THRESHOLD: num(100),
+  KINGUIN_API_KEY: z.string().min(1, "KINGUIN_API_KEY is required"),
+  KINGUIN_API_BASE: baseUrl("https://gateway.kinguin.net/esa/api"),
+  KINGUIN_CLIENT_ID: optional,
+  KINGUIN_CLIENT_SECRET: optional,
+  KINGUIN_OAUTH_TOKEN_URL: optional,
+  KINGUIN_LIVE_ORDERS: bool(false),
+  KINGUIN_SANDBOX_API_BASE: baseUrl("http://localhost:4010/esa/api"),
+  KINGUIN_SANDBOX_API_KEY: optional,
+  KINGUIN_WEBHOOK_SECRET: z.string().min(1, "KINGUIN_WEBHOOK_SECRET is required"),
+  KINGUIN_LOW_BALANCE_THRESHOLD: num(50),
+  CATALOG_MARGIN: num(catalogConfig.pricing.margin),
+  CATALOG_MIN_MARGIN_ABS: num(catalogConfig.pricing.minMarginAbs),
+  CATALOG_PRICE_TOLERANCE: num(catalogConfig.pricing.priceTolerance),
+  CATALOG_FIXTURE_FILE: optional,
+
+  KEY_ENCRYPTION_SECRET: z.string().min(32, "KEY_ENCRYPTION_SECRET must be at least 32 characters"),
 
   PAYMENT_PROVIDER: z
     .string()
@@ -47,8 +62,6 @@ const shape = {
       message: 'PAYMENT_PROVIDER="mock" is refused: it requires NODE_ENV other than "production" and PAYMENT_MOCK_ENABLED=true',
     }),
   PAYMENT_MOCK_ENABLED: bool(false),
-
-  STEAM_API_KEY: optional,
 
   CRON_SECRET: z.string().min(1, "CRON_SECRET is required"),
   APP_URL: z

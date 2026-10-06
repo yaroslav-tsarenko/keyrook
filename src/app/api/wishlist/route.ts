@@ -15,14 +15,14 @@ export async function GET() {
       include: {
         product: {
           omit: { metadata: true, costPrice: true },
-          include: { images: { take: 1, orderBy: { sortOrder: "asc" } }, skin: true },
+          include: { images: { take: 1, orderBy: { sortOrder: "asc" } }, item: { select: { title: true, productType: true, platform: true, region: true, edition: true, languages: true, genres: true, releaseYear: true, validity: true } } },
         },
       },
       orderBy: { createdAt: "desc" },
     });
 
     const newSince = await newArrivalCutoff();
-    return NextResponse.json(items.map((item) => ({ ...item, product: { ...item.product, isNew: isNewArrival(item.product.createdAt, newSince) } })));
+    return NextResponse.json(items.map((item) => ({ ...item, product: { ...item.product, key: item.product.item, isNew: isNewArrival(item.product.createdAt, newSince) } })));
   } catch (error) {
     console.error("Error fetching wishlist:", error);
     return NextResponse.json({ error: "Failed to fetch wishlist" }, { status: 500 });

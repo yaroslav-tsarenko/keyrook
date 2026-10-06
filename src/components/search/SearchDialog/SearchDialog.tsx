@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Sheet } from "@/components/ui/Dialog";
-import { SkinRow, type SkinProduct } from "@/components/skin/SkinTray";
+import { ProductRow, type CatalogProduct } from "@/components/product/ProductCard";
 import { PriceDisplay } from "@/components/shared/PriceDisplay/PriceDisplay";
 import { NAV_CATEGORIES } from "@/config/navigation";
 import { ReadoutLoader } from "@/components/ui/ReadoutLoader";
@@ -18,7 +18,7 @@ function flatten(categories: CategoryNode[]): CategoryNode[] {
 }
 
 type Option =
-  | { kind: "product"; id: string; href: string; product: SkinProduct }
+  | { kind: "product"; id: string; href: string; product: CatalogProduct }
   | { kind: "category"; id: string; href: string; category: CategoryNode }
   | { kind: "all"; id: string; href: string; total: number };
 
@@ -27,7 +27,7 @@ export function SearchDialog({ open, onClose, categories }: { open: boolean; onC
   const baseId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<{ q: string; products: SkinProduct[]; total: number } | null>(null);
+  const [results, setResults] = useState<{ q: string; products: CatalogProduct[]; total: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const trimmed = query.trim();
@@ -44,7 +44,7 @@ export function SearchDialog({ open, onClose, categories }: { open: boolean; onC
     const timer = window.setTimeout(() => {
       fetch(`/api/products?search=${encodeURIComponent(trimmed)}&pageSize=6`, { signal: controller.signal })
         .then((r) => r.json())
-        .then((data: { data?: SkinProduct[]; total?: number }) => {
+        .then((data: { data?: CatalogProduct[]; total?: number }) => {
           setResults({ q: trimmed, products: data.data ?? [], total: data.total ?? 0 });
           setActiveIndex(-1);
         })
@@ -121,8 +121,8 @@ export function SearchDialog({ open, onClose, categories }: { open: boolean; onC
             aria-controls={listboxId}
             aria-autocomplete="list"
             aria-activedescendant={activeIndex >= 0 ? options[activeIndex]?.id : undefined}
-            aria-label="Search skins"
-            placeholder="Search skins: AK-47 Redline, Karambit Fade…"
+            aria-label="Search games and gift cards"
+            placeholder="Search a game, gift card or publisher"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
@@ -139,7 +139,7 @@ export function SearchDialog({ open, onClose, categories }: { open: boolean; onC
           <div id={listboxId} role="listbox" aria-label="Search suggestions" className={cn(options.length === 0 && "hidden")}>
             {products.length > 0 ? (
               <div role="group" aria-labelledby={`${baseId}-products`} className="pt-5">
-                <p id={`${baseId}-products`} className="eyebrow m-0 pb-2">Skins</p>
+                <p id={`${baseId}-products`} className="eyebrow m-0 pb-2">Products</p>
                 <div className="grid gap-x-8 sm:grid-cols-2">
                   {products.map((o) => (
                     <div
@@ -151,7 +151,7 @@ export function SearchDialog({ open, onClose, categories }: { open: boolean; onC
                       onPointerEnter={() => setActiveIndex(options.indexOf(o))}
                       className={cn(optionCls(o.id), "border-b border-line px-2 py-2.5")}
                     >
-                      <SkinRow name={o.product.name} imageUrl={o.product.images?.[0]?.url} skin={o.product.skin} showRarity={false} headingLevel={3} aside={<PriceDisplay price={Number(o.product.price)} size="sm" />} />
+                      <ProductRow name={o.product.name} imageUrl={o.product.images?.[0]?.url} keyInfo={o.product.key} headingLevel={3} aside={<PriceDisplay price={Number(o.product.price)} size="sm" />} />
                     </div>
                   ))}
                 </div>
@@ -159,7 +159,7 @@ export function SearchDialog({ open, onClose, categories }: { open: boolean; onC
             ) : null}
             {cats.length > 0 ? (
               <div role="group" aria-labelledby={`${baseId}-cats`} className="pt-6">
-                <p id={`${baseId}-cats`} className="eyebrow m-0 pb-2">Weapons</p>
+                <p id={`${baseId}-cats`} className="eyebrow m-0 pb-2">Product types</p>
                 <div className="flex flex-wrap gap-x-6 gap-y-1">
                   {cats.map((o) => (
                     <div
@@ -197,7 +197,7 @@ export function SearchDialog({ open, onClose, categories }: { open: boolean; onC
           {empty ? (
             <div className="pt-6" role="status">
               <p className="m-0 text-step-1 text-ink">Nothing matches &ldquo;{results?.q}&rdquo;.</p>
-              <p className="m-0 mt-2 text-ui-md text-ink-muted">Try a weapon name, or start from a weapon type:</p>
+              <p className="m-0 mt-2 text-ui-md text-ink-muted">Try a shorter title, or start from a product type:</p>
               <ul className="m-0 mt-3 flex list-none flex-wrap gap-x-6 gap-y-2 p-0">
                 {NAV_CATEGORIES.map((c) => (
                   <li key={c.slug}>

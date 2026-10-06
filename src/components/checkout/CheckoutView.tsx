@@ -16,12 +16,9 @@ import { AccordionItem } from "@/components/ui/Accordion";
 import { ReadoutLoader } from "@/components/ui/ReadoutLoader";
 import { EmptyState } from "@/components/shared/EmptyState/EmptyState";
 import { PaymentLogos } from "@/components/shared/PaymentLogos/PaymentLogos";
-import { SkinRow } from "@/components/skin/SkinTray";
-import { SteamAccountBlock, steamTail } from "@/components/skin/SteamAccountBlock";
-import { TradeUrlField, maskToken, savedTradeParts } from "@/components/skin/TradeUrlField";
+import { ProductRow } from "@/components/product/ProductCard";
 import { PhoneField } from "@/components/account/fields/PhoneField";
 import { AddressFields } from "@/components/account/fields/AddressFields";
-import { useSteamAccount } from "@/components/account/SteamDelivery/SteamDelivery";
 import { useCart } from "@/providers/CartProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { useCurrency } from "@/providers/CurrencyProvider";
@@ -31,23 +28,23 @@ import { countryName, DEFAULT_COUNTRY_CODE } from "@/lib/countries";
 import { formatPrice } from "@/lib/utils/format-price";
 import { STORE_POLICY } from "@/config/store-policy";
 import { COMPANY } from "@/lib/company";
+import { BRAND } from "@/lib/brand";
 import { CheckoutCounter } from "./CheckoutCounter";
 import { TotalsList } from "./TotalsList";
 import { quotePayloadItems, useCheckoutQuote, type QuoteProblem } from "./useCheckoutQuote";
 
-const DRAFT_KEY = "patina-checkout-draft";
+const DRAFT_KEY = "keyrook-checkout-draft";
 const CHECKOUT_PATH = "/checkout";
 
 type FieldName = FieldPath<CheckoutFormData>;
 
 const STEP_FIELDS: FieldName[][] = [
   [],
-  [],
   ["contact.email", "contact.firstName", "contact.lastName", "contact.phoneCountry", "contact.phone", "billing.street", "billing.address2", "billing.city", "billing.postcode", "billing.country"],
   ["acceptedPolicies", "acceptedWaiver"],
 ];
 
-const LAST_STEP = 3;
+const LAST_STEP = 2;
 
 const FIELD_IDS: Record<string, string> = {
   "contact.email": "co-email",
@@ -79,8 +76,9 @@ const KNOWN_PROBLEMS = [
   "ORDER_LIMIT",
   "PRODUCT_UNAVAILABLE",
   "PRICE_UNAVAILABLE",
-  "STEAM_NOT_LINKED",
-  "TRADE_URL_REQUIRED",
+  "ITEM_LIMIT",
+  "ORDER_VALUE_LIMIT",
+  "CUSTOMER_LIMIT",
   "AGE_REQUIRED",
   "CART_EMPTY",
   "INVALID_REQUEST",
@@ -120,14 +118,12 @@ export function CheckoutView() {
   const { cart, displayTotals, isHydrated, removeItem } = useCart();
   const { user, loading: authLoading } = useAuth();
   const { currency } = useCurrency();
-  const steamAccount = useSteamAccount(Boolean(user));
   const [step, setStep] = useState(0);
   const [errorSummary, setErrorSummary] = useState<StepperErrorSummary | null>(null);
   const [submitProblem, setSubmitProblem] = useState<SubmitProblem | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [paymentFailed, setPaymentFailed] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
-  const [steamMissing, setSteamMissing] = useState(false);
   const [acceptedChanges, setAcceptedChanges] = useState("");
   const prefilled = useRef(false);
 
@@ -141,7 +137,6 @@ export function CheckoutView() {
   const { quote, setQuote, problem, loading } = useCheckoutQuote(cart.items, currency, isHydrated);
   const quoteReady = Boolean(quote && quote.currency === currency && !loading && !problem);
   const totals = quote && quote.currency === currency ? quote.totals : displayTotals;
-  const steamReady = Boolean(steamAccount.steam?.tradeUrlVerified);
 
   useEffect(() => {
     if (searchParams.get("payment") === "failed") setPaymentFailed(true);
@@ -232,14 +227,7 @@ export function CheckoutView() {
   );
 
   const handleContinue = async () => {
-    if (step === 0 && !steamAccount.steam) {
-      setSteamMissing(true);
-      return;
-    }
-    if (step === 1 && !steamReady) {
-      setSteamMissing(true);
-      return;
-    }
+    if (step === 0 && !user) return;
     const names = STEP_FIELDS[step];
     if (names.length) {
       const valid = await trigger(names);
@@ -248,13 +236,12 @@ export function CheckoutView() {
         return;
       }
     }
-    setSteamMissing(false);
     goTo(Math.min(step + 1, LAST_STEP));
   };
 
   const pay = form.handleSubmit(
     async (data) => {
-      if (!quote || !quoteReady || !steamReady) return;
+      if (!quote || !quoteReady || !user) return;
       setSubmitting(true);
       setSubmitProblem(null);
       writeDraft(data);
@@ -281,7 +268,7 @@ export function CheckoutView() {
       setSubmitting(false);
     },
     (errors) => {
-      const firstStep = [0, 1, 2, 3].find((index) => STEP_FIELDS[index].some((name) => getAt(errors, name)));
+      const firstStep = [0, 1, 2].find((index) => STEP_FIELDS[index].some((name) => getAt(errors, name)));
       const target = firstStep ?? LAST_STEP;
       if (target !== step) setStep(target);
       setErrorSummary(buildSummary(STEP_FIELDS[target]));
@@ -297,6 +284,8 @@ export function CheckoutView() {
       total: formatPrice((p as SubmitProblem).total ?? totals.total, currency),
       email: COMPANY.email,
       minAge: STORE_POLICY.minAge,
+      type: (p as QuoteProblem & { type?: string }).type ?? "",
+      value: formatPrice((p as QuoteProblem & { value?: number }).value ?? STORE_POLICY.limits.maxOrderValue, STORE_POLICY.currency),
     });
   };
 
@@ -312,59 +301,29 @@ export function CheckoutView() {
     return (
       <div className="mx-auto max-w-narrow px-gutter py-12">
         <h1 className="m-0 text-step-5 font-[650] leading-none text-ink">{t("title")}</h1>
-        <EmptyState title={t("empty.title")} subtitle={t("empty.subtitle")} actionLabel="Browse all skins" actionHref="/catalog" align="start" className="px-0" />
+        <EmptyState title={t("empty.title")} subtitle={t("empty.subtitle")} actionLabel="Browse the catalogue" actionHref="/catalog" align="start" className="px-0" />
       </div>
     );
   }
 
   const counterProps = { items: cart.items, totals, currency, quote, loading };
 
-  const steamPanel = !user ? (
+  const accountPanel = !user ? (
     <div className="flex flex-col items-start gap-4">
-      <p className="m-0 max-w-[52ch] text-step-0 text-ink">We deliver skins as Steam trade offers, so checkout starts with your Steam account.</p>
-      <Button as="a" href={`/api/auth/steam?next=${encodeURIComponent(CHECKOUT_PATH)}`} variant="steam" size="lg">
-        Sign in through Steam
+      <p className="m-0 max-w-[52ch] text-step-0 text-ink">Your keys are issued to your {BRAND.name} account, so checkout starts with signing in.</p>
+      <Button as={Link} href={`/auth/login?next=${encodeURIComponent(CHECKOUT_PATH)}`} size="lg">
+        Sign in
       </Button>
-      <Link href={`/auth/login?next=${encodeURIComponent(CHECKOUT_PATH)}`} className="min-h-11 py-2 text-ui-md font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline">
-        Sign in with email instead
+      <Link href={`/auth/register?next=${encodeURIComponent(CHECKOUT_PATH)}`} className="min-h-11 py-2 text-ui-md font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline">
+        Create an account
       </Link>
       <p className="m-0 text-ui-sm text-ink-muted">Your cart stays as it is while you sign in.</p>
     </div>
-  ) : steamAccount.loading ? (
-    <ReadoutLoader />
-  ) : steamAccount.steam ? (
-    <SteamAccountBlock
-      steam={steamAccount.steam}
-      nextPath={CHECKOUT_PATH}
-      showTradeStatus={false}
-      action={
-        <a href={`/api/auth/steam?link=1&next=${encodeURIComponent(CHECKOUT_PATH)}`} className="text-ui-md font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline">
-          Not you? Switch account
-        </a>
-      }
-    />
   ) : (
-    <div className="flex flex-col gap-3">
-      {steamMissing ? <Alert tone="danger">Link your Steam account to continue.</Alert> : null}
-      <p className="m-0 max-w-[52ch] text-step-0 text-ink">We deliver skins as Steam trade offers, so your Steam account must be linked.</p>
-      <SteamAccountBlock steam={null} nextPath={CHECKOUT_PATH} />
+    <div className="flex flex-col gap-2">
+      <p className="m-0 text-step-0 text-ink">Signed in as {user.email}</p>
+      <p className="m-0 max-w-[60ch] text-ui-sm text-ink-muted">Keys appear on the order page in this account once your payment is confirmed. We email you when they are ready.</p>
     </div>
-  );
-
-  const tradePanel = steamAccount.steam ? (
-    <div className="flex flex-col gap-4">
-      {steamMissing && !steamReady ? <Alert tone="danger">Save a trade URL that belongs to your linked Steam account to continue.</Alert> : null}
-      <TradeUrlField
-        steam={steamAccount.steam}
-        onSaved={(next) => {
-          steamAccount.setSteam(next);
-          setSteamMissing(false);
-        }}
-      />
-      <p className="m-0 max-w-[60ch] text-ui-sm text-ink-muted">We save it to your account for future orders. You can change it any time in Account, Trade URL.</p>
-    </div>
-  ) : (
-    <p className="m-0 text-ui-md text-ink-muted">Link your Steam account first.</p>
   );
 
   const billingPanel = (
@@ -440,7 +399,6 @@ export function CheckoutView() {
       : [];
   const changeSignature = priceChanges.map((c) => `${c.productId}:${c.now}`).join("|");
   const priceIssueOpen = priceChanges.length > 0 && acceptedChanges !== changeSignature;
-  const trade = savedTradeParts(steamAccount.steam?.tradeUrl);
   const provider = STORE_POLICY.payment.providerName ?? "our payment provider";
 
   const reviewPanel = (
@@ -475,7 +433,7 @@ export function CheckoutView() {
             const item = cart.items.find((i) => i.productId === line.productId);
             return (
               <li key={`${line.productId}-${index}`} className="py-3">
-                <SkinRow name={line.name} imageUrl={imageFor.get(line.productId) ?? null} skin={item?.skin} aside={<span className="font-mono text-data text-ink">{formatPrice(line.total, currency)}</span>} />
+                <ProductRow name={line.name} imageUrl={imageFor.get(line.productId) ?? null} keyInfo={item?.key} meta={line.quantity > 1 ? <span className="font-mono text-[0.75rem] text-ink-muted">{line.quantity} keys</span> : null} aside={<span className="font-mono text-data text-ink">{formatPrice(line.total, currency)}</span>} />
               </li>
             );
           })}
@@ -529,13 +487,13 @@ export function CheckoutView() {
 
       <div className="flex flex-col gap-5">
         <div className="flex flex-wrap-reverse items-center justify-between gap-4">
-          <Button variant="ghost" onPress={() => goTo(2)}>
+          <Button variant="ghost" onPress={() => goTo(1)}>
             {t("back")}
           </Button>
           <Button
             type="submit"
             size="lg"
-            isDisabled={!accepted || !quoteReady || !steamReady || priceIssueOpen}
+            isDisabled={!accepted || !quoteReady || !user || priceIssueOpen}
             isLoading={submitting}
             startContent={<LockKeyhole size={18} aria-hidden="true" />}
             className="max-sm:w-full"
@@ -597,8 +555,7 @@ export function CheckoutView() {
             hideActions={step === LAST_STEP}
             errorSummary={errorSummary}
             steps={[
-              { id: "steam", title: "Steam account", summary: steamAccount.steam ? `Signed in as ${steamAccount.steam.personaName ?? "Steam user"} · SteamID ${steamTail(steamAccount.steam.steamId64)}` : undefined, content: steamPanel },
-              { id: "trade", title: "Trade URL", summary: trade ? `partner ${trade.partnerId} · token ${maskToken(trade.token)}` : undefined, content: tradePanel },
+              { id: "account", title: "Account", summary: user ? `Signed in as ${user.email}` : undefined, content: accountPanel },
               { id: "billing", title: "Receipt and billing", summary: [contactSummary, values.contact?.email, billingSummary].filter(Boolean).join(" · ") || undefined, content: billingPanel },
               { id: "review", title: "Review and pay", content: reviewPanel },
             ]}

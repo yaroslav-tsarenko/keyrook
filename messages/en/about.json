@@ -1,30 +1,30 @@
 {
   "metaTitle": "About {brand}",
-  "metaDescription": "What {brand} sells, what it doesn't, and how payment, delivery by {method}, refunds and the item guarantee work.",
+  "metaDescription": "What {brand} sells, what it doesn't, and how payment, key delivery, refunds and the key guarantee work.",
   "breadcrumbHome": "Home",
   "breadcrumb": "About",
   "hero": {
-    "title": "A store for Counter-Strike 2 skins",
-    "lead": "{brand} sells weapon skins, knives and gloves for {game} to customers in the {countries}. You buy each skin from us, at the price shown, and we deliver it to your Steam account as a trade offer."
+    "title": "A store for game keys, codes and gift cards",
+    "lead": "{brand} sells activation keys for games and DLC, subscription codes, gift cards, top-ups and software to customers in the {countries}. You buy each key from us, at the price shown, and we issue it to your account after your payment is confirmed."
   },
   "range": {
     "title": "What we sell",
-    "body": "Cosmetic items for weapons, knives and gloves, sorted by weapon type and then by weapon:"
+    "body": "Six kinds of product, each with its own page and filters for platform, region, genre and language:"
   },
   "listing": {
-    "title": "What every listing shows",
-    "single": "One item in one condition. Each listing can be bought once.",
-    "exterior": "Rarity, exterior and quality, with the float range that exterior allows for the finish.",
-    "image": "The standard Steam image of the item.",
-    "prices": "A price you can view in {currencies}, confirmed again before you pay."
+    "title": "What every product page shows",
+    "platform": "The platform the key is redeemed on and the account you need for it.",
+    "region": "The activation region, and the languages the publisher lists.",
+    "edition": "The edition, a subscription's duration or a gift card's value and currency.",
+    "prices": "A price you can view in {currencies}, checked again before you pay."
   },
   "notSold": {
     "title": "What we don't do",
     "items": {
-      "marketplace": "Buy items from users or swap items with them. {brand} does not take items in.",
-      "cases": "Sell cases, keys, stickers or agents.",
-      "accounts": "Sell Steam accounts, or ask for your Steam password or Steam Guard codes.",
-      "other": "Offer gambling, case openings or anything with a random outcome."
+      "marketplace": "Buy keys from users or let users sell to each other. {brand} is a store, not a marketplace.",
+      "cases": "Sell random or mystery keys, loot boxes or anything with a random outcome.",
+      "accounts": "Sell game or platform accounts, or ask for your platform password.",
+      "other": "Sell keys that need a VPN, or keys for regions where we don't trade."
     }
   },
   "ordering": {
@@ -36,22 +36,22 @@
     },
     "delivery": {
       "label": "Delivery",
-      "body": "Each item arrives as a {method}, {usual}. Steam may keep received items under trade protection for up to {days} days.",
-      "link": "Delivery via Steam"
+      "body": "Your key appears on your order page, {usual}. We email you when it is ready.",
+      "link": "Delivery policy"
     },
     "guarantee": {
-      "label": "Item guarantee",
-      "body": "If we cannot deliver an item within {hours} hours, or Steam reverses the trade, we refund it within {refundDays} days.",
-      "link": "Item guarantee"
+      "label": "Key guarantee",
+      "body": "If a key does not activate, tell us within {claimDays} days of delivery and we replace it or refund it within {refundDays} days.",
+      "link": "Key guarantee"
     },
     "withdrawal": {
       "label": "Cancelling",
-      "body": "You can cancel for free until delivery begins. The {days}-day right to cancel ends once delivery has begun at your request.",
+      "body": "You can cancel for free until your key is issued. The {days}-day right to cancel ends once delivery has begun at your request.",
       "link": "Refund policy"
     }
   },
   "company": {
     "title": "Who runs the store"
   },
-  "browse": "Browse skins"
+  "browse": "Browse the catalogue"
 }

@@ -71,8 +71,8 @@ const sections: PolicySection[] = [
       <>
         <p>
           Your card is charged when you complete payment on the provider&rsquo;s page. We confirm your order, send a confirmation email and
-          request delivery of your items only after the provider confirms the payment to us. If the payment is declined or cancelled, nothing
-          is charged and no item is delivered.
+          request your keys only after the provider confirms the payment to us. If the payment is declined or cancelled, nothing is charged and
+          no key is issued.
         </p>
         <p>
           If a payment fails, check the card details and that your bank has approved the payment, then try again. If it still fails, contact

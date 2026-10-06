@@ -6,8 +6,11 @@ import { useTranslations } from "next-intl";
 import { FileDown } from "lucide-react";
 import { ReadoutLoader } from "@/components/ui/ReadoutLoader";
 import { Button } from "@/components/ui/Button";
-import { SkinRow } from "@/components/skin/SkinTray";
-import { PurchaseTimeline } from "@/components/skin/PurchaseTimeline";
+import { ProductRow } from "@/components/product/ProductCard";
+import { PurchaseTimeline } from "@/components/account/PurchaseTimeline";
+import { KeyVault } from "@/components/account/KeyVault/KeyVault";
+import { AccordionItem } from "@/components/ui/Accordion";
+import { platformDef } from "@/lib/keys/taxonomy";
 import { orderTimelineStatus } from "../OrderHistory/OrderHistory";
 import { EmptyState } from "@/components/shared/EmptyState/EmptyState";
 import { TotalsList } from "@/components/checkout/TotalsList";
@@ -20,6 +23,23 @@ import { LoadError } from "../LoadError";
 import { formatOrderDate } from "../format";
 
 const POLL_MS = 15_000;
+
+function ActivationSteps({ platform }: { platform: string }) {
+  const def = platformDef(platform);
+  if (!def) return null;
+  return (
+    <div className="border-y border-line">
+      <AccordionItem title={`How to redeem on ${def.label}`} headingLevel={3} flush className="border-b-0">
+        <p className="m-0 mb-2 text-ui-sm text-ink-muted">You need {def.account}.</p>
+        <ol className="m-0 flex list-decimal flex-col gap-1.5 pl-5 text-ui-md text-ink">
+          {def.redeem.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      </AccordionItem>
+    </div>
+  );
+}
 
 export function OrderDetail({ id }: { id: string }) {
   const t = useTranslations("account.order");
@@ -57,11 +77,11 @@ export function OrderDetail({ id }: { id: string }) {
         <ul className="m-0 flex list-none flex-col border-t border-rule p-0">
           {order.lines.map((line) => (
             <li key={line.id} className="flex flex-col gap-6 border-b border-line py-6">
-              <SkinRow
+              <ProductRow
                 name={line.name}
                 href={line.slug ? `/product/${line.slug}` : null}
                 imageUrl={line.imageUrl}
-                skin={line.skin}
+                keyInfo={line.key}
                 size="md"
                 aside={<span className="price text-step-1 text-ink">{formatPrice(line.total, order.currency)}</span>}
               />
@@ -71,10 +91,10 @@ export function OrderDetail({ id }: { id: string }) {
                 paidAt={order.paidAt}
                 finishedAt={line.delivery?.finishedAt}
                 refundedAt={line.delivery?.refundedAt}
-                offerUrl={line.delivery?.offerUrl}
-                expiresAt={line.delivery?.expiresAt}
               />
               {line.delivery?.note ? <p className="m-0 text-ui-md text-ink">{line.delivery.note}</p> : null}
+              {line.delivery?.keys.length ? <KeyVault keys={line.delivery.keys} platformLabel={platformDef(line.key?.platform)?.label ?? null} /> : null}
+              {line.delivery?.keys.length && line.key ? <ActivationSteps platform={line.key.platform} /> : null}
             </li>
           ))}
         </ul>
@@ -91,10 +111,7 @@ export function OrderDetail({ id }: { id: string }) {
             <h2 id="order-delivery" className="eyebrow m-0 mb-2">
               {t("deliveryTitle")}
             </h2>
-            <p className="m-0 text-ui-sm leading-[1.6] text-ink">
-              {t("deliveryMethod")}
-              {order.steamId ? <span className="block font-mono text-data">SteamID …{order.steamId.slice(-4)}</span> : null}
-            </p>
+            <p className="m-0 text-ui-sm leading-[1.6] text-ink">{t("deliveryMethod")}</p>
             {order.waiverAcceptedAt ? <p className="m-0 mt-3 text-ui-sm text-ink-muted">{t("waiver", { date: formatOrderDate(order.waiverAcceptedAt, true) })}</p> : null}
           </section>
           <section aria-labelledby="order-billing">

@@ -6,8 +6,8 @@ import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import { SkeletonBar } from "@/components/ui/ReadoutLoader";
 import { EmptyState } from "@/components/shared/EmptyState/EmptyState";
-import { SkinRow } from "@/components/skin/SkinTray";
-import { PurchaseTimeline } from "@/components/skin/PurchaseTimeline";
+import { ProductRow } from "@/components/product/ProductCard";
+import { PurchaseTimeline } from "@/components/account/PurchaseTimeline";
 import { formatPrice } from "@/lib/utils/format-price";
 import type { OrderView } from "@/lib/orders";
 import { AccountPageHeader } from "../AccountSidebar/AccountSidebar";
@@ -22,7 +22,7 @@ export function orderTimelineStatus(order: OrderView, line: OrderView["lines"][n
   if (line.delivery) return line.delivery.status;
   if (order.state === "awaitingPayment" || order.state === "paymentFailed") return "awaiting_payment";
   if (order.state === "refunded") return "refunded";
-  if (order.state === "delivered") return "finished";
+  if (order.state === "delivered") return "delivered";
   return "paid";
 }
 
@@ -71,11 +71,11 @@ export function OrderHistory() {
               <ul className="m-0 flex list-none flex-col gap-6 p-0">
                 {order.lines.map((line) => (
                   <li key={line.id} className="flex flex-col gap-4">
-                    <SkinRow
+                    <ProductRow
                       name={line.name}
                       href={line.slug ? `/product/${line.slug}` : null}
                       imageUrl={line.imageUrl}
-                      skin={line.skin}
+                      keyInfo={line.key}
                       size="md"
                       aside={<span className="price text-[1rem] text-ink">{formatPrice(line.total, order.currency)}</span>}
                     />
@@ -84,9 +84,7 @@ export function OrderHistory() {
                       paidAt={order.paidAt}
                       finishedAt={line.delivery?.finishedAt}
                       refundedAt={line.delivery?.refundedAt}
-                      offerUrl={line.delivery?.offerUrl}
-                      expiresAt={line.delivery?.expiresAt}
-                      className="sm:pl-[184px]"
+                      className="sm:pl-[120px]"
                     />
                   </li>
                 ))}
@@ -95,7 +93,7 @@ export function OrderHistory() {
           ))}
         </ol>
       )}
-      {polling ? <p className="m-0 mt-4 text-ui-sm text-ink-muted">This page updates while your skins are being delivered.</p> : null}
+      {polling ? <p className="m-0 mt-4 text-ui-sm text-ink-muted">This page updates while your keys are being issued.</p> : null}
     </div>
   );
 }

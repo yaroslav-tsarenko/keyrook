@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "tertiary" | "outline" | "ghost" | "danger" | "danger-soft" | "light" | "flat" | "bordered" | "steam";
+export type ButtonVariant = "primary" | "secondary" | "tertiary" | "outline" | "ghost" | "danger" | "danger-soft" | "light" | "flat" | "bordered" | "account";
 export type ButtonColor = "primary" | "danger" | "success" | "warning" | "default";
 type Kind = "indicator" | "outline" | "text" | "danger" | "danger-text" | "account";
 
@@ -17,7 +17,7 @@ const TEXT_SIZE: Record<"sm" | "md" | "lg", string> = {
 };
 
 function resolveKind(variant: ButtonVariant, color?: ButtonColor): Kind {
-  if (variant === "steam") return "account";
+  if (variant === "account") return "account";
   if (color === "danger") {
     return variant === "flat" || variant === "light" || variant === "ghost" || variant === "tertiary" || variant === "danger-soft"
       ? "danger-text"

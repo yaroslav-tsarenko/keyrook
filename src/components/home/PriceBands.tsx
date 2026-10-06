@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Segmented } from "@/components/ui/Choice";
-import { SkinTray } from "@/components/skin/SkinTray";
+import { ProductCard } from "@/components/product/ProductCard";
 import { useCurrency } from "@/providers/CurrencyProvider";
 import { formatPrice } from "@/lib/utils/format-price";
 import type { HomePriceBand } from "./types";
@@ -21,6 +21,7 @@ export function PriceBands({ bands }: { bands: HomePriceBand[] }) {
   const query = new URLSearchParams();
   if (band.min !== null && !under(band)) query.set("minPrice", String(band.min));
   if (band.max !== null) query.set("maxPrice", String(band.max));
+  query.set("type", "dlc,game");
   const total = under(band) ? bands.filter((b) => b.max !== null && b.max <= (band.max as number)).reduce((sum, b) => sum + b.total, 0) : band.total;
 
   return (
@@ -31,7 +32,7 @@ export function PriceBands({ bands }: { bands: HomePriceBand[] }) {
             <h2 id="price-title" className="m-0 text-step-4 font-[650] leading-[1.04] text-ink">
               By price
             </h2>
-            <p className="m-0 mt-3 text-step-0 text-ink-muted">A spread from the cheapest to the dearest skin in each band, in your currency.</p>
+            <p className="m-0 mt-3 text-step-0 text-ink-muted">Games and DLC from across each price band, shown in your currency.</p>
           </div>
           <div className="no-scrollbar -mx-gutter max-w-[100vw] overflow-x-auto px-gutter">
             <Segmented
@@ -48,16 +49,16 @@ export function PriceBands({ bands }: { bands: HomePriceBand[] }) {
         <div data-band-grid="" data-swapped={swapped || undefined} role="region" aria-live="polite" aria-label={label(band)} className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
           {feature ? (
             <div key={feature.id} className="col-span-2 lg:row-span-2">
-              <SkinTray product={feature} variant="feature" stageAspect="4/3" fill sizes="(min-width: 1024px) 640px, 100vw" />
+              <ProductCard product={feature} variant="feature" fill sizes="(min-width: 1024px) 640px, 100vw" />
             </div>
           ) : null}
           {rest.map((p) => (
-            <SkinTray key={p.id} product={p} />
+            <ProductCard key={p.id} product={p} />
           ))}
         </div>
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-          <p className="m-0 font-mono text-data text-ink-muted">{total.toLocaleString("en-GB")} skins in this range</p>
-          <TextLink href={`/catalog?${query.toString()}`}>All skins in this range</TextLink>
+          <p className="m-0 font-mono text-data text-ink-muted">{total.toLocaleString("en-GB")} products in this range</p>
+          <TextLink href={`/catalog?${query.toString()}`}>All products in this range</TextLink>
         </div>
       </div>
     </section>

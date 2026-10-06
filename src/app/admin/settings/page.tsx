@@ -73,7 +73,6 @@ export default function AdminSettingsPage() {
       <h1 className="admin-page-title" style={{ marginBottom: "1.5rem" }}>Store Settings</h1>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-        {/* Appearance */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">Appearance</div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -106,7 +105,6 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        {/* General */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">General</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -131,7 +129,6 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        {/* Contact */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">Contact</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -150,7 +147,6 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        {/* Colors */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">Colors</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
@@ -165,7 +161,6 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        {/* Social Media */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">Social Media</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -184,7 +179,6 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        {/* SEO */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">SEO</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>

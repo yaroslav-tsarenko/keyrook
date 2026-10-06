@@ -60,9 +60,9 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
           <p style={{ fontSize: "0.875rem", color: "var(--admin-text-secondary)" }}>{order.customerEmail}</p>
         </div>
         <div className="admin-info-card">
-          <h3>Steam delivery</h3>
+          <h3>Key delivery</h3>
           <p style={{ fontSize: "0.875rem", color: "var(--admin-text)" }}>
-            Steam ID {order.steamId ?? "—"}
+            Keys are issued to the customer account and never shown here.
             <br />
             Billing: {order.shippingAddress.address1}, {order.shippingAddress.city}, {order.shippingAddress.postalCode}, {order.shippingAddress.country}
           </p>
@@ -93,7 +93,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
             {order.items.map((item) => (
               <tr key={item.id}>
                 <td style={{ color: "var(--admin-text)" }}>{item.productName}{item.variantName && ` (${item.variantName})`}</td>
-                <td style={{ fontSize: "0.75rem" }}>{item.sihOrder ? `${item.sihOrder.status}${item.sihOrder.sihError ? ` · ${item.sihOrder.sihError}` : ""}` : "—"}</td>
+                <td style={{ fontSize: "0.75rem" }}>{item.keyOrder ? `${item.keyOrder.status} · ${item.keyOrder._count.keys}/${item.quantity} keys${item.keyOrder.supplierError ? ` · ${item.keyOrder.supplierError}` : ""}` : "—"}</td>
                 <td style={{ textAlign: "right" }}>{formatPrice(item.price)}</td>
                 <td style={{ textAlign: "right", fontWeight: 600, color: "var(--admin-text)" }}>{formatPrice(item.total)}</td>
               </tr>
@@ -103,7 +103,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
         <div style={{ padding: "1.25rem", textAlign: "right", fontSize: "0.875rem", borderTop: "1px solid var(--admin-border)" }}>
           <div style={{ color: "var(--admin-text-secondary)" }}>Subtotal: {formatPrice(order.subtotal)}</div>
           <div style={{ fontWeight: 700, fontSize: "1.125rem", color: "var(--admin-text)", marginTop: "0.5rem" }}>Total: {formatPrice(order.total)}</div>
-          {order.chargeTotal != null && order.currency !== "USD" ? <div style={{ color: "var(--admin-text-secondary)" }}>Charged: {formatPrice(order.chargeTotal, order.currency)}</div> : null}
+          {order.chargeTotal != null && order.currency !== "EUR" ? <div style={{ color: "var(--admin-text-secondary)" }}>Charged: {formatPrice(order.chargeTotal, order.currency)}</div> : null}
         </div>
       </div>
     </motion.div>

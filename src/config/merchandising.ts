@@ -5,22 +5,18 @@ export interface PriceBand {
 }
 
 export const PRICE_BANDS: PriceBand[] = [
-  { key: "under-10", min: null, max: 10 },
-  { key: "under-25", min: 10, max: 25 },
-  { key: "25-250", min: 25, max: 250 },
-  { key: "250-up", min: 250, max: null },
+  { key: "under-5", min: null, max: 5 },
+  { key: "5-15", min: 5, max: 15 },
+  { key: "15-40", min: 15, max: 40 },
+  { key: "40-up", min: 40, max: null },
 ];
 
 export const MERCH = {
   bandItems: 9,
   bandMinimum: 3,
   newest: 8,
-  spotlightKnives: 3,
-  spotlightGloves: 2,
-  stattrak: 3,
-  souvenir: 2,
+  releases: 8,
+  prepaid: 8,
   related: 4,
-  siblings: 12,
-  pairsTolerance: 0.4,
   recentlyViewed: 8,
 } as const;

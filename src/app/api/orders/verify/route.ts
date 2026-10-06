@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 import { ORDER_VIEW_INCLUDE, orderView } from "@/lib/orders";
-import { refreshOrdersFor } from "@/lib/sih/poll";
+import { refreshKeyOrdersFor } from "@/lib/esa/poll";
 import { hasEnv } from "@/lib/env";
 
 export const runtime = "nodejs";
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     const exists = await prisma.order.findFirst({ where: { id, userId: user.id }, select: { id: true, paymentStatus: true } });
     if (!exists) return NextResponse.json({ code: "ORDER_NOT_FOUND" }, { status: 404 });
-    if (exists.paymentStatus === "PAID" && hasEnv("SIH_API_KEY")) await refreshOrdersFor({ orderId: id }).catch(() => 0);
+    if (exists.paymentStatus === "PAID" && hasEnv("KINGUIN_API_KEY", "KEY_ENCRYPTION_SECRET")) await refreshKeyOrdersFor({ orderId: id }).catch(() => 0);
 
     const order = await prisma.order.findFirst({ where: { id, userId: user.id }, include: ORDER_VIEW_INCLUDE });
     if (!order) return NextResponse.json({ code: "ORDER_NOT_FOUND" }, { status: 404 });

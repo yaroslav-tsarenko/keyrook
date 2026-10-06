@@ -16,7 +16,6 @@ export interface InvoiceSource extends OrderAmountsSource {
   paymentMethod?: string | null;
   createdAt?: Date | string;
   paidAt?: Date | string | null;
-  steamId?: string | null;
   items: { productName: string; variantName?: string | null; quantity: number; price: Numeric }[];
 }
 
@@ -325,7 +324,7 @@ export async function renderInvoicePdf(order: InvoiceSource): Promise<Uint8Array
   const billedLines = addressLines(billing);
   const billedTo = [...(billedLines.length ? billedLines : [order.customerName]), order.customerEmail];
   const billedBottom = addressColumn(w, "Billed to", billedTo, PAGE.margin, w.y);
-  const deliveredBottom = addressColumn(w, "Delivered by", ["Steam trade offer", ...(order.steamId ? [`Steam ID ${order.steamId}`] : [])], rightX, w.y);
+  const deliveredBottom = addressColumn(w, "Delivery", ["Digital activation keys", `Issued to the ${BRAND.name} account`, order.customerEmail], rightX, w.y);
   w.y = Math.min(billedBottom, deliveredBottom) - 22;
 
   tableHeader(w);

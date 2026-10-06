@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { getSessionUser } from "@/lib/auth";
 import { hasEnv } from "@/lib/env";
-import { getBaseUrl } from "@/lib/steam";
+import { getBaseUrl } from "@/lib/brand";
 import { clientIp, consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
-import { createSkinCheckout, SkinCheckoutError } from "@/lib/sih/checkout";
+import { createKeyCheckout, KeyCheckoutError } from "@/lib/esa/checkout";
 import { getPaymentProvider, PaymentUnavailableError } from "@/lib/payments/provider";
 import { checkoutRequestSchema } from "@/lib/validators/checkout";
 import { composePhone } from "@/lib/validators/fields";
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     if (!provider.available) {
       return NextResponse.json({ code: "PAYMENTS_NOT_CONNECTED" }, { status: 503 });
     }
-    if (!hasEnv("SIH_API_KEY")) {
+    if (!hasEnv("KINGUIN_API_KEY", "KEY_ENCRYPTION_SECRET")) {
       return NextResponse.json({ code: "PAYMENT_UNAVAILABLE" }, { status: 503 });
     }
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const phone = form.contact.phone ? composePhone(form.contact.phoneCountry, form.contact.phone, dialCodeFor(form.contact.phoneCountry)) : null;
     const ip = clientIp(request);
 
-    const result = await createSkinCheckout({
+    const result = await createKeyCheckout({
       userId: user.id,
       items: body.items,
       currency: body.currency,
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof PaymentUnavailableError) {
       return NextResponse.json({ code: error.code }, { status: 503 });
     }
-    if (error instanceof SkinCheckoutError) {
+    if (error instanceof KeyCheckoutError) {
       return NextResponse.json({ code: error.code, ...error.details }, { status: error.status });
     }
     if (error instanceof ZodError) {

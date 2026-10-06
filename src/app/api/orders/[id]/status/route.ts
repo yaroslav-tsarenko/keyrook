@@ -3,8 +3,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendOrderStatusEmail } from "@/lib/email";
 import { requireAdmin } from "@/lib/auth";
-import { logSihEvent } from "@/lib/sih/orders";
-import { loadOrderForEmail, orderEmailPayload } from "@/lib/sih/order-status";
+import { logKeyEvent } from "@/lib/esa/events";
+import { loadOrderForEmail, orderEmailPayload } from "@/lib/esa/order-status";
 
 const statusSchema = z.object({
   status: z.enum(["PENDING", "CONFIRMED", "PROCESSING", "DELIVERED", "CANCELLED", "REFUNDED"]),
@@ -29,11 +29,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     });
 
     if (validated.status === "REFUNDED" || validated.status === "CANCELLED") {
-      const open = await prisma.sihOrder.findMany({ where: { orderId: id, status: { in: ["refund_pending", "rolled_back", "awaiting_payment", "failed"] } }, select: { id: true, status: true } });
+      const open = await prisma.keyOrder.findMany({ where: { orderId: id, status: { in: ["refund_pending", "awaiting_payment", "failed"] } }, select: { id: true, status: true } });
       for (const item of open) {
         const next = item.status === "awaiting_payment" || item.status === "failed" ? "failed" : "refunded";
-        await prisma.sihOrder.update({ where: { id: item.id }, data: { status: next, ...(next === "refunded" ? { refundedAt: new Date() } : {}) } });
-        if (next !== item.status) await logSihEvent({ orderId: item.id, source: "system", fromStatus: item.status, toStatus: next, payload: { reason: "admin_order_status", by: admin.email ?? admin.id } });
+        await prisma.keyOrder.update({ where: { id: item.id }, data: { status: next, ...(next === "refunded" ? { refundedAt: new Date() } : {}) } });
+        if (next !== item.status) await logKeyEvent({ keyOrderId: item.id, source: "admin", fromStatus: item.status, toStatus: next, payload: { reason: "admin_order_status", by: admin.email ?? admin.id } });
       }
     }
 

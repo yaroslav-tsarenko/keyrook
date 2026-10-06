@@ -187,7 +187,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
       <form onSubmit={handleSubmit(onSubmit)} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
-        {/* Images */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">Product Images</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", marginBottom: "1rem" }}>
@@ -248,7 +247,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               </div>
             ))}
 
-            {/* Upload button */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -296,7 +294,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           )}
         </div>
 
-        {/* Basic Info */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">Basic Information</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -321,7 +318,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        {/* Pricing */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">Pricing</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
@@ -340,7 +336,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        {/* Inventory */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">Inventory</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
@@ -359,7 +354,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        {/* Organization */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">Organization</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -444,7 +438,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        {/* Product Identifiers */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">Product Identifiers</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -474,7 +467,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        {/* Characteristics */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">Characteristics</div>
           <p style={{ fontSize: "0.8125rem", color: "var(--admin-text-tertiary)", marginBottom: "0.75rem" }}>
@@ -546,7 +538,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        {/* SEO */}
         <div className="admin-form-card">
           <div className="admin-form-section-title">SEO</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>

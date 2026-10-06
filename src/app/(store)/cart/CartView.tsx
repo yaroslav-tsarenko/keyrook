@@ -18,9 +18,9 @@ import { formatPrice } from "@/lib/utils/format-price";
 import { STORE_POLICY } from "@/config/store-policy";
 
 const EMPTY_LINKS = [
-  { href: "/catalog/knives", key: "knives" },
-  { href: "/catalog/gloves", key: "gloves" },
-  { href: "/catalog/rifles", key: "rifles" },
+  { href: "/catalog/games", key: "games" },
+  { href: "/catalog/gift-cards", key: "giftCards" },
+  { href: "/catalog/subscriptions", key: "subscriptions" },
 ] as const;
 
 export function CartView() {

@@ -57,8 +57,8 @@ export function MotionRoot() {
 
   useEffect(() => {
     const onAdd = (event: Event) => flyToCart((event as CustomEvent<CartAddDetail>).detail);
-    window.addEventListener("patina:cart-add", onAdd);
-    return () => window.removeEventListener("patina:cart-add", onAdd);
+    window.addEventListener("keyrook:cart-add", onAdd);
+    return () => window.removeEventListener("keyrook:cart-add", onAdd);
   }, []);
 
   return null;

@@ -7,7 +7,7 @@
 @source not "../../README.md";
 @source not "../../scripts";
 @source not "../../.claude";
-@source not "../lib/sih";
+@source not "../lib/esa";
 @source not "../../.env.example";
 
 @custom-variant dark ([data-theme="dark"] &);
@@ -60,16 +60,6 @@
   --color-info-tint: var(--color-info-tint);
   --color-on-danger: var(--color-on-danger);
 
-  --color-rarity: var(--rarity);
-  --color-rarity-consumer: var(--rarity-consumer);
-  --color-rarity-industrial: var(--rarity-industrial);
-  --color-rarity-milspec: var(--rarity-milspec);
-  --color-rarity-restricted: var(--rarity-restricted);
-  --color-rarity-classified: var(--rarity-classified);
-  --color-rarity-covert: var(--rarity-covert);
-  --color-rarity-gold: var(--rarity-gold);
-  --color-mark-stattrak: var(--mark-stattrak);
-  --color-mark-souvenir: var(--mark-souvenir);
 
   --font-sans: var(--font-source-sans), "Source Sans 3 Variable", "Source Sans Fallback", "Segoe UI", sans-serif;
   --font-display: var(--font-sofia-condensed), "Sofia Sans Condensed Variable", "Sofia Condensed Fallback", "Arial Narrow", sans-serif;
@@ -124,34 +114,6 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
-}
-
-[data-rarity="consumer"] {
-  --rarity: var(--rarity-consumer);
-}
-
-[data-rarity="industrial"] {
-  --rarity: var(--rarity-industrial);
-}
-
-[data-rarity="milspec"] {
-  --rarity: var(--rarity-milspec);
-}
-
-[data-rarity="restricted"] {
-  --rarity: var(--rarity-restricted);
-}
-
-[data-rarity="classified"] {
-  --rarity: var(--rarity-classified);
-}
-
-[data-rarity="covert"] {
-  --rarity: var(--rarity-covert);
-}
-
-[data-rarity="gold"] {
-  --rarity: var(--rarity-gold);
 }
 
 @layer base {
@@ -257,104 +219,46 @@
 }
 
 @layer components {
-  .stage {
-    --stage-lamp: radial-gradient(ellipse 70% 62% at var(--lx, 50%) var(--ly, 0%), rgb(var(--lamp-rgb) / calc(var(--lamp-pool-alpha) * var(--lamp-level, 1))), transparent 72%);
+  .cover {
     position: relative;
     isolation: isolate;
     overflow: hidden;
     background-color: var(--color-stage);
-    background-image: var(--stage-lamp);
     color: var(--color-on-stage);
-    transition: --lamp-level var(--dur-micro) var(--ease-std);
   }
 
-  .stage::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: var(--lamp-inset);
-    right: var(--lamp-inset);
-    height: 1px;
-    z-index: 3;
-    pointer-events: none;
-    background: var(--lamp-line);
-    opacity: min(1, var(--lamp-level, 1));
-  }
-
-  .stage[data-lamp="off"] {
-    background-image: none;
-  }
-
-  .stage[data-lamp="off"]::before {
-    opacity: 0;
-  }
-
-  .stage-render {
-    position: absolute;
-    inset: 12% 9% 16% 9%;
-    z-index: 1;
-  }
-
-  .contact-shadow {
-    position: absolute;
-    left: 18%;
-    right: 18%;
-    bottom: 8%;
-    height: 10px;
-    z-index: 0;
-    pointer-events: none;
-    background: radial-gradient(closest-side, var(--shadow-contact), transparent);
-  }
-
-  .tray {
-    --tray-edge: var(--color-border);
+  .product-card {
+    --card-edge: var(--color-border);
     position: relative;
     display: flex;
     flex-direction: column;
     min-width: 0;
     border-radius: var(--radius-tray);
     background-color: var(--color-raised);
-    box-shadow: var(--shadow-card), 0 0 0 1px var(--tray-edge);
+    box-shadow: var(--shadow-card), 0 0 0 1px var(--card-edge);
     transition:
       transform var(--dur-micro) var(--ease-instrument),
       box-shadow var(--dur-micro) var(--ease-instrument);
   }
 
-  [data-theme="light"] .tray {
-    --tray-edge: transparent;
+  [data-theme="light"] .product-card {
+    --card-edge: transparent;
   }
 
-  .tray > .stage {
+  .product-card > .cover {
     border-radius: var(--radius-tray) var(--radius-tray) 0 0;
   }
 
-  .tray::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: var(--spine);
-    z-index: 4;
-    pointer-events: none;
-    background: var(--rarity);
-    border-radius: var(--radius-tray) 0 0 var(--radius-tray);
-  }
-
   @media (hover: hover) and (pointer: fine) {
-    .tray[data-lift]:is(:hover, :focus-within) {
+    .product-card[data-lift]:is(:hover, :focus-within) {
       transform: translateY(-3px);
-      box-shadow: var(--shadow-card-hover), 0 0 0 1px var(--tray-edge);
+      box-shadow: var(--shadow-card-hover), 0 0 0 1px var(--card-edge);
     }
   }
 
-  .tray:has([data-tray-link]:focus-visible) {
+  .product-card:has([data-card-link]:focus-visible) {
     outline: 2px solid var(--color-focus);
     outline-offset: 3px;
-  }
-
-  .spine-row {
-    box-shadow: inset 2px 0 0 var(--rarity);
   }
 
   .lamp-rule {

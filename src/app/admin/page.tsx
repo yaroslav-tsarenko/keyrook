@@ -160,7 +160,6 @@ export default function AdminDashboard() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Page Title */}
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">Dashboard</h1>
@@ -171,7 +170,6 @@ export default function AdminDashboard() {
         </span>
       </div>
 
-      {/* KPI Grid */}
       <div className="kpi-grid gap-section">
         {kpis.map((kpi, i) => (
           <motion.div
@@ -200,7 +198,6 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Summary Strip */}
       <div className="stat-strip gap-section">
         {[
           { label: "This Month Revenue", value: formatPrice(data.thisMonthRevenue), change: monthRevChange },
@@ -229,7 +226,6 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Charts Row 1 */}
       <motion.div
         className="chart-grid-2 gap-section"
         initial={{ opacity: 0, y: 8 }}
@@ -258,7 +254,6 @@ export default function AdminDashboard() {
         </div>
       </motion.div>
 
-      {/* Charts Row 2 */}
       <motion.div
         className="chart-grid-3 gap-section"
         initial={{ opacity: 0, y: 8 }}
@@ -294,7 +289,6 @@ export default function AdminDashboard() {
         </div>
       </motion.div>
 
-      {/* Top Products + Recent Customers */}
       <motion.div
         className="chart-grid-3-2 gap-section"
         initial={{ opacity: 0, y: 8 }}
@@ -398,7 +392,6 @@ export default function AdminDashboard() {
         </div>
       </motion.div>
 
-      {/* Recent Orders + Low Stock */}
       <motion.div
         className="chart-grid-2 gap-section"
         initial={{ opacity: 0, y: 8 }}

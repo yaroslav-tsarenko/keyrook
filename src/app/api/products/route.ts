@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
         include: {
           images: { orderBy: { sortOrder: "asc" }, take: 2 },
           categories: { include: { category: { select: { id: true, name: true, slug: true } } } },
-          skin: true,
+          item: { select: { title: true, productType: true, platform: true, region: true, edition: true, languages: true, genres: true, releaseYear: true, validity: true } },
         },
       }),
       prisma.product.count({ where }),
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       {
-        data: products,
+        data: products.map((p) => ({ ...p, key: p.item })),
         total,
         page,
         pageSize,

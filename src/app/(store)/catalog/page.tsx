@@ -14,7 +14,7 @@ interface CatalogPageProps {
 
 export async function generateMetadata({ searchParams }: CatalogPageProps): Promise<Metadata> {
   const t = await getTranslations("catalog");
-  const params = parseCatalogParams(await searchParams);
+  const params = parseCatalogParams(await searchParams, "popular");
   const tree = await getCategoryTree();
   const counts = await categoryCounts(tree);
   const total = tree.roots.reduce((sum, c) => sum + (counts.get(c.id) ?? 0), 0);
@@ -33,7 +33,7 @@ export async function generateMetadata({ searchParams }: CatalogPageProps): Prom
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const raw = await searchParams;
-  const params = parseCatalogParams(raw);
+  const params = parseCatalogParams(raw, "popular");
   const tree = await getCategoryTree();
 
   if (params.category) {
@@ -43,7 +43,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   const t = await getTranslations("catalog");
   const counts = await categoryCounts(tree);
-  const result = await queryCatalog({ kind: "all" }, { ...params, category: null }, { basePath: "/catalog" });
+  const result = await queryCatalog({ kind: "all" }, { ...params, category: null }, { basePath: "/catalog", defaultSort: "popular" });
   const typeIndex = tree.roots
     .filter((c) => (counts.get(c.id) ?? 0) > 0)
     .map((c) => ({ slug: c.slug, label: c.name, count: counts.get(c.id) ?? 0, href: `/catalog/${c.slug}` }));
@@ -51,13 +51,8 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   return (
     <div className="mx-auto max-w-container px-gutter pb-24">
-      <Breadcrumbs items={[{ label: t("home"), href: "/" }, { label: "All skins" }]} />
-      <CategoryOpener
-        name="All CS2 skins"
-        count={total}
-        lead={`Knives, gloves and weapon skins across ${typeIndex.length} weapon types. Every listing is one item in one exterior, with its price shown up front.`}
-        typeIndex={typeIndex}
-      />
+      <Breadcrumbs items={[{ label: t("home"), href: "/" }, { label: t("allCategoriesTitle") }]} />
+      <CategoryOpener name={t("allCategoriesTitle")} count={total} lead={t("catalogLead", { categories: typeIndex.length })} typeIndex={typeIndex} />
 
       <CatalogBrowser
         basePath="/catalog"
@@ -67,6 +62,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         page={result.page}
         totalPages={result.totalPages}
         facets={result.facets}
+        defaultSort="popular"
         related={typeIndex.slice(0, 3).map((d) => ({ name: d.label, href: d.href }))}
         headingId="catalog-results"
         heading={t("resultsHeading")}

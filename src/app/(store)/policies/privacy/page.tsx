@@ -9,8 +9,8 @@ export const generateMetadata = policyMetadata(
 );
 
 const purposes: { purpose: string; data: string; basis: string }[] = [
-  { purpose: "Taking your order and delivering items to your Steam account", data: "Name, email, phone (optional), billing address, items ordered, Steam ID, trade URL and the trade token it contains", basis: "Contract" },
-  { purpose: "Signing you in with Steam and linking your Steam account", data: "Steam ID, public Steam profile name, avatar and profile link", basis: "Contract" },
+  { purpose: "Taking your order and delivering your keys", data: "Name, email, phone (optional), billing address, products ordered, the keys issued to you (stored encrypted)", basis: "Contract" },
+  { purpose: "Showing your keys only to you", data: "When each key was revealed in your account and how many times", basis: "Contract and legitimate interests" },
   { purpose: "Running your account", data: "Name, email, phone, date of birth, address, password (stored as a hash), order history, saved items", basis: "Contract" },
   { purpose: "Recording your request for immediate delivery", data: "The time you ticked the checkbox and the wording you agreed to", basis: "Legal obligation" },
   { purpose: `Checking you are ${F.minAge} or over`, data: "Date of birth", basis: "Contract and legitimate interests" },
@@ -45,9 +45,8 @@ const sections: PolicySection[] = [
       <>
         <ul>
           <li><strong>Account details:</strong> first and last name, email, phone number, date of birth, street, city, postcode and country, and your password, which we store only as a one-way hash.</li>
-          <li><strong>Steam details:</strong> your Steam ID (SteamID64), and from your public Steam profile your display name, avatar and profile link. If you sign in with Steam, Steam confirms your Steam ID to us; we never see your Steam password.</li>
-          <li><strong>Trade URL:</strong> the Steam trade URL you save, which contains your Steam account number and a trade token. We use it only to send trade offers for items you bought.</li>
-          <li><strong>Order details:</strong> the items you buy, billing address, contact details, your request for immediate delivery, the status of each trade offer, and the payment result and transaction reference sent to us by our payment provider.</li>
+          <li><strong>Order details:</strong> the products you buy, billing address, contact details, your request for immediate delivery, the delivery status of each key, and the payment result and transaction reference sent to us by our payment provider.</li>
+          <li><strong>Keys:</strong> the activation keys issued to you. We store them encrypted and decrypt a key only when you select Reveal key in your account. We record when a key was first revealed.</li>
           <li><strong>Messages:</strong> what you send through the contact form or by email, including any order number, and for the contact form the IP address it was sent from.</li>
           <li><strong>Saved items:</strong> products you save to your account.</li>
           <li><strong>Newsletter:</strong> your email address, if you sign up.</li>
@@ -129,8 +128,8 @@ const sections: PolicySection[] = [
     title: "International transfers",
     body: (
       <p>
-        Steam is operated by Valve Corporation in the United States, and Steam sign-in and trade offers are processed there under Valve&rsquo;s
-        own privacy policy. Our item delivery partner receives your Steam ID and trade token to send the offer. Where a service provider
+        Our key distribution partner receives the product and quantity of each order and our own order reference. It does not receive your
+        name, email, address or card details. Where a service provider
         processes data outside the UK or the European Economic Area, we use an adequacy decision or standard contractual clauses (with the UK
         International Data Transfer Addendum for UK data).
       </p>
@@ -180,7 +179,8 @@ const sections: PolicySection[] = [
     body: (
       <p>
         The website is served only over HTTPS. Passwords are stored as one-way hashes. Access to customer data is limited to the people who
-        need it to fulfil orders and answer messages. Card details, Steam passwords and Steam Guard codes never reach our systems.
+        need it to fulfil orders and answer messages. Keys are encrypted at rest and shown only to the signed-in account that bought them; our
+        staff do not see them in the admin area. Card details never reach our systems.
       </p>
     ),
   },

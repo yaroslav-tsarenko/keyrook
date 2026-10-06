@@ -1,21 +1,20 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { AlignRight, ChevronDown, CircleUser, Search, ShoppingCart } from "lucide-react";
 import { Wordmark } from "@/components/layout/BrandMark";
 import { useCart } from "@/providers/CartProvider";
 import { useAuth } from "@/providers/AuthProvider";
-import { useSteamAccount } from "@/components/account/SteamDelivery/SteamDelivery";
 import { catalogSlugFromPath, findRootSlug, useCategoryTree } from "@/lib/hooks/useCategoryTree";
 import { RIG_LINKS, navCategory } from "@/config/navigation";
+import { productTypeDef } from "@/lib/keys/taxonomy";
 import { cn } from "@/lib/utils/cn";
 import { BRAND } from "@/lib/brand";
 import { ThemeToggle } from "./ThemeToggle";
 import { CurrencySelect } from "./CurrencySelect";
-import { LoadoutBoard } from "./LoadoutBoard";
+import { CatalogBoard } from "./CatalogBoard";
 import { MobileMenu } from "./MobileMenu";
 import { SearchDialog } from "@/components/search/SearchDialog/SearchDialog";
 import { CartSheet } from "@/components/cart/CartSheet/CartSheet";
@@ -42,8 +41,7 @@ export function CartCount({ count, bump }: { count: number; bump: number }) {
 function CatalogFilterProbe({ onChange }: { onChange: (slug: string | null) => void }) {
   const params = useSearchParams();
   const types = (params.get("type") ?? "").split(",").filter(Boolean);
-  const weapons = (params.get("weapon") ?? "").split(",").filter(Boolean);
-  const slug = types.length === 1 ? types[0] : types.length === 0 && weapons.length === 1 ? weapons[0] : null;
+  const slug = types.length === 1 ? productTypeDef(types[0])?.slug ?? null : null;
   useEffect(() => onChange(slug), [slug, onChange]);
   return null;
 }
@@ -53,7 +51,6 @@ function StoreHeader() {
   const [filterSlug, setFilterSlug] = useState<string | null>(null);
   const { itemCount, cartBounce, openSheet, isSheetOpen } = useCart();
   const { user } = useAuth();
-  const steam = useSteamAccount(Boolean(user));
   const categories = useCategoryTree();
   const boardId = useId();
   const [boardOpen, setBoardOpen] = useState(false);
@@ -113,8 +110,7 @@ function StoreHeader() {
   const filteredSlug = pathname === "/catalog" ? filterSlug : null;
   const activeRoot = findRootSlug(categories, catalogSlug ?? filteredSlug) ?? catalogSlug ?? filteredSlug;
   const boardActive = (pathname === "/catalog" && !filteredSlug) || (activeRoot !== null && !RIG_LINKS.includes(activeRoot));
-  const persona = steam.steam?.personaName ?? user?.firstName ?? user?.name ?? null;
-  const avatar = steam.steam?.avatar ?? null;
+  const persona = user?.firstName ?? user?.name ?? null;
 
   return (
     <>
@@ -173,8 +169,8 @@ function StoreHeader() {
                 }}
                 className={cn(navLink, "cursor-pointer gap-1", boardOpen && "text-ink")}
               >
-                <span className="xl:hidden">Skins</span>
-                <span className="hidden xl:inline">All skins</span>
+                <span className="xl:hidden">Shop</span>
+                <span className="hidden xl:inline">All products</span>
                 <ChevronDown size={16} aria-hidden="true" />
               </button>
             </nav>
@@ -186,7 +182,7 @@ function StoreHeader() {
                 className="hidden h-9 w-[200px] cursor-pointer items-center gap-2 rounded-control border border-control bg-raised px-3 text-left text-ui-md text-ink-subtle shadow-lamp-catch transition-colors duration-[140ms] hover-device:hover:border-ink-muted lg:flex 2xl:w-[240px]"
               >
                 <Search size={16} aria-hidden="true" className="text-ink-muted" />
-                <span className="flex-1">Search skins</span>
+                <span className="flex-1">Search games</span>
                 <kbd className="rounded-[1px] border border-line px-1.5 font-mono text-[0.6875rem] leading-[1.3] text-ink-muted">/</kbd>
               </button>
               <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search" className={cn(action, "w-11 justify-center px-0 lg:hidden")}>
@@ -195,11 +191,7 @@ function StoreHeader() {
               <CurrencySelect className="hidden lg:flex" />
               <ThemeToggle className="hidden lg:flex" />
               <Link href={user ? "/account" : "/auth/login"} className={cn(action, "hidden lg:inline-flex")} aria-label={user ? `Account${persona ? `, ${persona}` : ""}` : "Sign in"}>
-                {user && avatar ? (
-                  <Image src={avatar} alt="" width={24} height={24} unoptimized className="size-6 rounded-control" />
-                ) : (
-                  <CircleUser size={20} aria-hidden="true" />
-                )}
+                <CircleUser size={20} aria-hidden="true" />
                 <span className="hidden max-w-[14ch] truncate 2xl:inline">{user ? persona ?? "Account" : "Sign in"}</span>
               </Link>
               <button
@@ -219,7 +211,7 @@ function StoreHeader() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <LoadoutBoard
+            <CatalogBoard
               id={boardId}
               open={boardOpen}
               categories={categories}

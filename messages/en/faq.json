@@ -1,7 +1,7 @@
 {
   "title": "Questions",
-  "metaTitle": "Questions about buying CS2 skins, Steam delivery and refunds",
-  "metaDescription": "Answers on ordering Counter-Strike 2 skins from {brand}, delivery by {method}, Steam trade protection, refunds, card payment and your account.",
+  "metaTitle": "Questions about buying game keys, delivery and refunds",
+  "metaDescription": "Answers on ordering game keys, subscriptions and gift cards from {brand}: delivery to your account, regions, redeeming, refunds, card payment and your account.",
   "lead": "Short answers about buying from {brand}. The full terms are in our <policies>policies</policies>.",
   "home": "Home",
   "groupsNav": "Question groups",
@@ -14,23 +14,19 @@
       "items": {
         "place": {
           "q": "How do I place an order?",
-          "a": "Sign in, link your Steam account and save your trade URL. Add items to your cart, go to checkout, enter your contact and billing details, tick the two confirmation boxes and pay on our payment provider's secure page. We email your order confirmation once the payment is confirmed."
+          "a": "Sign in, add products to your cart and go to checkout. Enter your contact and billing details, tick the two confirmation boxes and pay on our payment provider's secure page. We email your order confirmation and invoice once the payment is confirmed."
         },
         "account": {
           "q": "Do I need an account to order?",
-          "a": "Yes. Items are delivered to a Steam account, so checkout needs an account with your Steam account linked. You can sign in through Steam or with an email and password."
+          "a": "Yes. Keys are issued to your {brand} account and shown only to you, so checkout needs you to be signed in. Creating an account takes three short steps."
         },
-        "unique": {
-          "q": "Why can I only add one of each item?",
-          "a": "Each listing is one item in one condition, so it can only be bought once. One order can hold up to {maxItems} different items."
-        },
-        "float": {
-          "q": "Will I get the exact float shown?",
-          "a": "Each listing shows the exterior and the float range that exterior allows for that finish. The delivered item's float falls within that range; the exact value and pattern are shown in Steam after delivery."
+        "limits": {
+          "q": "Is there a limit on how many keys I can buy?",
+          "a": "One order can hold up to {maxItems} keys and be worth up to {maxValue}. Gift cards and top-ups are limited to {cardLimit} per product per order and {cardLimit24h} keys or {cardValue24h} per customer in 24 hours. The limit for each product is shown on its page."
         },
         "change": {
           "q": "Can I cancel my order?",
-          "a": "You can cancel free of charge before {cancelBefore}. Email {email} with your order number. Once delivery has begun, the right to cancel no longer applies, as explained in our <returns>Refund policy</returns>."
+          "a": "You can cancel free of charge before {cancelBefore}. Email {email} with your order number. Keys are usually issued within minutes, and once a key is issued the right to cancel no longer applies, as explained in our <returns>Refund policy</returns>."
         },
         "noEmail": {
           "q": "I paid but did not get a confirmation email.",
@@ -39,52 +35,52 @@
       }
     },
     "delivery": {
-      "title": "Delivery via Steam",
+      "title": "Delivery and redeeming",
       "items": {
         "how": {
-          "q": "How do I receive the item?",
-          "a": "As a {method} to the Steam account linked to your {brand} account. Open Steam, go to Inventory then Trade Offers, check the offer and accept it."
+          "q": "How do I receive my key?",
+          "a": "On the order page in your account. Open the order, select Reveal key and copy it. We email you when your keys are ready; for security the email does not contain the key itself."
         },
         "time": {
           "q": "How long does delivery take?",
-          "a": "We send the trade offer {usual}. If we cannot deliver an item within {deadlineHours} hours of payment confirmation, we refund it."
+          "a": "Keys are {usual}. A bank check or a security review can make it take longer. If we cannot issue a key within {deadlineHours} hours of payment confirmation, we refund it."
         },
-        "requirements": {
-          "q": "What does my Steam account need?",
-          "a": "A Steam account in good standing with no trade ban or cooldown, the Steam Guard Mobile Authenticator turned on for at least 7 days, a public inventory, and a current trade URL saved in your account."
+        "region": {
+          "q": "What does the activation region mean?",
+          "a": "A Global key works on an account set to any country we sell to. A Europe, United Kingdom, United States or North America key only activates on an account set to that region. The region is shown on every product page and in your cart."
         },
-        "protection": {
-          "q": "Why can't I trade the item straight away?",
-          "a": "Steam may keep items received in a trade under trade protection for up to {protectionDays} days, during which they cannot be traded or sold. Without the Mobile Authenticator, Steam can hold a trade for up to {holdDays} days. These are Steam rules we cannot change."
+        "language": {
+          "q": "Which languages will the game have?",
+          "a": "The product page lists the languages the publisher states for that key. Some keys support only some languages; if a language matters to you, check the list before you buy."
         },
-        "expired": {
-          "q": "I missed the trade offer. What now?",
-          "a": "Contact us with your order number. If the offer expired before you could accept it, we send it again where possible, or refund the item."
+        "redeem": {
+          "q": "Where do I enter the key?",
+          "a": "On the platform named on the product page: for example Games, Activate a Product on Steam; Redeem code in the EA app; redeem.microsoft.com for Xbox. Step-by-step instructions for every platform are on <howto>How delivery works</howto> and on your order page."
         },
         "safety": {
-          "q": "How do I know the offer is from you?",
-          "a": "Your order page shows each item's status and links to the trade offer when it is sent. The offer only gives you the item you bought and never asks for items from your inventory. We never ask for your Steam password or Steam Guard codes."
+          "q": "Is my key safe in my account?",
+          "a": "Keys are stored encrypted and only shown to the signed-in account that bought them, when you select Reveal key. Keep the key private until you redeem it: anyone who sees it can use it."
         }
       }
     },
     "returns": {
-      "title": "Refunds",
+      "title": "Refunds and the key guarantee",
       "items": {
         "when": {
-          "q": "When do I get a refund?",
-          "a": "If we cannot deliver an item within {deadlineHours} hours, if the offer fails for a reason on our side, or if Steam reverses the trade during trade protection. See our <warranty>Item guarantee</warranty>."
+          "q": "When do you refund?",
+          "a": "If we cannot issue a key within {deadlineHours} hours of payment confirmation, if a key does not activate and no replacement is available, or if you cancel before {cancelBefore}. Refunds go to {refundMethod} within {refundDays} days. See our <returns>Refund policy</returns>."
+        },
+        "notWorking": {
+          "q": "My key doesn't work. What now?",
+          "a": "First check that the platform and region match your account. If it still fails, contact us within {claimDays} days of delivery with your order number and a screenshot of the error. We check it within {reviewDays} business days and replace the key or refund it. See the <warranty>Key guarantee</warranty>."
         },
         "withdrawal": {
-          "q": "Can I return an item I no longer want?",
-          "a": "Before delivery begins you can cancel for free. At checkout you ask us to start delivery straight away and confirm that you lose the {withdrawalDays}-day right to cancel once delivery begins, so delivered items cannot be returned for a change of mind."
+          "q": "What happens to the 14-day right to cancel?",
+          "a": "At checkout you ask us to start delivery straight away and acknowledge that the {withdrawalDays}-day right to cancel ends once a key is issued. This does not affect your rights if a key is not delivered, does not work or is not as described."
         },
         "refund": {
-          "q": "How long does a refund take?",
-          "a": "We refund within {refundDays} days to {refundMethod}, in the currency you paid in. Your bank may take a few further working days to show it."
-        },
-        "account": {
-          "q": "The trade failed because of my Steam account. Do I get a refund?",
-          "a": "Yes. If the offer cannot be completed because of an invalid trade URL, a private inventory, a trade ban or a Steam Guard restriction, we refund the item and tell you what to change."
+          "q": "Can I return a key I don't want?",
+          "a": "Not once it has been issued and works as described, for example if you changed your mind or bought the wrong platform when the product page stated it correctly. Please check the platform, region and edition before you buy."
         }
       }
     },
@@ -117,45 +113,41 @@
         }
       }
     },
-    "items": {
-      "title": "Items",
+    "products": {
+      "title": "Products",
       "items": {
         "what": {
           "q": "What do you sell?",
-          "a": "Cosmetic items for Counter-Strike 2: weapon skins, knives and gloves. They change how weapons look in the game and have no effect on gameplay."
+          "a": "Activation keys for games and DLC, subscription codes, gift cards and in-game top-ups, and software licence keys. Everything is digital; nothing is posted."
         },
-        "store": {
-          "q": "Do you buy skins from customers?",
-          "a": "No. {brand} is a store: we supply items we source ourselves. You cannot list, trade in or exchange items here."
+        "subscriptions": {
+          "q": "Do subscriptions renew automatically?",
+          "a": "No. A subscription code gives access for the duration shown and we never charge you again. If you want it to continue, you renew it yourself with the platform."
         },
-        "rarity": {
-          "q": "What do rarity, exterior and quality mean?",
-          "a": "Rarity is the item's grade in the game, from Consumer to Covert, with knives and gloves shown as ★. Exterior (Factory New to Battle-Scarred) reflects the float value. Quality is normal, StatTrak™ (counts kills) or Souvenir (tournament stickers)."
+        "giftCards": {
+          "q": "Which gift card should I choose?",
+          "a": "The one for the region your platform account is set to. A card adds its value, in the currency shown, only to an account in that region."
         },
         "affiliation": {
-          "q": "Are you connected to Valve or Steam?",
-          "a": "No. {brand} is not affiliated with or endorsed by Valve Corporation. Items are held in your Steam account under Steam's own terms."
+          "q": "Are you connected to the platforms or publishers?",
+          "a": "No. {brand} is an independent store, not affiliated with or endorsed by the platforms and publishers whose products it sells. Their names and logos belong to them."
         }
       }
     },
     "account": {
-      "title": "Account",
+      "title": "Your account",
       "items": {
         "who": {
           "q": "Who can open an account?",
-          "a": "Anyone aged {minAge} or over in a country we sell to. You can sign in through Steam or register with an email and password."
-        },
-        "steam": {
-          "q": "What do you get from my Steam account?",
-          "a": "Your Steam ID and public profile name, avatar and profile link. Steam confirms your Steam ID to us when you sign in; we never see your Steam password. See our <privacy>Privacy policy</privacy>."
+          "a": "Anyone aged {minAge} or over who lives in a country we sell to. We don't sell to or open accounts in {restricted}."
         },
         "password": {
           "q": "I forgot my password.",
-          "a": "Select \"Forgot your password?\" on the sign-in page and enter your email. If an account exists for it, we send you a link to set a new password. If you signed in through Steam, sign in through Steam again."
+          "a": "Use Forgot your password on the sign-in page. We email you a link to set a new one."
         },
         "delete": {
-          "q": "How do I delete my account or my data?",
-          "a": "Email {email} from the address on your account. We close the account and delete your data, apart from order records we must keep by law, as explained in our <privacy>Privacy policy</privacy>."
+          "q": "How do I close my account?",
+          "a": "Email {email} from the address on your account. We close it and delete your data except what we must keep by law, as explained in our <privacy>Privacy policy</privacy>. Keys you have already redeemed stay on the platforms where you redeemed them."
         }
       }
     }

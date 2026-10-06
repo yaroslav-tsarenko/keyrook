@@ -12,7 +12,7 @@ export const localeTags: Record<Locale, { html: string; og: string }> = {
   en: { html: "en-GB", og: "en_GB" },
 };
 
-export const LOCALE_STORAGE_KEY = "patina.locale";
+export const LOCALE_STORAGE_KEY = "keyrook.locale";
 
 export const LOCALE_COOKIE = "NEXT_LOCALE";
 

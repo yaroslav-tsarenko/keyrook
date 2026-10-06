@@ -1,4 +1,4 @@
-import { SkinTray, type SkinProduct } from "@/components/skin/SkinTray";
+import { ProductCard, type CatalogProduct } from "@/components/product/ProductCard";
 import { SectionHead } from "./SectionHead";
 
 export function ProductRail({
@@ -13,7 +13,7 @@ export function ProductRail({
   id: string;
   title: string;
   lead?: string;
-  products: SkinProduct[];
+  products: CatalogProduct[];
   link?: { href: string; label: string };
   showCompare?: boolean;
   className?: string;
@@ -25,7 +25,7 @@ export function ProductRail({
       <div className="no-scrollbar -mx-gutter mt-8 flex snap-x gap-3 overflow-x-auto px-gutter pb-2 lg:mx-0 lg:grid lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-0">
         {products.map((p) => (
           <div key={p.id} className="w-[min(72vw,280px)] shrink-0 snap-start lg:w-auto">
-            <SkinTray product={p} showCompare={showCompare} />
+            <ProductCard product={p} showCompare={showCompare} />
           </div>
         ))}
       </div>

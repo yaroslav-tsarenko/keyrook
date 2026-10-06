@@ -1,9 +1,9 @@
-import type { SkinSummary } from "@/lib/skins/cs2";
+import type { KeySummary } from "@/lib/keys/taxonomy";
 import { STORE_POLICY } from "@/config/store-policy";
 import { computeTotals, rateConverter, type Totals } from "@/lib/pricing";
 import { countryName } from "@/lib/countries";
-import { statusMeta } from "@/lib/sih/status-labels";
-import { userMessageForSih, type SihErrorCode } from "@/lib/sih/errors";
+import { statusMeta } from "@/lib/esa/status";
+import { customerMessageFor } from "@/lib/esa/errors";
 
 export interface StoredAddress {
   firstName?: string;
@@ -33,6 +33,7 @@ export type CustomerOrderState =
   | "processing"
   | "shipped"
   | "delivered"
+  | "refundPending"
   | "cancelled"
   | "refunded";
 
@@ -43,6 +44,7 @@ const STATE_PLATE: Record<CustomerOrderState, string> = {
   processing: "PROCESSING",
   shipped: "SHIPPED",
   delivered: "DELIVERED",
+  refundPending: "REFUND_PENDING",
   cancelled: "CANCELLED",
   refunded: "REFUNDED",
 };
@@ -73,12 +75,16 @@ export function orderTotals(order: OrderAmountsSource): Totals {
   );
 }
 
-export function customerOrderState(order: { status: string; paymentStatus: string }): CustomerOrderState {
+const UNFULFILLED_KEY_STATUSES = new Set(["refund_pending", "failed", "refunded"]);
+
+export function customerOrderState(order: { status: string; paymentStatus: string; items?: { keyOrder?: { status: string } | null }[] }): CustomerOrderState {
   if (order.status === "CANCELLED") return "cancelled";
   if (order.status === "REFUNDED" || order.paymentStatus === "REFUNDED") return "refunded";
   if (order.paymentStatus === "FAILED") return "paymentFailed";
   if (order.paymentStatus !== "PAID") return "awaitingPayment";
   if (order.status === "DELIVERED") return "delivered";
+  const keyStatuses = (order.items ?? []).map((item) => item.keyOrder?.status).filter((status): status is string => Boolean(status));
+  if (keyStatuses.length > 0 && keyStatuses.every((status) => UNFULFILLED_KEY_STATUSES.has(status))) return "refundPending";
   if (order.status === "SHIPPED") return "shipped";
   if (order.status === "PROCESSING") return "processing";
   return "paid";
@@ -106,76 +112,58 @@ export const ORDER_VIEW_INCLUDE = {
         select: {
           slug: true,
           images: { take: 1, orderBy: { sortOrder: "asc" as const }, select: { url: true } },
-          skin: { select: { weaponType: true, weapon: true, skinName: true, rarity: true, rarityColor: true, exterior: true, floatMin: true, floatMax: true, isStatTrak: true, isSouvenir: true, collection: true, phase: true } },
+          item: { select: { title: true, productType: true, platform: true, region: true, edition: true, languages: true, genres: true, releaseYear: true, validity: true } },
         },
       },
-      sihOrder: {
+      keyOrder: {
         select: {
           status: true,
-          sihError: true,
-          senderOfferId: true,
-          senderTimeout: true,
-          finishedAt: true,
+          supplierError: true,
+          deliveredAt: true,
           refundedAt: true,
           updatedAt: true,
+          quantity: true,
+          keys: { select: { id: true, revealedAt: true, keyType: true }, orderBy: { createdAt: "asc" as const } },
         },
       },
     },
   },
 };
 
-const SIH_ERROR_CODES = new Set([
-  "invalid_tradelink",
-  "private_inventory",
-  "steam_guard_disabled",
-  "steam_guard_hold",
-  "steam_trade_ban",
-  "insufficient_balance",
-  "duplicate_custom_id",
-  "price_changed",
-  "item_unavailable",
-  "network",
-  "timeout",
-  "bad_response",
-  "unknown",
-]);
-
 export interface ItemDelivery {
   status: string;
   inFlight: boolean;
   tone: string;
-  offerUrl: string | null;
-  expiresAt: string | null;
   finishedAt: string | null;
   refundedAt: string | null;
   note: string | null;
+  keys: { id: string; revealed: boolean; type: string }[];
 }
 
-export function itemDelivery(source: {
-  status: string;
-  sihError?: string | null;
-  senderOfferId?: string | null;
-  senderTimeout?: Date | null;
-  finishedAt?: Date | null;
-  refundedAt?: Date | null;
-} | null | undefined): ItemDelivery | null {
+export function itemDelivery(
+  source:
+    | {
+        status: string;
+        supplierError?: string | null;
+        deliveredAt?: Date | null;
+        refundedAt?: Date | null;
+        keys?: { id: string; revealedAt: Date | null; keyType: string }[];
+      }
+    | null
+    | undefined,
+): ItemDelivery | null {
   if (!source) return null;
   const meta = statusMeta(source.status);
-  const errorCode = source.sihError && SIH_ERROR_CODES.has(source.sihError) ? (source.sihError as SihErrorCode) : null;
-  const fallback = userMessageForSih("unknown");
-  const reason = errorCode ? userMessageForSih(errorCode) : fallback;
-  const attention = source.status === "refund_pending" || source.status === "failed" || source.status === "rolled_back";
-  const note = attention ? (reason === fallback ? fallback : `${reason} ${fallback.replace("We could not deliver this item. ", "")}`) : null;
-  const offerId = source.senderOfferId && /^\d+$/.test(source.senderOfferId) ? source.senderOfferId : null;
+  const attention = source.status === "refund_pending" || source.status === "failed";
+  const note = attention && !source.supplierError?.startsWith("payment_") ? customerMessageFor(source.supplierError) : null;
   return {
     status: source.status,
     inFlight: meta.inFlight,
     tone: meta.color,
-    offerUrl: source.status === "sent" && offerId ? `https://steamcommunity.com/tradeoffer/${offerId}/` : null,
-    expiresAt: source.senderTimeout ? source.senderTimeout.toISOString() : null,
-    finishedAt: source.finishedAt ? source.finishedAt.toISOString() : null,
+    finishedAt: source.deliveredAt ? source.deliveredAt.toISOString() : null,
     refundedAt: source.refundedAt ? source.refundedAt.toISOString() : null,
-    note: source.sihError?.startsWith("payment_") ? null : note,
+    note,
+    keys: source.status === "delivered" ? (source.keys ?? []).map((k) => ({ id: k.id, revealed: Boolean(k.revealedAt), type: k.keyType })) : [],
   };
 }
 
@@ -194,7 +182,6 @@ interface OrderViewSource extends OrderAmountsSource {
   createdAt: Date;
   updatedAt: Date;
   paidAt?: Date | null;
-  steamId?: string | null;
   waiverAcceptedAt?: Date | null;
   waiverText?: string | null;
   items: {
@@ -203,8 +190,8 @@ interface OrderViewSource extends OrderAmountsSource {
     variantName: string | null;
     quantity: number;
     price: Numeric;
-    product?: { slug: string; images: { url: string }[]; skin?: SkinSummary | null } | null;
-    sihOrder?: Parameters<typeof itemDelivery>[0];
+    product?: { slug: string; images: { url: string }[]; item?: KeySummary | null } | null;
+    keyOrder?: Parameters<typeof itemDelivery>[0];
   }[];
 }
 
@@ -231,8 +218,8 @@ export function orderView(order: OrderViewSource) {
       total: totals.lines[index]?.total ?? 0,
       slug: item.product?.slug ?? null,
       imageUrl: item.product?.images[0]?.url ?? null,
-      skin: item.product?.skin ?? null,
-      delivery: itemDelivery(item.sihOrder),
+      key: item.product?.item ?? null,
+      delivery: itemDelivery(item.keyOrder),
     })),
     delivery,
     billing,
@@ -243,10 +230,9 @@ export function orderView(order: OrderViewSource) {
     updatedAt: order.updatedAt.toISOString(),
     paidAt: order.paidAt ? order.paidAt.toISOString() : null,
     invoiceAvailable: invoiceAvailable(order),
-    steamId: order.steamId ?? null,
     waiverAcceptedAt: order.waiverAcceptedAt ? order.waiverAcceptedAt.toISOString() : null,
     waiverText: order.waiverText ?? null,
-    inFlight: order.items.some((item) => itemDelivery(item.sihOrder)?.inFlight),
+    inFlight: order.items.some((item) => itemDelivery(item.keyOrder)?.inFlight),
   };
 }
 

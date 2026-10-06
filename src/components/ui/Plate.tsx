@@ -1,14 +1,10 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils/cn";
 
-export type PlateVariant = "rarity" | "stattrak" | "souvenir" | "star" | "phase" | "neutral" | "success" | "warning" | "danger" | "info" | "indicator";
+export type PlateVariant = "outline" | "neutral" | "success" | "warning" | "danger" | "info" | "indicator";
 
 const VARIANT: Record<PlateVariant, string> = {
-  rarity: "border border-line text-rarity shadow-[inset_2px_0_0_var(--rarity)] pl-2.5",
-  stattrak: "border border-line text-mark-stattrak",
-  souvenir: "border border-line text-mark-souvenir",
-  star: "border border-line text-rarity-gold",
-  phase: "border border-line text-ink",
+  outline: "border border-line text-ink",
   neutral: "bg-surface-1 text-ink",
   success: "bg-success-tint text-success",
   warning: "bg-warning-tint text-warning",
@@ -55,6 +51,7 @@ const ORDER_STATUS_VARIANT: Record<string, PlateVariant> = {
   PROCESSING: "warning",
   SHIPPED: "info",
   DELIVERED: "success",
+  REFUND_PENDING: "warning",
   CANCELLED: "danger",
   REFUNDED: "neutral",
   FAILED: "danger",

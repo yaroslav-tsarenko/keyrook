@@ -4,14 +4,12 @@ import type { ReactNode } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
-export function FilterChip({ label, onRemove, rarity, className }: { label: string; onRemove: () => void; rarity?: string; className?: string }) {
+export function FilterChip({ label, onRemove, className }: { label: string; onRemove: () => void; className?: string }) {
   return (
     <span
-      data-rarity={rarity}
       className={cn(
         "inline-flex h-8 items-center gap-0.5 rounded-control border border-control bg-raised pl-3 text-ui-sm font-semibold text-ink transition-colors duration-[140ms]",
         "has-[button:hover]:border-ink",
-        rarity && "shadow-[inset_2px_0_0_var(--rarity)]",
         className,
       )}
     >

@@ -5,8 +5,8 @@ import { FAQ_VALUES, faqLinkTags } from "@/components/faq/faq-content";
 
 const PICKS = [
   ["delivery", "how"],
-  ["delivery", "requirements"],
-  ["delivery", "protection"],
+  ["delivery", "region"],
+  ["returns", "notWorking"],
   ["returns", "when"],
 ] as const;
 

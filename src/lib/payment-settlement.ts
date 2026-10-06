@@ -4,15 +4,15 @@ import { sendOrderConfirmationEmail, sendOrderInvoiceEmail } from "@/lib/email";
 import { sendAlert } from "@/lib/alerts/telegram";
 import { displayOrderNumber, toNumber } from "@/lib/orders";
 import type { PaymentEvent, PaymentProviderId } from "@/lib/payments/provider";
-import { logSihEvent } from "@/lib/sih/orders";
-import { submitOrderToSih } from "@/lib/sih/checkout";
-import { loadOrderForEmail, orderEmailPayload, refreshOrderStatus } from "@/lib/sih/order-status";
+import { logKeyEvent } from "@/lib/esa/events";
+import { submitKeyOrder } from "@/lib/esa/orders";
+import { loadOrderForEmail, orderEmailPayload, refreshOrderStatus } from "@/lib/esa/order-status";
 
 export type SettlementOutcome = "paid" | "already_paid" | "failed" | "review" | "ignored" | "recorded";
 
 async function logAll(orderId: string, payload: Record<string, unknown>) {
-  const items = await prisma.sihOrder.findMany({ where: { orderId }, select: { id: true } });
-  for (const item of items) await logSihEvent({ orderId: item.id, source: "payment", payload });
+  const items = await prisma.keyOrder.findMany({ where: { orderId }, select: { id: true } });
+  for (const item of items) await logKeyEvent({ keyOrderId: item.id, source: "payment", payload });
 }
 
 async function holdForReview(order: { id: string; orderNumber: string; notes: string | null }, note: string) {
@@ -23,7 +23,7 @@ async function holdForReview(order: { id: string; orderNumber: string; notes: st
 }
 
 async function findOrder(event: PaymentEvent) {
-  const include = { sihOrders: { select: { id: true, status: true } } } as const;
+  const include = { keyOrders: { select: { id: true, status: true } } } as const;
   if (event.orderId) return prisma.order.findUnique({ where: { id: event.orderId }, include });
   return prisma.order.findFirst({ where: { paymentId: event.providerRef }, include });
 }
@@ -56,13 +56,13 @@ export async function settlePayment(provider: PaymentProviderId, event: PaymentE
         data: { paymentStatus: "PAID", status: "CONFIRMED", paidAt, paymentId: event.providerRef },
       });
       if (claimed.count > 0) {
-        const items = await prisma.sihOrder.findMany({
-          where: { orderId: order.id, OR: [{ status: "awaiting_payment" }, { status: "failed", sihError: { startsWith: "payment_" } }] },
+        const items = await prisma.keyOrder.findMany({
+          where: { orderId: order.id, OR: [{ status: "awaiting_payment" }, { status: "failed", supplierError: { startsWith: "payment_" } }] },
           select: { id: true, status: true },
         });
         for (const item of items) {
-          const flip = await prisma.sihOrder.updateMany({ where: { id: item.id, status: item.status }, data: { status: "paid", paidAt, sihError: null } });
-          if (flip.count > 0) await logSihEvent({ orderId: item.id, source: "payment", fromStatus: item.status, toStatus: "paid" });
+          const flip = await prisma.keyOrder.updateMany({ where: { id: item.id, status: item.status }, data: { status: "paid", paidAt, supplierError: null } });
+          if (flip.count > 0) await logKeyEvent({ keyOrderId: item.id, source: "payment", fromStatus: item.status, toStatus: "paid" });
         }
         const full = await loadOrderForEmail(order.id);
         if (full) {
@@ -71,8 +71,8 @@ export async function settlePayment(provider: PaymentProviderId, event: PaymentE
           scheduleEmail(`order invoice ${full.orderNumber}`, () => sendOrderInvoiceEmail(payload));
         }
       }
-      const toSubmit = await prisma.sihOrder.findMany({ where: { orderId: order.id, status: "paid" }, select: { id: true } });
-      for (const item of toSubmit) await submitOrderToSih(item.id);
+      const toSubmit = await prisma.keyOrder.findMany({ where: { orderId: order.id, status: "paid" }, select: { id: true } });
+      for (const item of toSubmit) await submitKeyOrder(item.id);
       await refreshOrderStatus(order.id);
       return claimed.count > 0 ? "paid" : "already_paid";
     }
@@ -82,9 +82,9 @@ export async function settlePayment(provider: PaymentProviderId, event: PaymentE
         data: { paymentStatus: "FAILED", status: "CANCELLED" },
       });
       if (flipped.count > 0) {
-        for (const item of order.sihOrders.filter((s) => s.status === "awaiting_payment")) {
-          const flip = await prisma.sihOrder.updateMany({ where: { id: item.id, status: "awaiting_payment" }, data: { status: "failed", sihError: "payment_failed" } });
-          if (flip.count > 0) await logSihEvent({ orderId: item.id, source: "payment", fromStatus: "awaiting_payment", toStatus: "failed" });
+        for (const item of order.keyOrders.filter((s) => s.status === "awaiting_payment")) {
+          const flip = await prisma.keyOrder.updateMany({ where: { id: item.id, status: "awaiting_payment" }, data: { status: "failed", supplierError: "payment_failed" } });
+          if (flip.count > 0) await logKeyEvent({ keyOrderId: item.id, source: "payment", fromStatus: "awaiting_payment", toStatus: "failed" });
         }
       }
       return "failed";

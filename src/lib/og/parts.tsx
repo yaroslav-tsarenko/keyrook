@@ -12,15 +12,9 @@ export async function ogResponse(element: ReactElement, cacheSeconds = 86400) {
 }
 
 export function Wordmark({ size, color = P.ink }: { size: number; color?: string }) {
-  const square = Math.round(size * 0.105);
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", fontFamily: "Sofia Sans Condensed", fontWeight: 700, fontSize: size, lineHeight: 1, letterSpacing: -size * 0.01, color }}>
-      <span>Pat</span>
-      <span style={{ display: "flex", position: "relative" }}>
-        <span>{"ı"}</span>
-        <span style={{ position: "absolute", left: "50%", top: size * 0.06, width: square, height: square, marginLeft: -square / 2, background: P.accent }} />
-      </span>
-      <span>naskins</span>
+    <div style={{ display: "flex", fontFamily: "Sofia Sans Condensed", fontWeight: 700, fontSize: size, lineHeight: 1, letterSpacing: -size * 0.01, color }}>
+      <span>Keyrook</span>
     </div>
   );
 }

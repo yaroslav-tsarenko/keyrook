@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -6,7 +7,7 @@ import pg from "pg";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const ENV_FILE = path.join(ROOT, ".env");
-const DB_NAME = process.env.LOCAL_DB_NAME || "patinaskins";
+const DB_NAME = process.env.LOCAL_DB_NAME || "keyrook";
 
 function readEnv() {
   if (!fs.existsSync(ENV_FILE)) return {};
@@ -63,8 +64,8 @@ async function ensureDatabase(adminUrl) {
 
 async function main() {
   const env = readEnv();
-  const fixture = process.env.SIH_FIXTURE_FILE || env.SIH_FIXTURE_FILE || "";
-  const hasSupplierKey = Boolean(process.env.SIH_API_KEY || env.SIH_API_KEY);
+  const fixture = process.env.CATALOG_FIXTURE_FILE || env.CATALOG_FIXTURE_FILE || "";
+  const hasSupplierKey = Boolean(process.env.KINGUIN_API_KEY || env.KINGUIN_API_KEY);
 
   let dbUrl = env.DIRECT_URL || env.DATABASE_URL;
   if (!dbUrl) {
@@ -85,7 +86,12 @@ async function main() {
   if (hasSupplierKey || fixture) {
     run("npx", ["tsx", "scripts/catalog-sync.ts", ...(fixture && !hasSupplierKey ? ["--fixture", fixture] : []), ...process.argv.slice(2)], dbEnv);
   } else {
-    console.log("\n! Catalogue not synced: set SIH_API_KEY in .env (or SIH_FIXTURE_FILE for a local test file), then run: npm run catalog:sync");
+    console.log("\n! Catalogue not synced: set KINGUIN_API_KEY in .env (or CATALOG_FIXTURE_FILE for a local test file), then run: npm run catalog:sync");
+  }
+
+  if (!process.env.KEY_ENCRYPTION_SECRET && !env.KEY_ENCRYPTION_SECRET) {
+    writeEnvValue("KEY_ENCRYPTION_SECRET", crypto.randomBytes(32).toString("base64url"));
+    console.log("✓ Generated KEY_ENCRYPTION_SECRET in .env (keep it: delivered keys cannot be decrypted without it)");
   }
 
   console.log("\n✓ Done. Start the store with: npm run dev  →  http://localhost:3000");

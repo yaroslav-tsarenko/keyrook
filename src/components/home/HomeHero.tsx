@@ -3,60 +3,61 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type MouseEvent } from "react";
-import { ArrowRight, CircleCheck, CreditCard, Plus, Repeat2, Search } from "lucide-react";
+import { ArrowRight, CircleCheck, CreditCard, KeyRound, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Plate } from "@/components/ui/Plate";
 import { PriceDisplay } from "@/components/shared/PriceDisplay/PriceDisplay";
-import { SkinStage } from "@/components/skin/SkinStage";
-import { CalibratedRuler, exteriorReadout } from "@/components/skin/FloatRuler";
-import { SkinMarks, WeaponLine, skinFace, useAddToCart, type SkinProduct } from "@/components/skin/SkinTray";
+import { ProductCover } from "@/components/product/ProductCover";
+import { KeyPlates, TypeLine, productFace, useAddToCart, type CatalogProduct } from "@/components/product/ProductCard";
+import { STORE_POLICY } from "@/config/store-policy";
 
 export interface HeroProps {
   liveCount: number;
-  hero: SkinProduct | null;
+  hero: CatalogProduct | null;
 }
 
 const PROPS = [
-  { Icon: Repeat2, title: "Sent to your Steam inventory", body: "Delivered as a Steam trade offer after your payment is confirmed." },
-  { Icon: CreditCard, title: "The price you see is what you pay", body: "No fees added at checkout. Prices are re-confirmed before you pay." },
-  { Icon: CircleCheck, title: "Refunded if we can't deliver", body: "If we can't deliver an item you paid for, you get the full price back." },
+  { Icon: KeyRound, title: "Keys go to your account", body: `They appear on your order page ${STORE_POLICY.delivery.usualTime}.` },
+  { Icon: CreditCard, title: "The price you see is what you pay", body: "No fees added at checkout. Prices are re-checked before you pay." },
+  { Icon: CircleCheck, title: "Replaced or refunded", body: `If a key does not activate, tell us within ${STORE_POLICY.guarantee.claimDays} days and we replace or refund it.` },
 ];
 
-function HeroReadout({ product }: { product: SkinProduct }) {
-  const face = skinFace(product.name, product.skin);
+const QUICK = [
+  { href: "/catalog/games", label: "Games" },
+  { href: "/catalog/gift-cards", label: "Gift cards" },
+  { href: "/catalog/subscriptions", label: "Subscriptions" },
+];
+
+function HeroFeature({ product }: { product: CatalogProduct }) {
+  const face = productFace(product.name, product.key);
   const { add, inCart, openSheet, price } = useAddToCart(product);
   return (
-    <div data-depth="4" data-hero-readout="" data-rarity={face.rarity} className="relative flex flex-col gap-4 rounded-tray bg-raised p-5 shadow-lg sm:p-6">
-      <div>
-        <WeaponLine face={face} />
-        <p className="m-0 mt-1.5 font-display text-step-3 font-semibold leading-[1.02] text-ink">{face.name}</p>
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        {face.rarityLabel ? <Plate variant="rarity">{face.rarityLabel}</Plate> : null}
-        <SkinMarks face={face} className="contents" />
-      </div>
-      {face.exteriorCode ? (
-        <CalibratedRuler lit={[face.exteriorCode]} labels={false} minor={false} draw readout={exteriorReadout(face.exteriorCode)} />
-      ) : (
-        <p className="m-0 font-mono text-data text-ink">Not painted</p>
-      )}
-      <div className="border-t border-line pt-4">
-        <PriceDisplay price={price} size="md" />
-      </div>
-      <div className="flex flex-col gap-1">
-        {inCart ? (
-          <Button variant="outline" fullWidth onPress={openSheet}>
-            In cart
-          </Button>
-        ) : (
-          <Button fullWidth startContent={<Plus size={18} aria-hidden="true" />} onClick={(e: MouseEvent<HTMLElement>) => add(e.currentTarget.closest("[data-scene]"))}>
-            Add to cart
-          </Button>
-        )}
-        <Link href={`/product/${product.slug}`} className="inline-flex min-h-10 items-center justify-center gap-1.5 text-ui-md font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline">
-          Inspect this skin
-          <ArrowRight size={16} aria-hidden="true" />
-        </Link>
+    <div data-card="" className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-5 rounded-tray bg-raised p-5 shadow-lg max-sm:grid-cols-1 sm:p-6">
+      <ProductCover src={product.images?.[0]?.url} alt={product.images?.[0]?.alt || face.title} priority sizes="(min-width: 1024px) 260px, 60vw" className="rounded-tray max-sm:mx-auto max-sm:w-2/3" />
+      <div className="flex min-w-0 flex-col gap-4">
+        <div>
+          <KeyPlates face={face} className="mb-3" />
+          <TypeLine face={face} />
+          <p className="m-0 mt-1.5 font-display text-step-3 font-semibold leading-[1.02] text-ink">{face.title}</p>
+          {face.detail ? <p className="m-0 mt-2 text-ui-sm text-ink-muted">{face.detail}</p> : null}
+        </div>
+        <div className="mt-auto border-t border-line pt-4">
+          <PriceDisplay price={price} comparePrice={product.comparePrice ? Number(product.comparePrice) : null} size="md" />
+        </div>
+        <div className="flex flex-col gap-1">
+          {inCart ? (
+            <Button variant="outline" fullWidth onPress={openSheet}>
+              In cart
+            </Button>
+          ) : (
+            <Button fullWidth startContent={<Plus size={18} aria-hidden="true" />} onClick={(e: MouseEvent<HTMLElement>) => add(e.currentTarget.closest("[data-card]"))}>
+              Add to cart
+            </Button>
+          )}
+          <Link href={`/product/${product.slug}`} className="inline-flex min-h-10 items-center justify-center gap-1.5 text-ui-md font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline">
+            Platform, region and languages
+            <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -65,18 +66,17 @@ function HeroReadout({ product }: { product: SkinProduct }) {
 export function HomeHero({ liveCount, hero }: HeroProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const face = hero ? skinFace(hero.name, hero.skin) : null;
 
   return (
-    <section aria-labelledby="hero-title" data-scene="bay-hero" data-section="hero" className="relative overflow-hidden">
-      <div data-hero-pin="" className="relative mx-auto grid max-w-wide gap-x-6 gap-y-10 px-gutter pb-14 pt-10 lg:min-h-[calc(100svh-var(--header-height))] lg:grid-cols-12 lg:items-center lg:pb-16 lg:pt-12">
-        <div className="min-w-0 lg:col-span-5">
-          <p className="eyebrow m-0">CS2 skin store</p>
-          <h1 id="hero-title" data-anim="words" className="m-0 mt-4 text-step-6 font-[720] leading-[0.92] tracking-[-0.015em] text-ink lg:text-[clamp(3.5rem,1.2rem+5.4vw,7.5rem)] lg:leading-[0.9]">
-            Every skin, under the lamp.
+    <section aria-labelledby="hero-title" data-section="hero" className="relative overflow-hidden">
+      <div className="relative mx-auto grid max-w-wide gap-x-6 gap-y-10 px-gutter pb-14 pt-10 lg:grid-cols-12 lg:items-center lg:pb-16 lg:pt-14">
+        <div className="min-w-0 lg:col-span-6">
+          <p className="eyebrow m-0">Game keys, subscriptions and gift cards</p>
+          <h1 id="hero-title" className="m-0 mt-4 text-step-6 font-[720] leading-[0.92] tracking-[-0.015em] text-ink">
+            Buy the key, redeem it on your platform.
           </h1>
-          <p className="m-0 mt-5 max-w-[46ch] text-step-1 leading-[1.5] text-ink-muted">
-            Counter-Strike 2 skins with exterior, rarity and price in plain view. Pay by card and we send the skin to your Steam account as a trade offer.
+          <p className="m-0 mt-5 max-w-[50ch] text-step-1 leading-[1.5] text-ink-muted">
+            Every product lists its platform, activation region and languages before you pay. After your card payment is confirmed, the key is issued to your account.
           </p>
           <form
             role="search"
@@ -88,7 +88,7 @@ export function HomeHero({ liveCount, hero }: HeroProps) {
             }}
           >
             <label htmlFor="hero-search" className="sr-only">
-              Search skins
+              Search games and gift cards
             </label>
             <div className="relative min-w-0 flex-1">
               <Search size={20} aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted" />
@@ -97,9 +97,9 @@ export function HomeHero({ liveCount, hero }: HeroProps) {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder={`Search ${liveCount.toLocaleString("en-GB")} skins`}
+                placeholder={liveCount > 0 ? `Search ${liveCount.toLocaleString("en-GB")} products` : "Search games"}
                 autoComplete="off"
-                className="h-14 w-full rounded-control border border-control bg-raised pl-12 pr-4 text-step-0 text-ink shadow-lamp-catch placeholder:text-ink-subtle hover-device:hover:border-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                className="h-14 w-full rounded-control border border-control bg-raised pl-12 pr-4 text-step-0 text-ink placeholder:text-ink-subtle hover-device:hover:border-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               />
             </div>
             <Button type="submit" size="lg" className="h-14">
@@ -108,11 +108,7 @@ export function HomeHero({ liveCount, hero }: HeroProps) {
           </form>
           <p className="m-0 mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-ui-md text-ink-muted">
             <span>Or go straight to</span>
-            {[
-              { href: "/catalog/knives", label: "Knives" },
-              { href: "/catalog/gloves", label: "Gloves" },
-              { href: "/catalog/rifles", label: "Rifles" },
-            ].map((l) => (
+            {QUICK.map((l) => (
               <Link key={l.href} href={l.href} className="min-h-10 py-2 font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline">
                 {l.label}
               </Link>
@@ -129,20 +125,9 @@ export function HomeHero({ liveCount, hero }: HeroProps) {
             ))}
           </ul>
         </div>
-
-        {hero && face ? (
-          <div className="relative min-w-0 lg:col-span-7 lg:pb-10">
-            <div aria-hidden="true" data-depth="0" data-horizon="" className="pointer-events-none absolute -right-[50vw] left-[-6%] top-[72%] hidden h-px bg-line lg:block" />
-            <div data-hero-dolly="" className="relative">
-              <article data-tray="" data-tilt="8" data-depth="2" data-rarity={face.rarity} className="tray lg:w-[calc(100%-240px)]">
-                <SkinStage src={hero.images?.[0]?.url} alt={hero.images?.[0]?.alt || hero.name} aspect="16/10" priority sizes="(min-width: 1024px) 720px, 100vw" viewTransition={`render-${hero.id}`}>
-                  <div data-lamp="webgl" aria-hidden="true" className="absolute inset-0 z-[2]" />
-                </SkinStage>
-              </article>
-              <div className="mt-3 lg:absolute lg:right-0 lg:top-1/2 lg:mt-0 lg:w-[300px] lg:-translate-y-1/2">
-                <HeroReadout product={hero} />
-              </div>
-            </div>
+        {hero ? (
+          <div className="min-w-0 lg:col-span-6">
+            <HeroFeature product={hero} />
           </div>
         ) : null}
       </div>

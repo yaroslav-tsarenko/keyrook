@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { SkinRow } from "@/components/skin/SkinTray";
+import { ProductRow } from "@/components/product/ProductCard";
 import { formatPrice } from "@/lib/utils/format-price";
 import { cn } from "@/lib/utils/cn";
 import { COMPANY } from "@/lib/company";
@@ -47,7 +47,7 @@ export function CheckoutCounter({ items, totals, currency, quote, loading, headi
           const lineTotal = line?.total ?? totals.lines[index]?.total ?? 0;
           return (
             <li key={item.id} className="py-3 first:pt-0">
-              <SkinRow name={item.name} imageUrl={item.imageUrl} skin={item.skin} showRarity={false} aside={<span className="font-mono text-data text-ink">{formatPrice(lineTotal, currency)}</span>} />
+              <ProductRow name={item.name} imageUrl={item.imageUrl} keyInfo={item.key} aside={<span className="font-mono text-data text-ink">{formatPrice(lineTotal, currency)}</span>} />
             </li>
           );
         })}

@@ -19,17 +19,11 @@ function visibleRect(el: Element | null | undefined): DOMRect | null {
   return rect;
 }
 
-function dimLamp(stage: HTMLElement | null) {
-  if (!stage) return;
-  stage.style.setProperty("--lamp-level", String(MOTION_LIMITS.lampDim));
-  window.setTimeout(() => stage.style.removeProperty("--lamp-level"), MOTION_DURATION.cartFlight);
-}
-
 export function flyToCart(detail: CartAddDetail | undefined) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const source = detail?.source ?? null;
-  const stage = source?.querySelector<HTMLElement>("[data-stage]") ?? null;
-  const img = source?.querySelector<HTMLImageElement>("[data-render] img") ?? null;
+  const stage = source?.matches?.("[data-cover]") ? (source as HTMLElement) : source?.querySelector<HTMLElement>("[data-cover]") ?? null;
+  const img = stage?.querySelector<HTMLImageElement>("img") ?? null;
   const from = visibleRect(stage ?? img);
   const targets = Array.from(document.querySelectorAll<HTMLElement>("[data-cart-target]"));
   const target = targets.map((el) => ({ el, rect: visibleRect(el) })).find((t) => t.rect);
@@ -58,8 +52,6 @@ export function flyToCart(detail: CartAddDetail | undefined) {
   Object.assign(picture.style, { width: "100%", height: "100%", objectFit: "contain", objectPosition: "center", display: "block" });
   ghost.appendChild(picture);
   document.body.appendChild(ghost);
-
-  dimLamp(stage);
   landsAt = performance.now() + MOTION_DURATION.cartFlight;
   target.el.dataset.arriving = "";
 

@@ -1,80 +1,122 @@
-import type { WeaponTypeKey } from "@/lib/skins/cs2";
+import type { PlatformKey, ProductTypeKey, RegionKey } from "@/lib/keys/taxonomy";
 
-export interface WeaponTypeQuota {
-  type: WeaponTypeKey;
+export interface TypeQuota {
+  type: ProductTypeKey;
   cap: number;
+  platformShare?: number;
 }
 
 export interface CatalogConfig {
-  appId: number;
   target: { min: number; max: number };
-  quotas: WeaponTypeQuota[];
+  quotas: TypeQuota[];
   pricing: {
     margin: number;
     minMarginAbs: number;
     priceTolerance: number;
+    orderPriceTolerance: number;
     minPrice: number;
-    maxPrice: number;
-    maxCostOverReference: number;
+    maxPriceByType: Record<ProductTypeKey, number>;
     bands: number[];
   };
+  anomaly: {
+    cohortPercentile: number;
+    cohortMultiplier: number;
+    cohortFloor: number;
+    siblingMultiplier: number;
+    minCohortSize: number;
+    faceValueMin: number;
+    faceValueMax: number;
+  };
   include: {
-    statTrak: boolean;
-    souvenir: boolean;
-    vanillaStar: boolean;
-    minStock: number;
+    regions: RegionKey[];
+    minTextQty: number;
+    requireCover: boolean;
+    requireEnglishName: boolean;
+    allowPreorders: boolean;
+  };
+  exclude: {
+    regionTerms: string[];
+    titleTerms: string[];
+    adultTerms: string[];
+    gamblingTerms: string[];
+    publishers: string[];
+    languagesOnly: string[];
+    platforms: string[];
   };
   selection: {
     keepExisting: boolean;
-    maxVariantsPerSkin: number;
-  };
-  images: {
-    hosting: "steam";
-    size: string;
+    maxPerTitle: number;
   };
   sync: {
+    pageSize: number;
+    concurrency: number;
+    maxPages: number | null;
     chunkSize: number;
+    refreshBatch: number;
   };
 }
 
 export const catalogConfig: CatalogConfig = {
-  appId: 730,
-  target: { min: 3000, max: 5000 },
+  target: { min: 5000, max: 7000 },
   quotas: [
-    { type: "rifles", cap: 900 },
-    { type: "pistols", cap: 820 },
-    { type: "smgs", cap: 560 },
-    { type: "sniper-rifles", cap: 420 },
-    { type: "shotguns", cap: 320 },
-    { type: "machine-guns", cap: 120 },
-    { type: "knives", cap: 640 },
-    { type: "gloves", cap: 260 },
+    { type: "game", cap: 3700, platformShare: 0.55 },
+    { type: "dlc", cap: 1400, platformShare: 0.6 },
+    { type: "subscription", cap: 140 },
+    { type: "gift-card", cap: 320 },
+    { type: "top-up", cap: 320 },
+    { type: "software", cap: 240 },
   ],
   pricing: {
-    margin: 0.07,
-    minMarginAbs: 0.1,
-    priceTolerance: 0.03,
-    minPrice: 0.5,
-    maxPrice: 3000,
-    maxCostOverReference: 2.5,
-    bands: [2, 10, 50, 200, 800],
+    margin: 0.12,
+    minMarginAbs: 0.3,
+    priceTolerance: 0.05,
+    orderPriceTolerance: 0.02,
+    minPrice: 0.49,
+    maxPriceByType: {
+      game: 150,
+      dlc: 90,
+      subscription: 180,
+      "gift-card": 220,
+      "top-up": 180,
+      software: 260,
+    },
+    bands: [5, 15, 30, 60],
+  },
+  anomaly: {
+    cohortPercentile: 0.95,
+    cohortMultiplier: 1.6,
+    cohortFloor: 30,
+    siblingMultiplier: 4,
+    minCohortSize: 15,
+    faceValueMin: 0.6,
+    faceValueMax: 1.35,
   },
   include: {
-    statTrak: true,
-    souvenir: true,
-    vanillaStar: true,
-    minStock: 1,
+    regions: ["global", "europe", "uk", "us", "north-america"],
+    minTextQty: 1,
+    requireCover: true,
+    requireEnglishName: true,
+    allowPreorders: false,
+  },
+  exclude: {
+    regionTerms: ["russia", "russian federation", "ru vpn", "ru/cis", "cis", "belarus", "iran", "north korea", "syria", "cuba", "crimea", "donetsk", "luhansk"],
+    titleTerms: ["vpn", "ru/cis", "cis only", "russia only", "ru only", "ru language", "russian language only", "cis key", " ru key", "(ru)", "[ru]", "- ru", "russia", "belarus"],
+    adultTerms: ["hentai", "nsfw", "adult only", "adults only", "18+", "nudity", "sexual content", "erotic", "porn", "xxx", "uncensored"],
+    gamblingTerms: ["random", "mystery", "loot box", "lootbox", "surprise key", "casino", "slots", "gambling", "lucky box", "blind box", "mystery box"],
+    publishers: ["kaspersky"],
+    languagesOnly: ["Russian", "Belarusian", "Kazakh"],
+    platforms: ["xbox 360", "playstation 3", "ps3", "android", "ios", "mog station"],
   },
   selection: {
     keepExisting: true,
-    maxVariantsPerSkin: 10,
-  },
-  images: {
-    hosting: "steam",
-    size: "360fx360f",
+    maxPerTitle: 4,
   },
   sync: {
+    pageSize: 100,
+    concurrency: 4,
+    maxPages: null,
     chunkSize: 400,
+    refreshBatch: 100,
   },
 };
 
@@ -87,7 +129,7 @@ export type ProductFeedId = "google" | "facebook" | "generic";
 export const PRODUCT_FEEDS: Record<ProductFeedId, { enabled: boolean; reason: string }> = {
   google: {
     enabled: false,
-    reason: "Off: Google Shopping listings are built for goods that ship to an address. In-game items delivered by Steam trade offer are commonly disapproved, and repeated disapprovals can suspend the Merchant Center account.",
+    reason: "Off: Google Shopping does not accept activation keys and other digital codes, and repeated disapprovals can suspend the Merchant Center account.",
   },
   facebook: {
     enabled: false,
@@ -100,3 +142,5 @@ export const PRODUCT_FEEDS: Record<ProductFeedId, { enabled: boolean; reason: st
 };
 
 export const ANY_PRODUCT_FEED_ENABLED = Object.values(PRODUCT_FEEDS).some((feed) => feed.enabled);
+
+export type { PlatformKey };

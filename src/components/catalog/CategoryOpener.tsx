@@ -13,14 +13,6 @@ export interface IndexLink {
   active?: boolean;
 }
 
-export interface RarityBar {
-  key: string;
-  slug: string | undefined;
-  label: string;
-  count: number;
-  href: string;
-}
-
 export interface CategoryOpenerProps {
   name: string;
   count: number;
@@ -29,8 +21,8 @@ export interface CategoryOpenerProps {
   maxPrice?: number | null;
   index?: IndexLink[];
   indexLabel?: string;
-  rarities?: RarityBar[];
   typeIndex?: IndexLink[];
+  typeIndexLabel?: string;
 }
 
 export function PriceSpan({ min, max }: { min: number; max: number }) {
@@ -43,12 +35,11 @@ export function PriceSpan({ min, max }: { min: number; max: number }) {
   );
 }
 
-export function CategoryOpener({ name, count, lead, minPrice, maxPrice, index = [], indexLabel = "Weapons", rarities = [], typeIndex = [] }: CategoryOpenerProps) {
-  const maxRarity = Math.max(1, ...rarities.map((r) => r.count));
+export function CategoryOpener({ name, count, lead, minPrice, maxPrice, index = [], indexLabel = "Platforms", typeIndex = [], typeIndexLabel = "Product types" }: CategoryOpenerProps) {
   return (
     <header data-category-opener="" className="pb-8 pt-1 lg:pb-10">
       <div className="grid gap-x-10 gap-y-6 lg:grid-cols-12 lg:items-end">
-        <div className={cn("min-w-0", typeIndex.length || rarities.length ? "lg:col-span-7" : "lg:col-span-12")}>
+        <div className={cn("min-w-0", typeIndex.length ? "lg:col-span-7" : "lg:col-span-12")}>
           <h1 className="m-0 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-step-5 font-[650] leading-none tracking-[-0.01em] text-ink">
             {name}
             <span className="font-mono text-data font-normal tracking-normal text-ink-muted">{count.toLocaleString("en-GB")}</span>
@@ -56,34 +47,18 @@ export function CategoryOpener({ name, count, lead, minPrice, maxPrice, index = 
           {lead ? <p className="measure m-0 mt-4 text-step-1 leading-[1.5] text-ink-muted">{lead}</p> : null}
           {minPrice != null && maxPrice != null && count > 0 ? (
             <p className="m-0 mt-3 text-ui-md text-ink-muted">
-              {count.toLocaleString("en-GB")} {count === 1 ? "skin" : "skins"} in stock, <PriceSpan min={minPrice} max={maxPrice} />.
+              {count.toLocaleString("en-GB")} {count === 1 ? "product" : "products"} available, <PriceSpan min={minPrice} max={maxPrice} />.
             </p>
           ) : null}
         </div>
         {typeIndex.length ? (
-          <nav aria-label="Weapon types" className="lg:col-span-5">
+          <nav aria-label={typeIndexLabel} className="lg:col-span-5">
             <ul className="m-0 grid list-none grid-cols-2 gap-x-6 gap-y-1 p-0 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-2">
               {typeIndex.map((l) => (
                 <li key={l.slug}>
                   <Link href={l.href} className="indicator-bar label-caps inline-flex min-h-9 items-baseline gap-2 text-[0.9375rem] text-ink hover-device:hover:[&::after]:scale-x-100">
                     {l.label}
                     <span className="font-mono text-[0.75rem] font-normal normal-case tracking-normal text-ink-subtle">{l.count}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ) : null}
-        {rarities.length ? (
-          <nav aria-label="Rarity in stock" className="lg:col-span-5">
-            <p className="eyebrow m-0 mb-3">Rarity in stock</p>
-            <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
-              {rarities.map((r) => (
-                <li key={r.key} data-rarity={r.slug}>
-                  <Link href={r.href} className="group grid grid-cols-[148px_minmax(0,1fr)_40px] items-center gap-3 py-0.5">
-                    <span className="truncate font-mono text-[0.75rem] font-medium uppercase tracking-[0.06em] text-rarity [font-stretch:87.5%] group-hover:underline">{r.label}</span>
-                    <span aria-hidden="true" className="h-0.5 bg-rarity" style={{ width: `${Math.max(2, (r.count / maxRarity) * 100)}%` }} />
-                    <span className="text-right font-mono text-[0.75rem] text-ink-muted">{r.count}</span>
                   </Link>
                 </li>
               ))}

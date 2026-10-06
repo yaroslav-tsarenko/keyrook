@@ -1,4 +1,4 @@
-import { STORE_POLICY } from "@/config/store-policy";
+import { STORE_POLICY, perItemLimit } from "@/config/store-policy";
 
 export type Convert = (amountInBase: number) => number;
 
@@ -51,8 +51,8 @@ export function shippingCostInBase(): number {
   return 0;
 }
 
-export function itemQuantityCap(stock?: number | null): number {
-  const perItem = STORE_POLICY.limits.maxQtyPerItem;
+export function itemQuantityCap(stock?: number | null, productType?: string | null): number {
+  const perItem = perItemLimit(productType);
   if (typeof stock !== "number" || !Number.isFinite(stock)) return perItem;
   return Math.max(0, Math.min(Math.floor(stock), perItem));
 }

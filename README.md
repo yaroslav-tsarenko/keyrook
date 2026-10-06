@@ -1,42 +1,62 @@
-# Patinaskins
+# Keyrook
 
-Storefront and admin for Patinaskins (patinaskins.com), a Counter-Strike 2 skins store built with Next.js 16. The store sells weapon skins, knives and gloves it sources from an item supplier and delivers each item to the buyer's Steam account as a trade offer. It is a store, not a marketplace: customers cannot sell or list items.
+Storefront and admin for Keyrook (keyrook.com), a store for game keys, DLC, subscriptions, gift cards, top-ups and software, built with Next.js 16. Products come from the Kinguin ESA API (Kinguin for Business). After a card payment is confirmed, the store orders the key from Kinguin, stores it encrypted and shows it to the buyer on their order page.
 
 ## Tech stack
 
 - Next.js 16 (App Router), TypeScript, Tailwind CSS 4
 - PostgreSQL with Prisma ORM 7 (`@prisma/adapter-pg`)
-- JWT session cookie plus Steam OpenID sign-in and account linking
+- Email and password accounts with a JWT session cookie
 - Card payments behind a provider interface (`src/lib/payments`); no live provider connected yet
-- Item supplier: api.sih.market (catalogue, live price, purchase and delivery)
+- Key supplier: Kinguin ESA API (`src/lib/esa`)
 - next-intl (messages in `messages/en/*.json`), Nodemailer, pdf-lib invoices
 
 ## How it works
 
 ### Catalogue
 
-`src/lib/sih/sync.ts` pulls the supplier catalogue, parses each `market_hash_name` (`src/lib/sih/parse.ts`) and builds one storefront product per unique market hash name, which already encodes weapon, finish, exterior and StatTrak/Souvenir. When the supplier has several offers for the same name, the cheapest in-stock offer is kept (lowest float on a price tie) and its details are stored server-side only in `SihItem.offer`.
+`npm run catalog:sync` (`scripts/catalog-sync.ts` → `src/lib/esa/sync.ts`) pages through `GET /v1/products`, then:
 
-`src/lib/sih/catalog-select.ts` then picks a balanced set across weapon types, weapons, rarities, exteriors and price bands. Caps, price limits, margin defaults and price bands live in `src/config/catalog.ts`. Products already listed are preferred on re-sync, and every write is an upsert keyed by the market hash name (deterministic product ids), so re-running the sync never duplicates products. Items that drop out are archived, never deleted.
+1. **Classifies** every product (`src/lib/esa/classify.ts`): product type (game, DLC, subscription, gift card, top-up, software), platform (Steam, Epic Games Store, EA app, Ubisoft Connect, GOG, Battle.net, Xbox, PlayStation, Nintendo, Rockstar Games Launcher, other; the product name wins over the supplier's platform field, so "EA App Key" listed under Steam becomes EA app), region, edition, genres and languages. A clean English title is derived from the supplier name.
+2. **Rejects** what the store does not list: regions outside `include.regions` (RU/CIS, Asia, LATAM, Turkey, region-locked VPN keys), Russian-only language sets, accounts and gift links, adult and gambling/loot-box products, pre-orders, products without stock, without a cover image or without a usable English name, and excluded platforms. All terms live in `src/config/catalog.ts`.
+3. **Deduplicates** by type + title + edition + platform + region (+ card value or duration for prepaid products) and keeps the cheapest in-stock offer of each group.
+4. **Drops price anomalies**: prices above the per-type ceiling, above the 95th percentile × 1.6 of comparable products (same type and release age), more than 4× the same title's other offers, or gift cards priced far from their face value.
+5. **Selects** a balanced catalogue within `target` (5,000–7,000 by default) using per-type quotas, a per-platform share cap, genre and price-band interleaving and at most `maxPerTitle` variants of one game. Products already listed are preferred on re-sync.
+6. **Upserts** everything with deterministic ids, so re-running never duplicates. Products that drop out are archived, never deleted. Categories are product type → platform and are hidden when empty.
 
-Data model: `Product` (storefront) ↔ `Skin` (public filter attributes: weapon type, weapon, rarity, exterior, float range, StatTrak, Souvenir, collection, phase) ↔ `SihItem` (supplier cost, stock and offer metadata). Categories are weapon type → weapon.
+Game attributes (genres, release date, developer, publisher, age rating, Metacritic score when supplied) are only stored for games and DLC; system requirements only for PC games and DLC. Subscriptions keep their duration, gift cards their face value.
 
-### Steam
+Images are served through `/media/<id>` (`src/app/media/[id]/route.ts`), so the supplier's image host never appears in the page source. Supplier ids, costs and raw names sit in `SupplyItem`, which is stripped from every Prisma result by `sanitizeSupplierData` unless a supplier module asks for it.
 
-- `/api/auth/steam` starts Steam OpenID sign-in or, with `link=1`, links Steam to the signed-in account. Return URLs always use `APP_URL`.
-- `/account/steam` saves the trade URL; it is accepted only when its partner id matches the linked SteamID64.
-- Checkout requires a linked Steam account with a saved trade URL.
+Price history: every sync appends to `SupplyItem.priceLog`. A product shows a struck-through "previously" price only when its price is at least 10% below its lowest price of the previous 30 days; the "Price drop" filter uses the same rule.
 
-### Money flow
+`npm run catalog:refresh` (and the daily cron) only re-checks price and stock of listed products in batches by `kinguinId`.
 
-1. `POST /api/checkout` re-confirms each item's live supplier price. If a price rose beyond `SIH_PRICE_TOLERANCE`, the product is re-priced and the buyer sees the new total before paying (`TOTAL_CHANGED`).
-2. One `Order` is created with one `OrderItem` and one `SihOrder` (status `awaiting_payment`) per skin, plus the buyer's consent to immediate delivery (timestamp, text and version).
-3. The configured payment provider creates a payment for the exact charge total and the buyer is redirected to its payment page. The provider reference is stored as `Order.paymentId`.
-4. `POST /api/webhooks/payment/<provider>` verifies the webhook, re-fetches the payment state from the provider and passes that verified state to `settlePayment` (`src/lib/payment-settlement.ts`). Settlement checks the amount and currency for an exact match (anything else is held for review with a critical alert), claims the order as paid once, emails the confirmation and invoice, and submits each `SihOrder` to the supplier with a single-flight `paid → submitted` claim. Supplier failures park the item as `refund_pending` and raise a critical alert.
-5. `POST /api/webhooks/sih?secret=…` re-fetches the authoritative supplier state and moves items through `processing → sent → finished`, or `failed`/`rolled_back` → `refund_pending`.
-6. Refunds are operator-driven: `/admin/sih` lists the refund backlog with "Mark refunded".
+### Data model
 
-A bag can hold several skins; they are paid together and delivered item by item. Each item's status is visible on `/account/orders/[id]`, which also triggers a rate-limited refresh from the supplier while items are in flight.
+- `Product` (storefront: name, slug, price, comparePrice, images, categories)
+- `KeyItem` (public filter attributes: type, platform, region, languages, genres, release year, developers, publishers, edition, age rating, system requirements, video, face value, validity)
+- `SupplyItem` (server only: Kinguin productId and kinguinId, cost, sell price, stock, offers, price log)
+- `KeyOrder` (one per order line: status, supplier order id, cost, margin, attempts) → `KeyOrderEvent` (audit trail)
+- `KeyCode` (the delivered key, AES-256-GCM encrypted, with a fingerprint against duplicates and reveal tracking)
+- `MediaSource` (media id → original image URL)
+
+### Order flow
+
+1. `POST /api/checkout` requires a signed-in account, checks per-product and per-order limits (`src/config/store-policy.ts`: gift cards, top-ups and subscriptions have lower caps plus a 24-hour per-customer limit) and re-checks each product's live price. If the total changed beyond `CATALOG_PRICE_TOLERANCE`, the buyer sees the new total before paying (`TOTAL_CHANGED`).
+2. One `Order` with one `KeyOrder` per line (`awaiting_payment`) is created with the buyer's request for immediate delivery and withdrawal acknowledgement (timestamp, text and version). The response contains only the order id and the payment link.
+3. The payment webhook (`/api/webhooks/payment/<provider>`) re-fetches the payment from the provider and calls `settlePayment`, which checks amount and currency, marks the order paid once, sends the confirmation and invoice, and submits each `KeyOrder` (`src/lib/esa/orders.ts`).
+4. Submission is single-flight (`paid → submitted` claim) and idempotent: the `orderExternalId` is the `KeyOrder` id, and an existing supplier order with that id is reused instead of creating a second one. The max price sent is cost × (1 + `orderPriceTolerance`).
+5. Keys are collected from `GET /v2/order/{id}/keys`, encrypted with a key derived from `KEY_ENCRYPTION_SECRET` (the ciphertext is bound to its key order) and stored; the line becomes `delivered` and the buyer gets a "your keys are ready" email that links to the order page. The email never contains the key.
+6. Supplier errors are retried up to three attempts for transient failures; otherwise the line is parked as `refund_pending`, a critical alert is sent (Telegram when configured, console otherwise) and the buyer sees "Refund pending". `/admin/supply` lists the backlog with Retry delivery and Mark refunded.
+
+Keys are only readable through `POST /api/account/keys/<id>`, which requires the owner's session, a delivered key order and a paid order, is rate limited and answers `Cache-Control: no-store`. The order page shows keys behind Reveal key with a Copy button and platform activation steps.
+
+Keys arrive through three paths: the order webhook from Kinguin (`/api/webhooks/esa`, checked against `KINGUIN_WEBHOOK_SECRET`), an on-view refresh when the buyer opens the order (at most every 20 seconds), and the daily poll cron.
+
+### Sandbox and live orders
+
+`KINGUIN_LIVE_ORDERS=false` (default) sends every order to `KINGUIN_SANDBOX_API_BASE` with `KINGUIN_SANDBOX_API_KEY`, while the catalogue still reads from `KINGUIN_API_BASE`. Set it to `true` only when the payment provider is live and the Kinguin balance is funded.
 
 ### Payments
 
@@ -50,32 +70,28 @@ No card provider is connected yet. Everything provider-specific sits behind one 
 
 `PAYMENT_PROVIDER` selects the provider:
 
-- `none` (default) — `available` is false. `POST /api/checkout` answers `503 { "code": "PAYMENTS_NOT_CONNECTED" }` before touching the supplier or creating an order, and checkout shows "Card payments are being connected. Nothing has been charged."
-- `mock` — local testing. Allowed only when `NODE_ENV` is not `production` and `PAYMENT_MOCK_ENABLED=true`; otherwise env validation fails and `src/instrumentation.ts` stops the server at startup. Checkout redirects to `/checkout/mock-pay` (404 in production), whose Pay / Fail buttons record the outcome and send an HMAC-signed webhook to `/api/webhooks/payment/mock`, so the whole paid → supplier → delivered path can be run against the supplier mock.
+- `none` (default): `POST /api/checkout` answers `503 { "code": "PAYMENTS_NOT_CONNECTED" }` before creating an order, and checkout says card payments are being connected and nothing has been charged.
+- `mock`: local testing only (`NODE_ENV` not `production` and `PAYMENT_MOCK_ENABLED=true`). Checkout redirects to `/checkout/mock-pay`, whose Pay / Fail buttons send an HMAC-signed webhook to `/api/webhooks/payment/mock`, so the whole paid → supplier → delivered path runs locally.
 
-The webhook route never settles from the payload alone: it always calls `fetchStatus` and settles from that answer. Settlement is idempotent, so repeated or late webhooks are safe.
-
-To connect a real provider:
-
-1. Add `src/lib/payments/<name>.ts` exporting a `PaymentProvider` with `id: "<name>"`. `createPayment` must charge exactly `amount` in `currency` and use `order.id` as the provider's merchant reference; `fetchStatus` must return the amount and currency the provider actually captured, or settlement holds the order for review.
-2. Add its variables to `src/lib/env.ts` (validated with zod like the others) and to `.env.example`.
-3. Add `"<name>"` to `PAYMENT_PROVIDER_IDS` in `src/lib/env.ts` and register the provider in the `PROVIDERS` map in `src/lib/payments/provider.ts`.
-4. Set `PAYMENT_PROVIDER=<name>` and register `https://<your-domain>/api/webhooks/payment/<name>` with the provider if it does not take a per-payment webhook URL.
+To connect a real provider: add `src/lib/payments/<name>.ts` exporting a `PaymentProvider`, add its variables to `src/lib/env.ts` and `.env.example`, add the id to `PAYMENT_PROVIDER_IDS` and the `PROVIDERS` map, then set `PAYMENT_PROVIDER=<name>`.
 
 ### Crons
 
-`vercel.json` runs four daily jobs (Vercel Hobby allows daily schedules only): catalogue sync, in-flight order poll, deep reconcile, and balance/stuck-order monitor. Webhooks remain the primary path; the daily poll and the on-view refresh are backstops. On a plan that allows it, change the poll schedule to every few minutes. All cron routes require `Authorization: Bearer $CRON_SECRET`.
+`vercel.json` runs three daily jobs (Vercel Hobby allows daily schedules only): price and stock refresh, key order poll, and balance/stuck-order monitor. All cron routes require `Authorization: Bearer $CRON_SECRET`. The full catalogue sync is run from the command line, because it takes longer than a serverless function may run.
 
-## Local setup
+## Local setup (macOS)
 
 ```bash
+brew install postgresql@16 && brew services start postgresql@16
 npm install
-cp .env.example .env        # fill in values, at least JWT_SECRET
-npm run local:setup         # creates the patinaskins database, pushes the schema, seeds, syncs the catalogue
-npm run dev
+cp .env.example .env         # set JWT_SECRET and KINGUIN_API_KEY
+npm run local:setup          # creates the keyrook database, pushes the schema, seeds, generates KEY_ENCRYPTION_SECRET, syncs the catalogue
+npm run dev                  # http://localhost:3000
 ```
 
-`local:setup` needs a local PostgreSQL. It writes `DATABASE_URL`/`DIRECT_URL` into `.env` if they are empty (override the server with `LOCAL_PG_URL`). The catalogue sync runs against the live supplier when `SIH_API_KEY` is set, or against a JSON file in the supplier's `get-items` shape when `SIH_FIXTURE_FILE` is set.
+`local:setup` writes `DATABASE_URL`/`DIRECT_URL` into `.env` when they are empty (override the server with `LOCAL_PG_URL`). The admin account comes from `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`.
+
+To try a purchase end to end without a card provider, set `PAYMENT_PROVIDER=mock` and `PAYMENT_MOCK_ENABLED=true`. Orders go to the Kinguin sandbox while `KINGUIN_LIVE_ORDERS=false`. Without sandbox access, run the fixture mock server from the dev tools (`node mock-esa-server.mjs`, port 4010) and point `KINGUIN_SANDBOX_API_BASE` at `http://localhost:4010/esa/api`.
 
 ## Scripts
 
@@ -84,17 +100,17 @@ npm run dev
 | `npm run dev` | Local dev server |
 | `npm run build` | `prisma generate` + production build |
 | `npm run local:setup` | Local database, schema, seed and first catalogue sync |
-| `npm run catalog:sync` | Sync the catalogue now (`-- --fixture <file>` to use a local file) |
-| `npm run sih:smoke` | Read-only supplier check: auth, balance, catalogue, one live price. Buys nothing |
-| `npm run sih:webhook` | Register the supplier webhook at `$APP_URL/api/webhooks/sih?secret=…` (`-- clear` removes it) |
+| `npm run catalog:sync` | Full catalogue sync (`-- --max-pages 20` for a quick trial, `-- --fixture <file>` to read a local JSON file) |
+| `npm run catalog:refresh` | Price and stock refresh of listed products |
 
 ## Configuration
 
-- `src/config/catalog.ts` — catalogue quotas per weapon type, price limits, margin defaults, price bands.
-- `src/config/store-policy.ts` — currencies, delivery wording, refund timeframes, order limits, the withdrawal waiver text. Policy pages, FAQ, emails and checkout read from here.
-- `src/lib/company.ts` — company particulars (placeholders until provided).
-- `.env.example` — every environment variable, grouped by service.
+- `src/config/catalog.ts`: target size, quotas per type, platform share, region and exclusion lists, margin, price ceilings, anomaly rules, sync paging.
+- `src/config/store-policy.ts`: currency, delivery wording, refund and guarantee periods, order and per-customer limits, the withdrawal waiver text. Policy pages, FAQ, emails, checkout and invoices read from here.
+- `src/lib/keys/taxonomy.ts`: product types, platforms with activation steps, regions, genres.
+- `src/lib/company.ts`: company particulars (placeholders until provided).
+- `.env.example`: every environment variable, grouped by service.
 
 ## Deployment
 
-Deploy on Vercel with the variables from `.env.example`. Set `APP_URL` and `NEXT_PUBLIC_SITE_URL` to the main domain; the `*.vercel.app` address should redirect there so Steam sign-in, payment returns and payment webhooks never use the technical URL. After the first deploy run `npm run sih:webhook` once with production variables.
+Deploy on Vercel with the variables from `.env.example`. Set `APP_URL` and `NEXT_PUBLIC_SITE_URL` to the main domain. Register `https://<domain>/api/webhooks/esa` as the order and product webhook in the Kinguin dashboard with the same secret as `KINGUIN_WEBHOOK_SECRET`. Keep `KEY_ENCRYPTION_SECRET` stable across deploys: delivered keys cannot be decrypted without it.

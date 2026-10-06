@@ -5,10 +5,7 @@ import { useTranslations } from "next-intl";
 import { ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useCurrency } from "@/providers/CurrencyProvider";
-import { Checkbox, Segmented } from "@/components/ui/Choice";
-import { Jaw } from "@/components/skin/FloatRuler";
-import { WEAPON_TYPES, raritySlug, weaponSlug } from "@/lib/skins/cs2";
-import { ExteriorFilter } from "./ExteriorFilter";
+import { Checkbox } from "@/components/ui/Choice";
 import { Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Dialog";
@@ -22,14 +19,11 @@ export interface FilterSelection {
   inStock: boolean;
   onSale: boolean;
   types: string[];
-  weapons: string[];
-  rarities: string[];
-  exteriors: string[];
-  qualities: string[];
-  phases: string[];
-  collections: string[];
-  floatMin: number | null;
-  floatMax: number | null;
+  platforms: string[];
+  regions: string[];
+  genres: string[];
+  languages: string[];
+  years: string[];
 }
 
 export function FilterGroup({
@@ -158,7 +152,7 @@ export function PriceRange({ bounds, value, onCommit, format, step = 1 }: PriceR
       style={{ left: `${pct(local[which])}%` }}
       className="absolute bottom-0 z-[1] flex h-8 w-6 -translate-x-1/2 cursor-grab touch-none items-end justify-center active:cursor-grabbing"
     >
-      <Jaw />
+      <span aria-hidden="true" className="block h-5 w-3 rounded-[2px] border border-ink bg-raised" />
     </span>
   );
 
@@ -281,90 +275,38 @@ function PriceGroup({
   );
 }
 
-function OptionRows({
-  options,
-  selected,
-  onToggle,
-  rarity = false,
-}: {
-  options: FacetOption[];
-  selected: string[];
-  onToggle: (key: string) => void;
-  rarity?: boolean;
-}) {
+function OptionRows({ options, selected, onToggle }: { options: FacetOption[]; selected: string[]; onToggle: (key: string) => void }) {
   return (
     <div>
-      {options.map((option) => {
-        const slug = rarity ? raritySlug(option.key) : undefined;
-        return (
-          <div key={option.key} data-rarity={slug} className={cn(rarity && "spine-row pl-2.5")}>
-            <Checkbox
-              dense
-              label={rarity ? <span className="font-mono text-[0.75rem] font-medium uppercase tracking-[0.06em] text-rarity [font-stretch:87.5%]">{option.label}</span> : option.label}
-              count={option.count}
-              checked={selected.includes(option.key)}
-              disabled={option.count === 0 && !selected.includes(option.key)}
-              onChange={() => onToggle(option.key)}
-            />
-          </div>
-        );
-      })}
+      {options.map((option) => (
+        <Checkbox
+          key={option.key}
+          dense
+          label={option.label}
+          count={option.count}
+          checked={selected.includes(option.key)}
+          disabled={option.count === 0 && !selected.includes(option.key)}
+          onChange={() => onToggle(option.key)}
+        />
+      ))}
     </div>
   );
 }
 
-function WeaponRows({ options, selected, onToggle }: { options: FacetOption[]; selected: string[]; onToggle: (key: string) => void }) {
+function SearchableRows({ options, selected, onToggle, placeholder }: { options: FacetOption[]; selected: string[]; onToggle: (key: string) => void; placeholder: string }) {
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
   const visible = q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
-  const groups = WEAPON_TYPES.map((type) => ({
-    type,
-    options: visible.filter((o) => type.weapons.some((w) => weaponSlug(w) === o.key)),
-  })).filter((g) => g.options.length > 0);
-  const showGroups = groups.length > 1;
   return (
     <div>
-      {options.length > 10 ? (
-        <Input label="Find a weapon" labelHidden size="sm" mono placeholder="Find a weapon" value={query} onChange={(e) => setQuery(e.target.value)} wrapperClassName="mb-2" />
-      ) : null}
-      <div className="max-h-[360px] overflow-y-auto pr-1">
-        {groups.map((g) => (
-          <div key={g.type.key} className={cn(showGroups && "mb-2")}>
-            {showGroups ? <p className="eyebrow m-0 pb-1 pt-2 text-ink-subtle">{g.type.label}</p> : null}
-            <OptionRows options={g.options} selected={selected} onToggle={onToggle} />
-          </div>
-        ))}
-        {groups.length === 0 ? <p className="m-0 py-2 text-ui-sm text-ink-muted">No weapon matches “{query}”.</p> : null}
+      {options.length > 10 ? <Input label={placeholder} labelHidden size="sm" mono placeholder={placeholder} value={query} onChange={(e) => setQuery(e.target.value)} wrapperClassName="mb-2" /> : null}
+      <div className="max-h-[320px] overflow-y-auto pr-1">
+        <OptionRows options={visible} selected={selected} onToggle={onToggle} />
+        {visible.length === 0 ? <p className="m-0 py-2 text-ui-sm text-ink-muted">Nothing matches “{query}”.</p> : null}
       </div>
     </div>
   );
 }
-
-type Tri = "any" | "only" | "none";
-const QUALITY_ALL = ["normal", "stattrak", "souvenir"];
-
-function markState(qualities: string[], mark: "stattrak" | "souvenir"): Tri {
-  if (qualities.length === 0) return "any";
-  if (qualities.length === 1 && qualities[0] === mark) return "only";
-  if (!qualities.includes(mark)) return "none";
-  return "any";
-}
-
-function qualitiesFor(st: Tri, sv: Tri): string[] {
-  let set = new Set(QUALITY_ALL);
-  if (st === "only") set = new Set(["stattrak"]);
-  if (st === "none") set.delete("stattrak");
-  if (sv === "only") set = new Set([...set].filter((k) => k === "souvenir"));
-  if (sv === "none") set.delete("souvenir");
-  if (st === "only" && sv === "only") set = new Set();
-  return set.size === QUALITY_ALL.length ? [] : [...set].sort();
-}
-
-const TRI_OPTIONS: { value: Tri; label: string }[] = [
-  { value: "any", label: "Any" },
-  { value: "only", label: "Only" },
-  { value: "none", label: "None" },
-];
 
 export interface ProductFiltersProps {
   facets: CatalogFacets;
@@ -373,46 +315,33 @@ export interface ProductFiltersProps {
   className?: string;
 }
 
+const GROUPS: { filter: ListFilter; title: string; open: boolean; search?: string }[] = [
+  { filter: "types", title: "Product type", open: true },
+  { filter: "platforms", title: "Platform", open: true },
+  { filter: "regions", title: "Activation region", open: true },
+  { filter: "genres", title: "Genre", open: false },
+  { filter: "languages", title: "Language", open: false, search: "Find a language" },
+  { filter: "years", title: "Release year", open: false, search: "Find a year" },
+];
+
 export function ProductFilters({ facets, selection, onChange, className }: ProductFiltersProps) {
   const t = useTranslations("catalog");
   const priceCount = (selection.minPrice !== null ? 1 : 0) + (selection.maxPrice !== null ? 1 : 0);
   const list = (filter: ListFilter) => facets[filter].filter((o) => o.count > 0 || o.selected);
-  const types = list("types");
-  const weapons = list("weapons");
-  const rarities = list("rarities");
-  const exteriors = list("exteriors");
-  const phases = list("phases");
-  const collections = list("collections");
-  const qualityKeys = new Set(list("qualities").map((o) => o.key));
-  const st = markState(selection.qualities, "stattrak");
-  const sv = markState(selection.qualities, "souvenir");
   const toggle = (filter: ListFilter) => (key: string) => onChange({ [filter]: toggleValue(selection[filter], key) } as Partial<FilterSelection>);
+
+  const groups = GROUPS.map((group) => ({ ...group, options: list(group.filter) })).filter((g) => g.options.length > 1 || selection[g.filter].length > 0);
+  const [head, tail] = [groups.slice(0, 3), groups.slice(3)];
+
+  const listGroup = (g: (typeof groups)[number]) => (
+    <FilterGroup key={g.filter} title={g.title} selectedCount={selection[g.filter].length} defaultOpen={g.open || selection[g.filter].length > 0}>
+      {g.search ? <SearchableRows options={g.options} selected={selection[g.filter]} onToggle={toggle(g.filter)} placeholder={g.search} /> : <OptionRows options={g.options} selected={selection[g.filter]} onToggle={toggle(g.filter)} />}
+    </FilterGroup>
+  );
 
   return (
     <div className={cn("border-t border-line", className)}>
-      {types.length > 1 || selection.types.length > 0 ? (
-        <FilterGroup title="Weapon type" selectedCount={selection.types.length} defaultOpen>
-          <OptionRows options={types} selected={selection.types} onToggle={toggle("types")} />
-        </FilterGroup>
-      ) : null}
-
-      {weapons.length > 1 || selection.weapons.length > 0 ? (
-        <FilterGroup title="Weapon" selectedCount={selection.weapons.length} defaultOpen={selection.weapons.length > 0}>
-          <WeaponRows options={weapons} selected={selection.weapons} onToggle={toggle("weapons")} />
-        </FilterGroup>
-      ) : null}
-
-      {exteriors.length > 0 ? (
-        <FilterGroup title="Exterior" selectedCount={selection.exteriors.length} defaultOpen>
-          <ExteriorFilter options={facets.exteriors} selected={selection.exteriors} onChange={(next) => onChange({ exteriors: next })} />
-        </FilterGroup>
-      ) : null}
-
-      {rarities.length > 0 ? (
-        <FilterGroup title="Rarity" selectedCount={selection.rarities.length} defaultOpen>
-          <OptionRows options={[...rarities].reverse()} selected={selection.rarities} onToggle={toggle("rarities")} rarity />
-        </FilterGroup>
-      ) : null}
+      {head.map(listGroup)}
 
       {facets.price ? (
         <FilterGroup title={t("groupPrice")} selectedCount={priceCount} defaultOpen>
@@ -420,45 +349,14 @@ export function ProductFilters({ facets, selection, onChange, className }: Produ
         </FilterGroup>
       ) : null}
 
-      {qualityKeys.has("stattrak") || st !== "any" ? (
-        <FilterGroup title="StatTrak™" selectedCount={st === "any" ? 0 : 1} defaultOpen={st !== "any"}>
-          <Segmented label="StatTrak™" fullWidth value={st} options={TRI_OPTIONS} onChange={(v) => onChange({ qualities: qualitiesFor(v, sv) })} />
+      {facets.onSaleCount > 0 || selection.onSale ? (
+        <FilterGroup title="Offers" selectedCount={selection.onSale ? 1 : 0} defaultOpen={selection.onSale}>
+          <Checkbox dense label="Price drop" count={facets.onSaleCount} checked={selection.onSale} onChange={() => onChange({ onSale: !selection.onSale })} />
+          <p className="m-0 mt-1 text-ui-xs text-ink-muted">At least 10% below its lowest price in the previous 30 days.</p>
         </FilterGroup>
       ) : null}
 
-      {qualityKeys.has("souvenir") || sv !== "any" ? (
-        <FilterGroup title="Souvenir" selectedCount={sv === "any" ? 0 : 1} defaultOpen={sv !== "any"}>
-          <Segmented label="Souvenir" fullWidth value={sv} options={TRI_OPTIONS} onChange={(v) => onChange({ qualities: qualitiesFor(st, v) })} />
-        </FilterGroup>
-      ) : null}
-
-      {phases.length > 0 ? (
-        <FilterGroup title="Phase" selectedCount={selection.phases.length} defaultOpen={selection.phases.length > 0}>
-          <OptionRows options={phases} selected={selection.phases} onToggle={toggle("phases")} />
-        </FilterGroup>
-      ) : null}
-
-      {collections.length > 0 ? (
-        <FilterGroup title="Collection" selectedCount={selection.collections.length} defaultOpen={selection.collections.length > 0}>
-          <WeaponlessSearch options={collections} selected={selection.collections} onToggle={toggle("collections")} />
-        </FilterGroup>
-      ) : null}
-    </div>
-  );
-}
-
-function WeaponlessSearch({ options, selected, onToggle }: { options: FacetOption[]; selected: string[]; onToggle: (key: string) => void }) {
-  const [query, setQuery] = useState("");
-  const q = query.trim().toLowerCase();
-  const visible = q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
-  return (
-    <div>
-      {options.length > 10 ? (
-        <Input label="Find a collection" labelHidden size="sm" mono placeholder="Find a collection" value={query} onChange={(e) => setQuery(e.target.value)} wrapperClassName="mb-2" />
-      ) : null}
-      <div className="max-h-[320px] overflow-y-auto pr-1">
-        <OptionRows options={visible} selected={selected} onToggle={onToggle} />
-      </div>
+      {tail.map(listGroup)}
     </div>
   );
 }
@@ -472,19 +370,19 @@ export function FilterSummary({
 }: {
   total: number;
   parts?: string[];
-  chips?: { key: string; label: string; onRemove: () => void; rarity?: string }[];
+  chips?: { key: string; label: string; onRemove: () => void }[];
   onClearAll?: () => void;
   className?: string;
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-3", className)}>
       <p className="m-0 font-mono text-data text-ink" aria-live="polite">
-        {[`${total.toLocaleString("en-GB")} ${total === 1 ? "skin" : "skins"}`, ...parts].join(" · ")}
+        {[`${total.toLocaleString("en-GB")} ${total === 1 ? "product" : "products"}`, ...parts].join(" · ")}
       </p>
       {chips.length > 0 ? (
         <FilterChipRow onClearAll={onClearAll}>
           {chips.map((chip) => (
-            <FilterChip key={chip.key} label={chip.label} rarity={chip.rarity} onRemove={chip.onRemove} />
+            <FilterChip key={chip.key} label={chip.label} onRemove={chip.onRemove} />
           ))}
         </FilterChipRow>
       ) : null}
@@ -524,7 +422,7 @@ export function ProductFiltersSheet({
             Clear all
           </Button>
           <Button onPress={onClose} className="flex-1">
-            Show {total.toLocaleString("en-GB")} {total === 1 ? "skin" : "skins"}
+            Show {total.toLocaleString("en-GB")} {total === 1 ? "product" : "products"}
           </Button>
         </div>
       </div>

@@ -53,19 +53,11 @@ export function LoginView() {
       <div className="flex flex-col gap-6 lg:col-span-6 lg:pr-10">
         <h1 className="m-0 text-step-5 font-[650] leading-none tracking-[-0.01em] text-ink">{t("title")}</h1>
         {searchParams.get("next") === "/checkout" ? <p className="m-0 text-ink-muted">{t("checkoutHint")}</p> : null}
-        {searchParams.get("error") === "steam" ? <Alert tone="danger" title={t("steamFailed")} /> : null}
         {problem ? (
           <div ref={alertRef} tabIndex={-1} className="outline-none">
             <Alert tone="danger" title={problem} />
           </div>
         ) : null}
-        <div className="flex flex-col gap-2">
-          <Button as="a" href={`/api/auth/steam?next=${encodeURIComponent(next)}`} size="lg" variant="steam" fullWidth>
-            Sign in through Steam
-          </Button>
-          <p className="m-0 text-ui-sm text-ink-muted">{t("steamNote")}</p>
-        </div>
-        <p className="eyebrow m-0 flex items-center gap-3 before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line">or use email</p>
         <form noValidate onSubmit={onSubmit} className="flex flex-col gap-5">
           <Input id="login-email" type="email" label={tf("email")} autoComplete="email" required error={fe(formState.errors.email?.message)} {...register("email")} />
           <PasswordInput id="login-password" label={tf("password")} autoComplete="current-password" required error={fe(formState.errors.password?.message)} {...register("password")} />

@@ -2,15 +2,15 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 
-export type Currency = "USD" | "EUR" | "GBP";
+export type Currency = "EUR" | "USD" | "GBP";
 
-export const BASE_CURRENCY: Currency = "USD";
+export const BASE_CURRENCY: Currency = "EUR";
 
-const CURRENCY_LIST: Currency[] = ["USD", "EUR", "GBP"];
+const CURRENCY_LIST: Currency[] = ["EUR", "USD", "GBP"];
 
 interface Rates {
-  USD: number;
   EUR: number;
+  USD: number;
   GBP: number;
 }
 
@@ -21,7 +21,7 @@ interface CurrencyContextType {
   rates: Rates;
 }
 
-const DEFAULT_RATES: Rates = { USD: 1, EUR: 0.86, GBP: 0.75 };
+const DEFAULT_RATES: Rates = { EUR: 1, USD: 1.16, GBP: 0.87 };
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
@@ -40,7 +40,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     fetch("/api/exchange-rates")
       .then((r) => r.json())
       .then((data) => {
-        if (data.rates?.EUR && data.rates?.GBP) setRates({ USD: 1, EUR: data.rates.EUR, GBP: data.rates.GBP });
+        if (data.rates?.USD && data.rates?.GBP) setRates({ EUR: 1, USD: data.rates.USD, GBP: data.rates.GBP });
       })
       .catch(() => {});
   }, []);

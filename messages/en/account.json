@@ -6,20 +6,18 @@
     "saved": "Saved items",
     "addresses": "Your addresses",
     "profile": "Your details",
-    "description": "Your Patinaskins account: orders, Steam delivery, saved items and details.",
-    "steam": "Steam account"
+    "description": "Your Keyrook account: orders, keys, saved products and details."
   },
   "nav": {
     "label": "Account",
     "account": "Account",
     "overview": "Overview",
-    "orders": "My purchases",
+    "orders": "Orders and keys",
     "saved": "Saved",
     "addresses": "Billing addresses",
     "profile": "Profile",
     "signOut": "Sign out",
-    "loading": "Loading your account",
-    "steam": "Trade URL"
+    "loading": "Loading your account"
   },
   "loadError": "Something went wrong loading this page.",
   "retry": "Try again",
@@ -27,9 +25,10 @@
     "awaitingPayment": "Awaiting payment",
     "paymentFailed": "Payment failed",
     "paid": "Paid",
-    "processing": "Delivering",
-    "shipped": "Trade offer sent",
+    "processing": "Issuing keys",
+    "shipped": "Issuing keys",
     "delivered": "Delivered",
+    "refundPending": "Refund pending",
     "cancelled": "Cancelled",
     "refunded": "Refunded"
   },
@@ -38,20 +37,16 @@
     "titleNoName": "Hello",
     "signedInAs": "Signed in as {email}",
     "welcomeTitle": "Your account is ready",
-    "welcomeBody": "We've saved your billing address for checkout and sent a welcome email. Link your Steam account next.",
-    "latestTitle": "Latest purchase",
+    "welcomeBody": "We've saved your billing address for checkout and sent a welcome email.",
+    "latestTitle": "Latest order",
     "placed": "{date} · {count, plural, one {# item} other {# items}}",
     "view": "View",
-    "allOrders": "See all {count} purchases",
-    "noOrdersTitle": "No purchases yet",
-    "noOrdersBody": "When you buy a skin, you can follow its Steam delivery here.",
-    "browse": "Browse all skins",
+    "allOrders": "See all {count} orders",
+    "noOrdersTitle": "No orders yet",
+    "noOrdersBody": "When you buy a key, it appears here once your payment is confirmed.",
+    "browse": "Browse the catalogue",
     "linksTitle": "Your account",
     "links": {
-      "steam": {
-        "title": "Trade URL",
-        "body": "Linked Steam account and trade URL"
-      },
       "addresses": {
         "title": "Billing addresses",
         "body": "Billing addresses for checkout"
@@ -62,17 +57,16 @@
       },
       "saved": {
         "title": "Saved",
-        "body": "Skins you saved for later"
+        "body": "Products you saved for later"
       },
       "orders": {
-        "title": "My purchases",
-        "body": "Every purchase and its delivery status"
+        "title": "Orders and keys",
+        "body": "Every order, its keys and their delivery status"
       }
-    },
-    "signedInSteam": "Signed in through Steam"
+    }
   },
   "orders": {
-    "title": "My purchases",
+    "title": "Orders and keys",
     "caption": "Your orders, newest first",
     "columns": {
       "order": "Order",
@@ -84,19 +78,19 @@
     },
     "view": "View",
     "mobileMeta": "{date} · {count, plural, one {# item} other {# items}}",
-    "emptyTitle": "No purchases yet",
-    "emptyBody": "When you buy a skin, you can follow its Steam delivery here.",
-    "browse": "Browse all skins"
+    "emptyTitle": "No orders yet",
+    "emptyBody": "When you buy a key, it appears here once your payment is confirmed.",
+    "browse": "Browse the catalogue"
   },
   "order": {
     "loading": "Loading the order",
-    "title": "Purchase {number}",
+    "title": "Order {number}",
     "placedOn": "Placed on {date}",
     "progressTitle": "Order progress",
     "steps": {
       "placed": "Placed",
       "paid": "Paid",
-      "shipped": "Trade offer sent",
+      "shipped": "Issuing keys",
       "delivered": "Delivered",
       "cancelled": "Cancelled",
       "refunded": "Refunded",
@@ -104,28 +98,27 @@
       "notYet": "Not yet",
       "notReached": "Not reached yet"
     },
-    "itemsTitle": "Items",
+    "itemsTitle": "Products",
     "deliveryTitle": "Delivery",
     "billingTitle": "Billing address",
     "paymentMethod": "Paid by card on our payment provider's secure page.",
     "totalsTitle": "Totals",
     "invoiceDownload": "Download invoice (PDF)",
-    "helpTitle": "Need help with this purchase?",
-    "helpBody": "Questions about a trade offer, a refund or anything else. Your order number will be filled in for you.",
-    "helpAction": "Contact us about this purchase",
+    "helpTitle": "Need help with this order?",
+    "helpBody": "A key that does not activate, a refund or anything else. Your order number will be filled in for you.",
+    "helpAction": "Contact us about this order",
     "notFoundTitle": "Order not found",
     "notFoundBody": "This order isn't in your account. It may have been placed from a different account.",
-    "backToOrders": "Back to my purchases",
-    "deliveryMethod": "Steam trade offer",
-    "steamId": "Steam ID {id}",
-    "waiver": "You asked for immediate delivery on {date} and acknowledged that the right to cancel ends once delivery begins.",
-    "liveUpdates": "This page updates while your items are being delivered."
+    "backToOrders": "Back to orders",
+    "deliveryMethod": "Activation keys, shown on this page",
+    "waiver": "You asked for immediate delivery on {date} and acknowledged that the right to cancel ends once a key is issued.",
+    "liveUpdates": "This page updates while your keys are being issued."
   },
   "saved": {
     "title": "Saved",
     "emptyTitle": "Nothing saved yet",
-    "emptyBody": "Select Save on any skin to keep it here.",
-    "browse": "Browse skins"
+    "emptyBody": "Select Save on any product to keep it here.",
+    "browse": "Browse the catalogue"
   },
   "addresses": {
     "title": "Billing addresses",
@@ -164,63 +157,26 @@
     "saveFailed": "We couldn't save this. Please try again.",
     "emailAdd": "Add an email address so we can send order confirmations and invoices."
   },
-  "steam": {
-    "title": "Trade URL",
-    "lead": "We send every skin you buy as a trade offer to this URL. It must belong to the Steam account linked here.",
-    "accountTitle": "Linked Steam account",
-    "unnamed": "Steam user",
-    "steamId": "Steam ID {id}",
-    "linkLead": "Link the Steam account that should receive your items. You sign in on Steam's own page; we only receive your Steam ID and public profile.",
-    "link": "Link Steam account",
-    "linkNote": "We never see your Steam password or Steam Guard codes.",
-    "tradeTitle": "Trade URL",
-    "tradeSaved": "Saved and checked against your Steam account",
-    "tradeChange": "Change trade URL",
-    "tradeLabel": "Steam trade URL",
-    "tradeHint": "Find it in Steam under Inventory, Trade Offers, <link>Who can send me Trade Offers?</link>",
-    "tradeSave": "Save trade URL",
-    "cancel": "Cancel",
-    "retry": "Try again",
-    "requirementsTitle": "Your Steam account needs",
-    "flags": {
-      "linked": "Your Steam account is linked.",
-      "taken": "That Steam account is already linked to another account here. Sign in with it instead, or contact us.",
-      "other": "Your account is already linked to a different Steam account. Contact us if you need to change it."
-    },
-    "errors": {
-      "invalid": "This doesn't look like a Steam trade URL. Copy the full link that starts with https://steamcommunity.com/tradeoffer/new/",
-      "otherAccount": "This trade URL belongs to a different Steam account. Use the trade URL of the account you linked.",
-      "generic": "We couldn't save the trade URL. Please try again.",
-      "loadTitle": "We couldn't load your Steam details",
-      "load": "Check your connection and try again."
-    }
-  },
   "delivery": {
-    "openOffer": "Open the trade offer in Steam",
-    "expires": "Offer expires {date}",
     "status": {
       "awaiting_payment": "Awaiting payment",
       "paid": "Payment confirmed",
-      "submitted": "Preparing trade offer",
-      "processing": "Preparing trade offer",
-      "sent": "Trade offer sent",
-      "finished": "Delivered",
+      "submitted": "Issuing key",
+      "processing": "Issuing key",
+      "delivered": "Delivered",
       "failed": "Not delivered",
       "refund_pending": "Refund pending",
-      "refunded": "Refunded",
-      "rolled_back": "Trade reversed, refund pending"
+      "refunded": "Refunded"
     },
     "help": {
-      "awaiting_payment": "We start delivery once your payment is confirmed.",
-      "paid": "Your payment is confirmed. We are requesting the trade offer.",
-      "submitted": "The trade offer is being prepared.",
-      "processing": "The trade offer is being prepared.",
-      "sent": "Accept the offer in Steam before it expires. Check it gives you only this item.",
-      "finished": "The item is in your Steam inventory. Steam may keep it under trade protection for a few days.",
-      "failed": "This item could not be delivered.",
-      "refund_pending": "We are refunding the price you paid for this item.",
-      "refunded": "The price of this item has been refunded.",
-      "rolled_back": "Steam reversed the trade. We are refunding this item."
+      "awaiting_payment": "We issue keys once your payment is confirmed.",
+      "paid": "Your payment is confirmed. We are issuing your key.",
+      "submitted": "Your key is being issued.",
+      "processing": "Your key is being issued.",
+      "delivered": "Your key is ready below. Reveal it when you are ready to redeem it.",
+      "failed": "This key could not be issued.",
+      "refund_pending": "We are refunding the price you paid for this key.",
+      "refunded": "The price of this key has been refunded."
     }
   }
 }

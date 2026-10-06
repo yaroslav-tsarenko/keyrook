@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { Trash2 } from "lucide-react";
 import { QuantitySelector } from "@/components/shared/QuantitySelector/QuantitySelector";
-import { SkinRow } from "@/components/skin/SkinTray";
+import { ProductRow } from "@/components/product/ProductCard";
 import { cartItemCap, useCart } from "@/providers/CartProvider";
 import { useCurrency } from "@/providers/CurrencyProvider";
 import { formatPrice } from "@/lib/utils/format-price";
@@ -38,11 +38,11 @@ export function CartItem({ item, size = "compact", onNavigate, actions }: CartIt
       className={cn("grid transition-[grid-template-rows,opacity] duration-[200ms] ease-[var(--ease-instrument)]", removing ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr]")}
     >
       <div className="relative min-h-0 overflow-hidden" onClickCapture={(e) => (e.target as HTMLElement).closest("a") && onNavigate?.()}>
-        <SkinRow
+        <ProductRow
           name={item.name}
           href={`/product/${item.slug}`}
           imageUrl={item.imageUrl}
-          skin={item.skin}
+          keyInfo={item.key}
           size={full ? "md" : "sm"}
           className={full ? "py-6" : "py-4"}
           aside={<span className="price text-[1rem] text-ink">{formatPrice(lineTotal, currency)}</span>}
@@ -73,7 +73,7 @@ export function CartItem({ item, size = "compact", onNavigate, actions }: CartIt
               </button>
             </span>
           </div>
-        </SkinRow>
+        </ProductRow>
       </div>
     </li>
   );

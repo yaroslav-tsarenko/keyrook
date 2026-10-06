@@ -18,7 +18,7 @@ export const RATE_LIMITS = {
   register: { limit: 10, windowMs: 60 * 60 * 1000 },
   forgotPassword: { limit: 5, windowMs: 60 * 60 * 1000 },
   checkout: { limit: 6, windowMs: 60 * 1000 },
-  tradeUrl: { limit: 10, windowMs: 10 * 60 * 1000 },
+  keyReveal: { limit: 40, windowMs: 10 * 60 * 1000 },
   orderRefresh: { limit: 30, windowMs: 60 * 1000 },
 } satisfies Record<string, RateLimitRule>;
 

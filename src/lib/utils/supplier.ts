@@ -1,8 +1,8 @@
-const SUPPLIER_TEST = /\bsih\b|sih\.market|steam\s*inventory\s*helper|\bbuff\.163\b|\bbuff163\b|\bcsfloat\b|\bskinport\b/i;
+const SUPPLIER_TEST = /\bkinguin(?:\.net)?\b|\besa\s+integration\b/i;
 
-const SUPPLIER_PHRASE = /\s*(?:from|by|via)?\s*(?:\bsih(?:\.market)?\b|steam\s*inventory\s*helper|\bbuff\.?163\b|\bcsfloat\b|\bskinport\b)/gi;
+const SUPPLIER_PHRASE = /\s*(?:on|from|by|via|at)?\s*\bkinguin(?:\.net)?\b(?:\s+(?:marketplace|store|platform|support|team))?/gi;
 
-const SUPPLIER_HOST_TEST = /(?:^|\.)sih\.market$|(?:^|\.)buff\.163\.com$|(?:^|\.)csfloat\.com$|(?:^|\.)skinport\.com$/i;
+const SUPPLIER_HOST_TEST = /(?:^|\.)kinguin\.net$/i;
 
 export function mentionsSupplier(value: string | null | undefined): boolean {
   return Boolean(value && SUPPLIER_TEST.test(value));

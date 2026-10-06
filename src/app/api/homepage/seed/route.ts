@@ -24,17 +24,17 @@ export async function POST() {
     const stocked = categories.filter((c) => c._count.products > 0);
 
     const utilityLinks = [
-      { label: "Delivery via Steam", linkUrl: "/policies/shipping", icon: "Send", position: "left" },
+      { label: "Delivery", linkUrl: "/policies/shipping", icon: "Send", position: "left" },
       { label: "Refunds", linkUrl: "/policies/returns", icon: "RotateCcw", position: "left" },
-      { label: "Item guarantee", linkUrl: "/policies/warranty", icon: "ShieldCheck", position: "left" },
+      { label: "Key guarantee", linkUrl: "/policies/warranty", icon: "ShieldCheck", position: "left" },
       { label: "FAQ", linkUrl: "/faq", icon: "CircleHelp", position: "left" },
       { label: "About", linkUrl: "/about", icon: "Info", position: "right" },
       { label: "Contact us", linkUrl: "/contact", icon: "Mail", position: "right" },
     ].map((link, sortOrder) => ({ id: `seed-utility-${sortOrder}`, ...link, sortOrder }));
 
     const promoStripItems = [
-      { icon: "Send", title: `Delivered by ${POLICY_FACTS.deliveryMethod}`, subtitle: `To your Steam account, ${POLICY_FACTS.deliveryUsual}`, linkUrl: "/policies/shipping" },
-      { icon: "ShieldCheck", title: "Item guarantee", subtitle: `Refund if we cannot deliver within ${POLICY_FACTS.deliveryDeadlineHours} hours`, linkUrl: "/policies/warranty" },
+      { icon: "Send", title: "Keys in your account", subtitle: `Issued ${POLICY_FACTS.deliveryUsual}`, linkUrl: "/policies/shipping" },
+      { icon: "ShieldCheck", title: "Key guarantee", subtitle: `Replaced or refunded if a key does not activate`, linkUrl: "/policies/warranty" },
       { icon: "CreditCard", title: "Card payments", subtitle: POLICY_FACTS.cardMethods, linkUrl: "/policies/payment" },
     ].map((item, sortOrder) => ({ id: `seed-promo-${sortOrder}`, ...item, sortOrder }));
 

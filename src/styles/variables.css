@@ -42,17 +42,6 @@
   --color-info: #9fb6c9;
   --color-info-tint: #1a2128;
 
-  --rarity-consumer: #b0c3d9;
-  --rarity-industrial: #6aa2e0;
-  --rarity-milspec: #7890ff;
-  --rarity-restricted: #a882ff;
-  --rarity-classified: #e05ef0;
-  --rarity-covert: #f26b6b;
-  --rarity-gold: #eac54f;
-  --rarity: var(--color-border-hover);
-  --mark-stattrak: #e98b4a;
-  --mark-souvenir: #e4c46a;
-
   --lamp-rgb: 255 233 199;
   --color-lamp: rgb(var(--lamp-rgb));
   --lamp-line: rgb(var(--lamp-rgb) / 0.55);
@@ -175,16 +164,6 @@
   --color-on-danger: #ffffff;
   --color-info: #38506a;
   --color-info-tint: #d8e0e8;
-
-  --rarity-consumer: #4a5c70;
-  --rarity-industrial: #235a96;
-  --rarity-milspec: #2c45c0;
-  --rarity-restricted: #6030bf;
-  --rarity-classified: #8e1e99;
-  --rarity-covert: #ac2828;
-  --rarity-gold: #755700;
-  --mark-stattrak: #8f430c;
-  --mark-souvenir: #6f5a12;
 
   --lamp-rgb: 255 250 240;
   --lamp-line: rgb(255 255 255 / 0.95);

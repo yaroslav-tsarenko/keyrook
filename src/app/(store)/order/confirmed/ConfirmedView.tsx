@@ -9,8 +9,8 @@ import { Check, Copy } from "lucide-react";
 import { StatusPlate } from "@/components/ui/Plate";
 import { Alert } from "@/components/ui/Alert";
 import { ReadoutLoader } from "@/components/ui/ReadoutLoader";
-import { SkinRow } from "@/components/skin/SkinTray";
-import { PurchaseTimeline } from "@/components/skin/PurchaseTimeline";
+import { ProductRow } from "@/components/product/ProductCard";
+import { PurchaseTimeline } from "@/components/account/PurchaseTimeline";
 import { orderTimelineStatus } from "@/components/account/OrderHistory/OrderHistory";
 import { TotalsList } from "@/components/checkout/TotalsList";
 import { useCart } from "@/providers/CartProvider";
@@ -57,15 +57,13 @@ function OrderSummary({ order, live = false }: { order: OrderView; live?: boolea
         <ul className="m-0 flex list-none flex-col border-t border-rule p-0">
           {order.lines.map((line) => (
             <li key={line.id} className="flex flex-col gap-5 border-b border-line py-5">
-              <SkinRow name={line.name} href={line.slug ? `/product/${line.slug}` : null} imageUrl={line.imageUrl} skin={line.skin} aside={<span className="font-mono text-data text-ink">{formatPrice(line.total, order.currency)}</span>} />
+              <ProductRow name={line.name} href={line.slug ? `/product/${line.slug}` : null} imageUrl={line.imageUrl} keyInfo={line.key} aside={<span className="font-mono text-data text-ink">{formatPrice(line.total, order.currency)}</span>} />
               {live ? (
                 <PurchaseTimeline
                   status={orderTimelineStatus(order, line)}
                   paidAt={order.paidAt}
                   finishedAt={line.delivery?.finishedAt}
                   refundedAt={line.delivery?.refundedAt}
-                  offerUrl={line.delivery?.offerUrl}
-                  expiresAt={line.delivery?.expiresAt}
                 />
               ) : null}
             </li>
@@ -79,8 +77,10 @@ function OrderSummary({ order, live = false }: { order: OrderView; live?: boolea
             {t("deliveryTitle")}
           </h2>
           <p className="m-0 text-ui-md leading-[1.6] text-ink">
-            Steam trade offer
-            {order.steamId ? <span className="block font-mono text-data text-ink-muted">SteamID …{order.steamId.slice(-4)}</span> : null}
+            Activation keys on your order page
+            <Link href={`/account/orders/${order.id}`} className="mt-1 block font-semibold underline decoration-1 underline-offset-4">
+              Open the order to reveal your keys
+            </Link>
           </p>
         </section>
         <section aria-labelledby="confirmed-when">
@@ -143,7 +143,7 @@ export function ConfirmedView() {
       cleared.current = true;
       clearCart();
       try {
-        sessionStorage.removeItem("patina-checkout-draft");
+        sessionStorage.removeItem("keyrook-checkout-draft");
       } catch {}
     }
     if (state !== "checking") headingRef.current?.focus();

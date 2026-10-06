@@ -8,9 +8,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { Alert } from "@/components/ui/Alert";
 import { SkeletonBar } from "@/components/ui/ReadoutLoader";
 import { EmptyState } from "@/components/shared/EmptyState/EmptyState";
-import { SkinRow } from "@/components/skin/SkinTray";
-import { SteamAccountBlock } from "@/components/skin/SteamAccountBlock";
-import { useSteamAccount } from "@/components/account/SteamDelivery/SteamDelivery";
+import { ProductRow } from "@/components/product/ProductCard";
 import { formatPrice } from "@/lib/utils/format-price";
 import type { OrderView } from "@/lib/orders";
 import { AccountPageHeader } from "./AccountSidebar/AccountSidebar";
@@ -24,17 +22,15 @@ const linkCls = "inline-flex min-h-10 items-center gap-1.5 text-ui-md font-semib
 export function AccountOverview() {
   const t = useTranslations("account.overview");
   const { user } = useAuth();
-  const steam = useSteamAccount(Boolean(user));
   const welcome = useSearchParams().get("welcome") === "1";
   const { data, error, loading, reload } = useAccountData<{ orders: OrderView[] }>("/api/account/orders");
   const latest = data?.orders[0];
-  const persona = steam.steam?.personaName ?? null;
-  const firstName = persona || user?.firstName || user?.name?.split(" ")[0] || "";
+  const firstName = user?.firstName || user?.name?.split(" ")[0] || "";
 
   return (
     <div>
       <AccountPageHeader title={firstName ? t("title", { name: firstName }) : t("titleNoName")}>
-        <p className="m-0 text-ink-muted">{user?.email ? t("signedInAs", { email: user.email }) : t("signedInSteam")}</p>
+        <p className="m-0 text-ink-muted">{user?.email ? t("signedInAs", { email: user.email }) : null}</p>
       </AccountPageHeader>
 
       {welcome ? (
@@ -42,15 +38,6 @@ export function AccountOverview() {
           {t("welcomeBody")}
         </Alert>
       ) : null}
-
-      <section aria-labelledby="steam-title" className="mb-12">
-        <h2 id="steam-title" className="eyebrow m-0 mb-3">
-          Steam account
-        </h2>
-        <div className="border-y border-line py-4">
-          {steam.loading ? <SkeletonBar className="w-1/2" /> : <SteamAccountBlock steam={steam.steam} nextPath="/account" tradeHref="/account/steam" />}
-        </div>
-      </section>
 
       <section aria-labelledby="latest-order" className="mb-12">
         <h2 id="latest-order" className="eyebrow m-0 mb-3">
@@ -65,11 +52,11 @@ export function AccountOverview() {
           <LoadError onRetry={reload} />
         ) : latest ? (
           <div className="border-y border-line py-4">
-            <SkinRow
+            <ProductRow
               name={latest.lines[0]?.name ?? latest.number}
               href={latest.lines[0]?.slug ? `/product/${latest.lines[0].slug}` : null}
               imageUrl={latest.lines[0]?.imageUrl}
-              skin={latest.lines[0]?.skin}
+              keyInfo={latest.lines[0]?.key}
               aside={<span className="price text-[1rem] text-ink">{formatPrice(latest.totals.total, latest.currency)}</span>}
             >
               <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -83,7 +70,7 @@ export function AccountOverview() {
                   <ArrowRight size={16} aria-hidden="true" />
                 </Link>
               </div>
-            </SkinRow>
+            </ProductRow>
             {data && data.orders.length > 1 ? (
               <Link href="/account/orders" className={`${linkCls} mt-3`}>
                 {t("allOrders", { count: data.orders.length })}
@@ -96,8 +83,8 @@ export function AccountOverview() {
       </section>
 
       <nav aria-label="Account shortcuts" className="flex flex-wrap gap-x-8 gap-y-1">
-        <Link href="/account/steam" className={linkCls}>
-          Trade URL
+        <Link href="/account/orders" className={linkCls}>
+          Orders and keys
           <ArrowRight size={16} aria-hidden="true" />
         </Link>
         <Link href="/account/profile" className={linkCls}>

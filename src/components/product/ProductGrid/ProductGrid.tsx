@@ -1,10 +1,10 @@
 "use client";
 
-import { SkinGrid, SkinTray, type SkinProduct } from "@/components/skin/SkinTray";
+import { CardGrid, ProductCard, type CatalogProduct } from "@/components/product/ProductCard";
 
 interface ProductGridProps {
-  products: SkinProduct[];
-  columns?: 3 | 4;
+  products: CatalogProduct[];
+  columns?: 3 | 4 | 5;
   priorityCount?: number;
   headingLevel?: 2 | 3;
   className?: string;
@@ -12,10 +12,10 @@ interface ProductGridProps {
 
 export function ProductGrid({ products, columns = 4, priorityCount = 0, headingLevel = 3, className }: ProductGridProps) {
   return (
-    <SkinGrid columns={columns} className={className}>
+    <CardGrid columns={columns} className={className}>
       {products.map((product, index) => (
-        <SkinTray key={product.id} product={product} priority={index < priorityCount} headingLevel={headingLevel} />
+        <ProductCard key={product.id} product={product} priority={index < priorityCount} headingLevel={headingLevel} />
       ))}
-    </SkinGrid>
+    </CardGrid>
   );
 }

@@ -1,5 +1,5 @@
 {
-  "name": "patinaskins",
+  "name": "keyrook",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,8 +11,7 @@
     "postinstall": "prisma generate",
     "local:setup": "node scripts/setup-local.mjs",
     "catalog:sync": "tsx scripts/catalog-sync.ts",
-    "sih:smoke": "tsx scripts/sih-smoke.ts",
-    "sih:webhook": "tsx scripts/sih-webhook.ts"
+    "catalog:refresh": "tsx scripts/catalog-sync.ts --refresh"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1054.0",

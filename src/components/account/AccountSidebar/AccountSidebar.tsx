@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils/cn";
 const NAV = [
   { href: "/account", key: "overview" },
   { href: "/account/orders", key: "orders" },
-  { href: "/account/steam", key: "steam" },
   { href: "/account/wishlist", key: "saved" },
   { href: "/account/profile", key: "profile" },
   { href: "/account/addresses", key: "addresses" },

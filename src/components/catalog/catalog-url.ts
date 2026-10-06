@@ -1,40 +1,35 @@
-import { EXTERIORS, RARITIES, WEAPON_TYPES } from "@/lib/skins/cs2";
+import { GENRES, PLATFORMS, PRODUCT_TYPES, REGIONS } from "@/lib/keys/taxonomy";
 
-export const SORT_KEYS = ["newest", "price-asc", "price-desc", "popular", "name-asc", "relevance", "rarity-desc", "float-asc"] as const;
+export const SORT_KEYS = ["newest", "price-asc", "price-desc", "popular", "name-asc", "relevance", "release-desc"] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
 
 export const CATALOG_PAGE_SIZE = 24;
 
-export const QUALITY_KEYS = ["normal", "stattrak", "souvenir"] as const;
-export type QualityKey = (typeof QUALITY_KEYS)[number];
-
-export const LIST_FILTERS = ["types", "weapons", "rarities", "exteriors", "qualities", "phases", "collections"] as const;
+export const LIST_FILTERS = ["types", "platforms", "regions", "genres", "languages", "years"] as const;
 export type ListFilter = (typeof LIST_FILTERS)[number];
 
-const LIST_PARAM: Record<ListFilter, string> = {
+export const LIST_PARAM: Record<ListFilter, string> = {
   types: "type",
-  weapons: "weapon",
-  rarities: "rarity",
-  exteriors: "exterior",
-  qualities: "quality",
-  phases: "phase",
-  collections: "collection",
+  platforms: "platform",
+  regions: "region",
+  genres: "genre",
+  languages: "language",
+  years: "year",
 };
 
-const TYPE_KEYS = new Set<string>(WEAPON_TYPES.map((t) => t.key));
-const RARITY_KEYS = new Set<string>(RARITIES.map((r) => r.key));
-export const NOT_PAINTED = "np";
-const EXTERIOR_KEYS = new Set<string>([...EXTERIORS.map((e) => e.code.toLowerCase()), NOT_PAINTED]);
+const TYPE_KEYS = new Set<string>(PRODUCT_TYPES.map((t) => t.key));
+const PLATFORM_KEYS = new Set<string>(PLATFORMS.map((p) => p.key));
+const REGION_KEYS = new Set<string>(REGIONS.map((r) => r.key));
+const GENRE_KEYS = new Set<string>(GENRES.map((g) => g.key));
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const VALID: Record<ListFilter, (value: string) => boolean> = {
   types: (v) => TYPE_KEYS.has(v),
-  weapons: (v) => SLUG.test(v) && v.length <= 40,
-  rarities: (v) => RARITY_KEYS.has(v),
-  exteriors: (v) => EXTERIOR_KEYS.has(v),
-  qualities: (v) => (QUALITY_KEYS as readonly string[]).includes(v),
-  phases: (v) => SLUG.test(v) && v.length <= 40,
-  collections: (v) => SLUG.test(v) && v.length <= 80,
+  platforms: (v) => PLATFORM_KEYS.has(v),
+  regions: (v) => REGION_KEYS.has(v),
+  genres: (v) => GENRE_KEYS.has(v),
+  languages: (v) => SLUG.test(v) && v.length <= 40,
+  years: (v) => /^(19[89]\d|20\d\d)$/.test(v),
 };
 
 export interface CatalogParams {
@@ -47,14 +42,11 @@ export interface CatalogParams {
   brand: string | null;
   category: string | null;
   types: string[];
-  weapons: string[];
-  rarities: string[];
-  exteriors: string[];
-  qualities: string[];
-  phases: string[];
-  collections: string[];
-  floatMin: number | null;
-  floatMax: number | null;
+  platforms: string[];
+  regions: string[];
+  genres: string[];
+  languages: string[];
+  years: string[];
 }
 
 export interface CategoryOption {
@@ -71,7 +63,6 @@ export interface FacetOption {
   label: string;
   count: number;
   selected: boolean;
-  color?: string | null;
 }
 
 export interface CatalogFacets {
@@ -83,13 +74,11 @@ export interface CatalogFacets {
   onSaleCount: number;
   narrowingInStock: boolean;
   types: FacetOption[];
-  weapons: FacetOption[];
-  rarities: FacetOption[];
-  exteriors: FacetOption[];
-  qualities: FacetOption[];
-  phases: FacetOption[];
-  collections: FacetOption[];
-  float: { min: number; max: number } | null;
+  platforms: FacetOption[];
+  regions: FacetOption[];
+  genres: FacetOption[];
+  languages: FacetOption[];
+  years: FacetOption[];
 }
 
 export type RawSearchParams = Record<string, string | string[] | undefined>;
@@ -105,12 +94,6 @@ function price(value: string): number | null {
   return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : null;
 }
 
-function wear(value: string): number | null {
-  if (!value) return null;
-  const n = Number(value);
-  return Number.isFinite(n) && n >= 0 && n <= 1 ? Math.round(n * 10000) / 10000 : null;
-}
-
 function list(raw: RawSearchParams, filter: ListFilter): string[] {
   const value = raw[LIST_PARAM[filter]];
   const values = (Array.isArray(value) ? value : [value ?? ""]).flatMap((v) => v.split(","));
@@ -124,11 +107,6 @@ export function parseCatalogParams(raw: RawSearchParams, defaultSort: SortKey = 
   let minPrice = price(first(raw.minPrice));
   let maxPrice = price(first(raw.maxPrice));
   if (minPrice !== null && maxPrice !== null && minPrice > maxPrice) [minPrice, maxPrice] = [maxPrice, minPrice];
-  let floatMin = wear(first(raw.floatMin));
-  let floatMax = wear(first(raw.floatMax));
-  if (floatMin !== null && floatMax !== null && floatMin > floatMax) [floatMin, floatMax] = [floatMax, floatMin];
-  if (floatMin === 0) floatMin = null;
-  if (floatMax === 1) floatMax = null;
   return {
     sort: SORT_KEYS.includes(sortRaw) ? sortRaw : defaultSort,
     page: Number.isFinite(page) && page > 1 ? page : 1,
@@ -139,14 +117,11 @@ export function parseCatalogParams(raw: RawSearchParams, defaultSort: SortKey = 
     brand: first(raw.brand).trim() || null,
     category: first(raw.category).trim() || null,
     types: list(raw, "types"),
-    weapons: list(raw, "weapons"),
-    rarities: list(raw, "rarities"),
-    exteriors: list(raw, "exteriors"),
-    qualities: list(raw, "qualities"),
-    phases: list(raw, "phases"),
-    collections: list(raw, "collections"),
-    floatMin,
-    floatMax,
+    platforms: list(raw, "platforms"),
+    regions: list(raw, "regions"),
+    genres: list(raw, "genres"),
+    languages: list(raw, "languages"),
+    years: list(raw, "years"),
   };
 }
 
@@ -158,9 +133,7 @@ export function hasActiveFilters(params: CatalogParams): boolean {
     params.onSale ||
     Boolean(params.brand) ||
     Boolean(params.category) ||
-    LIST_FILTERS.some((f) => params[f].length > 0) ||
-    params.floatMin !== null ||
-    params.floatMax !== null
+    LIST_FILTERS.some((f) => params[f].length > 0)
   );
 }
 
@@ -185,8 +158,6 @@ export function buildCatalogHref(
   if (next.brand) qs.set("brand", next.brand);
   if (next.minPrice !== null) qs.set("minPrice", String(next.minPrice));
   if (next.maxPrice !== null) qs.set("maxPrice", String(next.maxPrice));
-  if (next.floatMin !== null) qs.set("floatMin", String(next.floatMin));
-  if (next.floatMax !== null) qs.set("floatMax", String(next.floatMax));
   if (next.inStock) qs.set("inStock", "true");
   if (next.onSale) qs.set("onSale", "true");
   if (next.sort !== (options.defaultSort ?? "newest")) qs.set("sort", next.sort);
@@ -205,14 +176,11 @@ export function clearedParams(params: CatalogParams): CatalogParams {
     brand: null,
     category: null,
     types: [],
-    weapons: [],
-    rarities: [],
-    exteriors: [],
-    qualities: [],
-    phases: [],
-    collections: [],
-    floatMin: null,
-    floatMax: null,
+    platforms: [],
+    regions: [],
+    genres: [],
+    languages: [],
+    years: [],
     page: 1,
   };
 }

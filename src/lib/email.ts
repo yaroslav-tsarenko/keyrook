@@ -212,7 +212,6 @@ interface OrderEmailData {
   trackingNumber?: string | null;
   createdAt?: Date | string;
   paidAt?: Date | string | null;
-  steamId?: string | null;
   waiverText?: string | null;
   waiverAcceptedAt?: Date | string | null;
 }
@@ -333,7 +332,7 @@ function addressesBlock(data: OrderEmailData): string {
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
 <tr>
   <td width="50%" style="vertical-align:top;padding-right:12px;">${label("Billing address")}<p style="margin:0;font-size:14px;line-height:1.6;color:${C.ink};">${addressHtml(billing)}</p></td>
-  <td width="50%" style="vertical-align:top;padding-left:12px;">${label("Delivered by")}<p style="margin:0;font-size:14px;line-height:1.6;color:${C.ink};">Steam trade offer${data.steamId ? `<br>Steam ID ${escape(data.steamId)}` : ""}</p></td>
+  <td width="50%" style="vertical-align:top;padding-left:12px;">${label("Delivery")}<p style="margin:0;font-size:14px;line-height:1.6;color:${C.ink};">${escape(STORE_POLICY.delivery.method)}<br>${escape(data.customerEmail)}</p></td>
 </tr>
 </table>`;
 }
@@ -341,7 +340,7 @@ function addressesBlock(data: OrderEmailData): string {
 function deliveryNote(): string {
   const d = STORE_POLICY.delivery;
   return paragraph(
-    `We send each item to your Steam account as a ${d.method}, ${d.usualTime}. Open Steam and accept the offer before it expires. Steam may place received items under trade protection for up to ${d.tradeProtectionDays} days, during which they cannot be traded or sold. If we cannot deliver an item within ${d.deadlineHours} hours, we refund the price you paid for it.`,
+    `Your keys appear ${d.where}, ${d.usualTime}. ${d.emailNote} If we cannot deliver a key within ${d.deadlineHours} hours, we refund the price you paid for it.`,
     "font-size:14px;",
   );
 }
@@ -350,7 +349,7 @@ function waiverNote(data: OrderEmailData): string {
   const text = data.waiverText || STORE_POLICY.waiver.text;
   const when = data.waiverAcceptedAt ? ` on ${formatDate(data.waiverAcceptedAt)}` : "";
   return `${label("Your consent at checkout")}
-${paragraph(`You confirmed${when}: &ldquo;${escape(text)}&rdquo; Delivery begins when we send the trade offer for your item, so the ${STORE_POLICY.returns.withdrawalDays}-day right of withdrawal no longer applies from that point. Our <a href="${SITE_URL}/policies/warranty" style="color:${C.ink};">item guarantee</a> still covers items we cannot deliver.`, "font-size:13px;")}`;
+${paragraph(`You confirmed${when}: &ldquo;${escape(text)}&rdquo; Delivery begins when your key is issued to your account, so the ${STORE_POLICY.returns.withdrawalDays}-day right of withdrawal no longer applies from that point. Our <a href="${SITE_URL}/policies/warranty" style="color:${C.ink};">key guarantee</a> still covers keys that do not activate.`, "font-size:13px;")}`;
 }
 
 export async function sendWelcomeEmail(email: string, name?: string | null): Promise<boolean> {
@@ -362,11 +361,11 @@ export async function sendWelcomeEmail(email: string, name?: string | null): Pro
       `${heading(firstName ? `Welcome, ${firstName}` : `Welcome to ${BRAND.name}`)}
 ${paragraph(`Your account is set up. Sign in with <strong style="color:${C.ink};">${escape(email)}</strong> to:`)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid ${C.line};margin:0 0 8px;">
-  <tr><td style="padding:12px 0;border-bottom:1px solid ${C.line};font-size:15px;color:${C.ink};">Link your Steam account and save your trade URL</td></tr>
-  <tr><td style="padding:12px 0;border-bottom:1px solid ${C.line};font-size:15px;color:${C.ink};">Follow each order from payment to the Steam trade offer</td></tr>
-  <tr><td style="padding:12px 0;border-bottom:1px solid ${C.line};font-size:15px;color:${C.ink};">Save skins to look at later</td></tr>
+  <tr><td style="padding:12px 0;border-bottom:1px solid ${C.line};font-size:15px;color:${C.ink};">See every key you buy on its order page, revealed only when you ask for it</td></tr>
+  <tr><td style="padding:12px 0;border-bottom:1px solid ${C.line};font-size:15px;color:${C.ink};">Download invoices for your orders</td></tr>
+  <tr><td style="padding:12px 0;border-bottom:1px solid ${C.line};font-size:15px;color:${C.ink};">Save products to look at later</td></tr>
 </table>
-${button(`${SITE_URL}/account/steam`, "Link your Steam account")}
+${button(`${SITE_URL}/catalog`, "Browse the catalogue")}
 ${paragraph(`If you did not create this account, reply to this email and we will close it.`, "font-size:13px;margin:16px 0 0;")}`,
       { preheader: `Your ${BRAND.name} account is ready.` },
     ),
@@ -385,15 +384,15 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
     html: emailWrapper(
       `${heading(`Thank you, ${escape(data.customerName.split(" ")[0] || data.customerName)}`)}
 <p style="margin:0 0 20px;">${plate(`Order ${ref}`)}</p>
-${paragraph(`Your payment of <strong style="color:${C.ink};">${money(totals.total, currency)}</strong> has been confirmed and we are preparing your Steam trade offer.${attachments.length ? " Your invoice is attached as a PDF." : ""}`)}
+${paragraph(`Your payment of <strong style="color:${C.ink};">${money(totals.total, currency)}</strong> has been confirmed and we are issuing your keys.${attachments.length ? " Your invoice is attached as a PDF." : ""}`)}
 ${orderFacts(data)}
 ${itemsTable(data)}
 ${addressesBlock(data)}
 ${deliveryNote()}
 ${waiverNote(data)}
 ${sellerBlock()}
-${button(`${SITE_URL}/account/orders/${data.orderId}`, "Follow your delivery")}
-${paragraph(`See our <a href="${SITE_URL}/policies/returns" style="color:${C.ink};">Refund policy</a> and <a href="${SITE_URL}/policies/shipping" style="color:${C.ink};">Delivery via Steam</a>.`, "font-size:13px;margin:16px 0 0;")}`,
+${button(`${SITE_URL}/account/orders/${data.orderId}`, "Open your order")}
+${paragraph(`See our <a href="${SITE_URL}/policies/returns" style="color:${C.ink};">Refund policy</a> and <a href="${SITE_URL}/policies/shipping" style="color:${C.ink};">Delivery policy</a>.`, "font-size:13px;margin:16px 0 0;")}`,
       { preheader: `Order ${ref} is confirmed. Total ${money(totals.total, currency)}.` },
     ),
   });
@@ -426,18 +425,22 @@ ${paragraph(`${attachments.length ? "The PDF invoice is attached. " : ""}Keep th
   });
 }
 
-export async function sendTradeOfferEmail(data: OrderEmailData, item: { name: string; expiresAt?: Date | string | null }): Promise<boolean> {
+export async function sendKeysReadyEmail(data: OrderEmailData, items: { name: string; keys: number; platform: string | null }[]): Promise<boolean> {
   const ref = orderRef(data);
-  const expiry = item.expiresAt ? ` It expires on ${new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: "UTC" }).format(new Date(item.expiresAt))} (UTC).` : "";
+  const rows = items
+    .map((item) => `<tr><td style="padding:12px 0;border-bottom:1px solid ${C.line};font-size:15px;color:${C.ink};">${escape(item.name)}${item.platform ? `<br><span style="font-size:12px;color:${C.muted};">${escape(item.platform)}</span>` : ""}</td><td style="padding:12px 0;border-bottom:1px solid ${C.line};font-size:14px;color:${C.muted};text-align:right;white-space:nowrap;">${item.keys} ${item.keys === 1 ? "key" : "keys"}</td></tr>`)
+    .join("");
   return send({
     to: data.customerEmail,
-    subject: `Trade offer sent for order ${ref} — ${BRAND.name}`,
+    subject: `Your keys for order ${ref} are ready — ${BRAND.name}`,
     html: emailWrapper(
-      `${heading("Your trade offer is waiting in Steam")}
+      `${heading("Your keys are ready")}
 <p style="margin:0 0 20px;">${plate(`Order ${ref}`)}</p>
-${paragraph(`Hi ${escape(data.customerName.split(" ")[0] || data.customerName)}, a Steam trade offer for <strong style="color:${C.ink};">${escape(item.name)}</strong> has been sent to your Steam account.${expiry} Accept it in the Steam app or at steamcommunity.com under Inventory &rarr; Trade offers. Check that the offer gives you only this item and asks for nothing from your inventory.`)}
-${button(`${SITE_URL}/account/orders/${data.orderId}`, "View your order")}`,
-      { preheader: `Accept the Steam trade offer for ${item.name}` },
+${paragraph(`Hi ${escape(data.customerName.split(" ")[0] || data.customerName)}, the keys for your order have been issued. For your security this email does not contain them: sign in and open the order to reveal and copy each key.`)}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid ${C.line};margin:0 0 8px;">${rows}</table>
+${button(`${SITE_URL}/account/orders/${data.orderId}`, "Reveal your keys")}
+${paragraph(`Activation steps for each platform are on the order page and in <a href="${SITE_URL}/how-it-works" style="color:${C.ink};">How delivery works</a>. If a key does not activate, contact us within ${STORE_POLICY.guarantee.claimDays} days with the order number and a screenshot of the error.`, "font-size:13px;margin:16px 0 0;")}`,
+      { preheader: `Your keys for order ${ref} are in your account.` },
     ),
   });
 }
@@ -451,16 +454,16 @@ export async function sendOrderStatusEmail(data: OrderEmailData, status: "DELIVE
   const variants = {
     DELIVERED: {
       subject: `Order ${ref} has been delivered`,
-      title: "Your items are in your Steam inventory",
-      message: `the trade offer for your order has been accepted. Steam may keep received items under trade protection for up to ${STORE_POLICY.delivery.tradeProtectionDays} days. If Steam reverses the trade during that time, contact us and we refund the item.`,
-      cta: "View your order",
+      title: "Every key in your order has been delivered",
+      message: `all keys in your order are now in your account. Reveal them on the order page when you are ready to activate. If a key does not activate, contact us within ${STORE_POLICY.guarantee.claimDays} days of delivery and we replace it or refund it.`,
+      cta: "Open your order",
       href: `${SITE_URL}/account/orders/${data.orderId}`,
     },
     CANCELLED: {
       subject: `Order ${ref} has been cancelled`,
       title: "Your order has been cancelled",
       message: `if you were charged, we refund ${refunded} to ${STORE_POLICY.returns.refundMethod} within ${refundDays} days.`,
-      cta: "Browse skins",
+      cta: "Browse the catalogue",
       href: `${SITE_URL}/catalog`,
     },
     REFUNDED: {

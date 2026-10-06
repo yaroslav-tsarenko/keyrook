@@ -67,7 +67,6 @@ export function writeCached<T = unknown>(opts: Pick<CachedFetchOptions, "cacheKe
   try {
     store.setItem(cacheKey, JSON.stringify(entry));
   } catch {
-    // storage full or unavailable — ignore
   }
 }
 

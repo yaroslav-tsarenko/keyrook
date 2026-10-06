@@ -13,8 +13,7 @@ import { EmptyState } from "@/components/shared/EmptyState/EmptyState";
 import { ProductGrid } from "@/components/product/ProductGrid/ProductGrid";
 import { ProductSort, CATALOG_SORTS } from "@/components/product/ProductSort/ProductSort";
 import { FilterSummary, ProductFilters, ProductFiltersSheet, useDisplayPrice, type FilterSelection } from "@/components/product/ProductFilters/ProductFilters";
-import type { SkinProduct } from "@/components/skin/SkinTray";
-import { raritySlug } from "@/lib/skins/cs2";
+import type { CatalogProduct } from "@/components/product/product-face";
 import { CATALOG_PAGE_SIZE, LIST_FILTERS, buildCatalogHref, clearedParams, hasActiveFilters, type CatalogFacets, type CatalogParams, type ListFilter, type SortKey } from "./catalog-url";
 
 export interface CatalogBrowserProps {
@@ -23,7 +22,7 @@ export interface CatalogBrowserProps {
   defaultSort?: SortKey;
   sortOptions?: SortKey[];
   params: CatalogParams;
-  products: SkinProduct[];
+  products: CatalogProduct[];
   total: number;
   page: number;
   totalPages: number;
@@ -34,8 +33,6 @@ export interface CatalogBrowserProps {
   headingId: string;
   heading: string;
 }
-
-const QUALITY_CHIP: Record<string, string> = { stattrak: "StatTrak™", souvenir: "Souvenir", normal: "Standard" };
 
 export function CatalogBrowser({
   basePath,
@@ -78,28 +75,20 @@ export function CatalogBrowser({
           ? t("chipPriceTo", { max: money(params.maxPrice) })
           : null;
 
-  const chips: { key: string; label: string; onRemove: () => void; rarity?: string }[] = [];
+  const chips: { key: string; label: string; onRemove: () => void }[] = [];
   if (activeCategoryName) chips.push({ key: "category", label: activeCategoryName, onRemove: () => apply({ category: null }) });
   if (priceLabel) chips.push({ key: "price", label: priceLabel, onRemove: () => apply({ minPrice: null, maxPrice: null }) });
   for (const filter of LIST_FILTERS) {
     for (const key of params[filter]) {
       const option = facets[filter].find((o) => o.key === key);
-      const label = filter === "qualities" ? `${QUALITY_CHIP[key] ?? key}` : option?.label ?? key;
       chips.push({
         key: `${filter}:${key}`,
-        label,
-        rarity: filter === "rarities" ? raritySlug(key) : undefined,
+        label: option?.label ?? key,
         onRemove: () => apply({ [filter]: params[filter].filter((v) => v !== key) }),
       });
     }
   }
-  if (params.floatMin !== null || params.floatMax !== null) {
-    chips.push({
-      key: "float",
-      label: t("chipFloatRange", { min: (params.floatMin ?? 0).toFixed(2), max: (params.floatMax ?? 1).toFixed(2) }),
-      onRemove: () => apply({ floatMin: null, floatMax: null }),
-    });
-  }
+  if (params.onSale) chips.push({ key: "onSale", label: "Price drop", onRemove: () => apply({ onSale: false }) });
 
   const parts = [contextLabel].filter((p): p is string => Boolean(p));
   const selection: FilterSelection = {
@@ -109,14 +98,11 @@ export function CatalogBrowser({
     inStock: params.inStock,
     onSale: params.onSale,
     types: params.types,
-    weapons: params.weapons,
-    rarities: params.rarities,
-    exteriors: params.exteriors,
-    qualities: params.qualities,
-    phases: params.phases,
-    collections: params.collections,
-    floatMin: params.floatMin,
-    floatMax: params.floatMax,
+    platforms: params.platforms,
+    regions: params.regions,
+    genres: params.genres,
+    languages: params.languages,
+    years: params.years,
   };
   const filtering = hasActiveFilters(params);
   const filterCount = chips.length;
@@ -125,7 +111,7 @@ export function CatalogBrowser({
     .filter((f) => params[f].length > 0)
     .map((f) => {
       const without = facets[f].reduce((sum, o) => sum + o.count, 0);
-      const labels = params[f].map((k) => (f === "qualities" ? QUALITY_CHIP[k] ?? k : facets[f].find((o) => o.key === k)?.label ?? k));
+      const labels = params[f].map((k) => facets[f].find((o) => o.key === k)?.label ?? k);
       return { filter: f, gain: without - total, label: labels.join(", ") };
     })
     .filter((s) => s.gain > 0)
@@ -189,7 +175,7 @@ export function CatalogBrowser({
                 {chips.length > 0 ? (
                   <FilterChipRow onClearAll={clearAll} className="mt-2 justify-center">
                     {chips.map((chip) => (
-                      <FilterChip key={chip.key} label={chip.label} rarity={chip.rarity} onRemove={chip.onRemove} />
+                      <FilterChip key={chip.key} label={chip.label} onRemove={chip.onRemove} />
                     ))}
                   </FilterChipRow>
                 ) : null}

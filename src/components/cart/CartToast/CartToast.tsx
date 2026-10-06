@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/providers/CartProvider";
 import { Button } from "@/components/ui/Button";
-import { SkinStage } from "@/components/skin/SkinStage";
+import { ProductCover } from "@/components/product/ProductCover";
 
 interface CartToastProps {
   toastId?: string | number;
@@ -23,7 +23,7 @@ export function CartToast({ toastId, name, imageUrl, quantity }: CartToastProps)
   return (
     <div role="status" className="relative flex w-[min(380px,calc(100vw-32px))] gap-3 rounded-control bg-raised p-4 pr-11 text-ink shadow-[inset_2px_0_0_var(--color-accent),var(--shadow-lg)]">
       <div className="w-[72px] shrink-0 overflow-hidden rounded-tray">
-        <SkinStage src={imageUrl} alt="" compact sizes="72px" follow={false} />
+        <ProductCover src={imageUrl} alt="" compact sizes="72px" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <p className="eyebrow m-0">Added to cart{quantity > 1 ? ` · ${quantity}` : ""}</p>

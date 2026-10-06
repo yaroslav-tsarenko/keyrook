@@ -1,102 +1,99 @@
 import Link from "next/link";
 import { PolicyLayout, policyMetadata, type PolicySection } from "@/components/layout/PolicyLayout/PolicyLayout";
 import { POLICY_FACTS as F } from "@/lib/policy-facts";
+import { PLATFORMS } from "@/lib/keys/taxonomy";
 
 export const generateMetadata = policyMetadata(
   "shipping",
-  `How ${F.brand} delivers ${F.game} items: a ${F.deliveryMethod} to your Steam account, ${F.deliveryUsual}. Steam trade protection, trade holds and what you need.`,
+  `How ${F.brand} delivers game keys, subscription codes and gift cards: to your account after payment is confirmed, ${F.deliveryUsual}. Regions, languages and redeeming.`,
 );
 
 const sections: PolicySection[] = [
   {
     id: "how",
-    title: "How items are delivered",
+    title: "How keys are delivered",
     body: (
       <>
         <p>
-          There is no parcel and no delivery charge. Each item you buy is sent as a {F.deliveryMethod} to the Steam account linked to your{" "}
-          {F.brand} account, using the trade URL you saved. The offer comes from a delivery account that holds the item; it is not sent
-          from a person you are trading with.
+          Everything we sell is digital: activation keys for games and DLC, subscription codes, gift card and top-up codes, and software
+          licence keys. Nothing is posted and there is no delivery charge.
         </p>
         <p>
-          We request each trade offer straight after your payment is confirmed by our payment provider. Offers are sent {F.deliveryUsual}.
-          Orders with several items are delivered item by item, so you may receive more than one offer.
+          We request your key from our distribution partner only after our payment provider confirms your payment to us. The key then
+          appears {F.deliveryWhere}, {F.deliveryUsual}. {F.deliveryEmailNote}
+        </p>
+        <p>
+          Orders with several products, or several keys of one product, are delivered product by product. Your order page shows the status of
+          each one: payment confirmed, issuing key, delivered, or refunded.
         </p>
       </>
     ),
   },
   {
-    id: "requirements",
-    title: "What you need before you buy",
+    id: "timing",
+    title: "How long it takes",
     body: (
       <>
+        <p>
+          Most keys are issued within minutes of payment confirmation. We do not promise a fixed number of minutes: a payment check by your
+          bank, a security review of the order or a delay at our distribution partner can make it take longer.
+        </p>
+        <p>
+          If we cannot deliver a key within {F.deliveryDeadlineHours} hours of payment confirmation, we refund the price you paid for it
+          within {F.refundDays} days to {F.refundMethod} and email you when we do.
+        </p>
+        <p>We do not sell pre-orders. Every product in the catalogue can be delivered straight after payment.</p>
+      </>
+    ),
+  },
+  {
+    id: "before",
+    title: "Check before you buy",
+    body: (
+      <>
+        <p>Each product page states:</p>
         <ul>
-          {F.buyerRequirements.map((item) => (
-            <li key={item}>{item}</li>
+          <li>the platform the key is redeemed on, and the account you need for it;</li>
+          <li>the activation region, and what it means for your account&rsquo;s country setting;</li>
+          <li>the languages the game or service supports, where the publisher states them;</li>
+          <li>the edition, the duration of a subscription, or the value and currency of a gift card;</li>
+          <li>system requirements, for PC games and DLC only.</li>
+        </ul>
+        <p>
+          A key for one region only activates on an account set to that region. A DLC needs the base game on the same platform and
+          region. Please check these points against your account before ordering.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "redeem",
+    title: "Redeeming your key",
+    body: (
+      <>
+        <p>Open the order in your account, select Reveal key, copy it and redeem it on the platform:</p>
+        <ul>
+          {PLATFORMS.filter((p) => p.key !== "other").map((p) => (
+            <li key={p.key}>
+              <strong>{p.label}:</strong> {p.redeem[0]} {p.redeem[1] ?? ""}
+            </li>
           ))}
         </ul>
         <p>
-          You save your trade URL under <Link href="/account/steam">Steam account</Link>. You find it in Steam under Inventory, Trade
-          Offers, &ldquo;Who can send me Trade Offers?&rdquo;. We check that the trade URL belongs to the Steam account you linked.
+          Keep the key private until you redeem it: anyone who sees it can use it. We never ask for your platform password or two-factor
+          codes. Full steps are on <Link href="/how-it-works">How delivery works</Link>.
         </p>
       </>
     ),
   },
   {
-    id: "accepting",
-    title: "Accepting the trade offer",
+    id: "not-working",
+    title: "If a key does not work",
     body: (
-      <>
-        <p>
-          Open the Steam app or steamcommunity.com and go to Inventory, then Trade Offers. Before you accept, check that the offer gives you
-          the item named in your order and asks for nothing from your inventory. Confirm it in the Steam Guard Mobile Authenticator if Steam
-          asks you to.
-        </p>
-        <p>
-          {F.offerExpiryNote} Your order page shows the status of each item: payment confirmed, processing, trade offer sent, delivered,
-          or refunded.
-        </p>
-        <p>
-          We never ask for your Steam password, Steam Guard codes or API key, and we never ask you to send items to us.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "protection",
-    title: "Steam trade protection and trade holds",
-    body: (
-      <>
-        <p>
-          Steam may place items you receive in a trade under trade protection for up to {F.tradeProtectionDays} days. During that time the
-          item is in your inventory and can be used in the game, but it cannot be traded or sold on the Steam Community Market.
-        </p>
-        <p>
-          If your account has not had the Steam Guard Mobile Authenticator turned on for at least 7 days, Steam can hold the trade itself
-          for up to {F.tradeHoldMaxDays} days before the item arrives. These rules are set by Steam and we cannot shorten them.
-        </p>
-        <p>
-          If Steam reverses a trade during the protection period, so that the item leaves your inventory, we refund the price you paid for
-          that item. See our <Link href="/policies/warranty">Item guarantee</Link>.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "failed",
-    title: "If delivery does not happen",
-    body: (
-      <>
-        <p>
-          If we cannot deliver an item within {F.deliveryDeadlineHours} hours of payment confirmation, we refund the price you paid for it
-          within {F.refundDays} days to {F.refundMethod}. We email you when this happens.
-        </p>
-        <p>
-          Some problems are on the Steam account side: an invalid or outdated trade URL, a private inventory, a trade ban or cooldown, or a
-          Steam Guard restriction. We tell you what went wrong on your order page. You can fix the account settings and buy again once the
-          refund is made.
-        </p>
-      </>
+      <p>
+        Contact us within {F.guaranteeClaimDays} days of delivery with your order number and a screenshot of the error. We check the key and
+        replace it or refund it. The procedure is in our <Link href="/policies/warranty">Key guarantee</Link>.
+      </p>
     ),
   },
   {
@@ -104,19 +101,16 @@ const sections: PolicySection[] = [
     title: "Where we sell",
     body: (
       <p>
-        We sell to customers in the {F.marketCountries}. We do not sell to {F.restrictedCountries}, or to {F.restrictedTerritories}.
+        We sell to customers in the {F.marketCountries}. We do not sell to {F.restrictedCountries}, or to {F.restrictedTerritories}, and we
+        do not list keys whose activation region is limited to any of them. Do not use a VPN or proxy to redeem a key outside its region:
+        the platform can block the key or your account.
       </p>
     ),
   },
   {
-    id: "ownership",
-    title: "When the item becomes yours",
-    body: (
-      <p>
-        An item is delivered when you accept the trade offer and it appears in your Steam inventory. It is held in your Steam account under
-        Steam&rsquo;s terms of service. Questions about an order: email {F.email}.
-      </p>
-    ),
+    id: "contact",
+    title: "Questions about a delivery",
+    body: <p>Email {F.email} with your order number. We reply {F.replyTime}.</p>,
   },
 ];
 

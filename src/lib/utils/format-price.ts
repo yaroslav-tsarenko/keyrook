@@ -1,6 +1,6 @@
 export function formatPrice(
   amount: number | string,
-  currency: string = "USD",
+  currency: string = "EUR",
   locale: string = "en-GB"
 ): string {
   const numericAmount = typeof amount === "string" ? parseFloat(amount) : amount;

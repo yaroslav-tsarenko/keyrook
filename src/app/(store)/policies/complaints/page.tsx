@@ -19,7 +19,7 @@ const sections: PolicySection[] = [
         <ul>
           <li>your name and the email address used for the order;</li>
           <li>the order number, if the complaint is about an order;</li>
-          <li>what went wrong, and photographs if it concerns a damaged or faulty item;</li>
+          <li>what went wrong, and a screenshot of the error if a key does not activate;</li>
           <li>what you would like us to do.</li>
         </ul>
         <p>Our support hours are {F.supportHours}.</p>
@@ -32,10 +32,10 @@ const sections: PolicySection[] = [
     body: (
       <ol>
         <li>We acknowledge your complaint {F.complaintsAck}, with the name of the person handling it.</li>
-        <li>We look into it, which may include checking the trade offer record with our delivery partner.</li>
+        <li>We look into it, which may include checking the key with our distribution partner.</li>
         <li>
           We send you our full reply within {F.complaintsDays} days, explaining what we found and what we will do. If we need longer, for
-          example while a reversed Steam trade is being checked, we tell you why and when you will hear from us.
+          example while a publisher checks a key, we tell you why and when you will hear from us.
         </li>
       </ol>
     ),

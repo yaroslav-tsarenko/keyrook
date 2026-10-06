@@ -4,7 +4,6 @@ import { getTranslations } from "next-intl/server";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs/Breadcrumbs";
 import { CredentialsSheet } from "@/components/layout/Credentials/CredentialsSheet";
 import { buttonClasses } from "@/components/ui/button-classes";
-import { CalibratedRuler } from "@/components/skin/FloatRuler";
 import { SplitWords } from "@/components/motion/SplitWords";
 import { NAV_CATEGORIES } from "@/config/navigation";
 import { BRAND } from "@/lib/brand";
@@ -21,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-const LISTING_KEYS = ["single", "exterior", "image", "prices"] as const;
+const LISTING_KEYS = ["platform", "region", "edition", "prices"] as const;
 const NOT_SOLD_KEYS = ["marketplace", "cases", "accounts", "other"] as const;
 
 export default async function AboutPage() {
@@ -30,8 +29,8 @@ export default async function AboutPage() {
 
   const rows = [
     { key: "order", label: t("ordering.order.label"), text: t("ordering.order.body", { cardMethods: f.cardMethods, currencies: f.currencies }), href: "/policies/payment", link: t("ordering.order.link") },
-    { key: "delivery", label: t("ordering.delivery.label"), text: t("ordering.delivery.body", { method: f.deliveryMethod, usual: f.deliveryUsual, days: f.tradeProtectionDays }), href: "/how-it-works", link: "How delivery works" },
-    { key: "guarantee", label: t("ordering.guarantee.label"), text: t("ordering.guarantee.body", { hours: f.deliveryDeadlineHours, refundDays: f.refundDays }), href: "/policies/warranty", link: t("ordering.guarantee.link") },
+    { key: "delivery", label: t("ordering.delivery.label"), text: t("ordering.delivery.body", { usual: f.deliveryUsual }), href: "/how-it-works", link: "How delivery works" },
+    { key: "guarantee", label: t("ordering.guarantee.label"), text: t("ordering.guarantee.body", { claimDays: f.guaranteeClaimDays, refundDays: f.refundDays }), href: "/policies/warranty", link: t("ordering.guarantee.link") },
     { key: "withdrawal", label: t("ordering.withdrawal.label"), text: t("ordering.withdrawal.body", { days: f.withdrawalDays }), href: "/policies/returns", link: t("ordering.withdrawal.link") },
   ];
 
@@ -39,15 +38,12 @@ export default async function AboutPage() {
     <div data-page="about" className="mx-auto max-w-container px-gutter pb-24">
       <Breadcrumbs items={[{ label: t("breadcrumbHome"), href: "/" }, { label: t("breadcrumb") }]} />
 
-      <section aria-labelledby="about-title" data-section="about-hero" data-scene="calibration" className="grid items-end gap-10 pb-20 pt-6 lg:grid-cols-12">
-        <div className="lg:col-span-6">
+      <section aria-labelledby="about-title" data-section="about-hero" className="grid items-end gap-10 pb-20 pt-6 lg:grid-cols-12">
+        <div className="lg:col-span-8">
           <h1 id="about-title" data-anim="words" className="m-0 text-step-6 font-[680] leading-[0.96] tracking-[-0.01em] text-ink">
-            <SplitWords text="A store for CS2 skins, nothing else" />
+            <SplitWords text={t("hero.title")} />
           </h1>
-          <p className="m-0 mt-6 max-w-[56ch] text-step-1 leading-[1.5] text-ink-muted">{t("hero.lead", { brand: BRAND.name, countries: f.marketCountries, game: f.game })}</p>
-        </div>
-        <div className="lg:col-span-5 lg:col-start-8">
-          <CalibratedRuler lit={["FT"]} draw decorative />
+          <p className="m-0 mt-6 max-w-[60ch] text-step-1 leading-[1.5] text-ink-muted">{t("hero.lead", { brand: BRAND.name, countries: f.marketCountries })}</p>
         </div>
       </section>
 
@@ -114,7 +110,7 @@ export default async function AboutPage() {
         <CredentialsSheet />
         <div className="mt-10">
           <Link href="/catalog" className={buttonClasses({ size: "lg" })}>
-            Browse all skins
+            {t("browse")}
           </Link>
         </div>
       </section>

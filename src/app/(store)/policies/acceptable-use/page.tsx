@@ -39,9 +39,9 @@ const sections: PolicySection[] = [
     body: (
       <ul>
         <li>Using stolen or unauthorised payment cards, or placing orders you do not intend to pay for.</li>
-        <li>Buying in order to resell, or getting around the limit of {F.maxItemsPerOrder} items per order.</li>
-        <li>Linking a Steam account or saving a trade URL that is not your own, or using {F.brand} to move items between accounts for someone else.</li>
-        <li>Accepting an item and then reversing the trade, or opening a chargeback for an item you received, to obtain the item without paying.</li>
+        <li>Buying keys in order to resell them, or getting around the purchase limits ({F.maxItemsPerOrder} keys per order, and lower limits for gift cards and top-ups) with several accounts.</li>
+        <li>Reporting a working key as faulty, or opening a chargeback for keys you received and redeemed, to get them without paying.</li>
+        <li>Sharing or publishing keys bought here, or using {F.brand} to redeem keys outside the region they are sold for.</li>
         <li>Automated access that puts load on the site, such as scraping, bulk account creation or repeated checkout attempts.</li>
         <li>Trying to access other customers&rsquo; data, our admin area or systems you are not authorised to use, or testing for security weaknesses without our written permission.</li>
         <li>Uploading or sending malware, spam or anything unlawful.</li>

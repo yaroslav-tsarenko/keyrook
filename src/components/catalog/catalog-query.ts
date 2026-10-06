@@ -3,14 +3,12 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { mentionsSupplier, publicBrand } from "@/lib/utils/supplier";
 import { isNewArrival, newArrivalCutoff } from "@/lib/new-arrivals";
-import type { SkinProduct } from "@/components/skin/SkinTray";
+import type { CatalogProduct } from "@/components/product/product-face";
 import { slugify } from "@/lib/utils/slugify";
-import { EXTERIORS, RARITIES, WEAPON_TYPES, rarityRank, weaponSlug, type SkinSummary } from "@/lib/skins/cs2";
+import { GENRES, PLATFORMS, PRODUCT_TYPES, REGIONS, genreDef, platformDef, productTypeDef, regionDef, type KeySummary, type PlatformDef } from "@/lib/keys/taxonomy";
 import {
   CATALOG_PAGE_SIZE,
   LIST_FILTERS,
-  NOT_PAINTED,
-  QUALITY_KEYS,
   buildCatalogHref,
   type CatalogFacets,
   type CatalogParams,
@@ -79,61 +77,52 @@ interface Row {
   cats: Set<string>;
   score: number;
   type: string | null;
-  weapon: string | null;
-  weaponKey: string | null;
-  rarity: string | null;
-  exterior: string | null;
-  quality: string | null;
-  phase: string | null;
-  phaseKey: string | null;
-  collection: string | null;
-  collectionKey: string | null;
-  floatMin: number | null;
-  floatMax: number | null;
+  platform: string | null;
+  region: string | null;
+  genres: string[];
+  languages: string[];
+  languageLabels: Map<string, string>;
+  year: string | null;
+  release: number;
 }
 
-type Facet = "category" | "brand" | "price" | "inStock" | "onSale" | "float" | ListFilter;
+type Facet = "category" | "brand" | "price" | "inStock" | "onSale" | ListFilter;
 
-export const SKIN_SELECT = {
-  weaponType: true,
-  weapon: true,
-  skinName: true,
-  rarity: true,
-  rarityColor: true,
-  exterior: true,
-  floatMin: true,
-  floatMax: true,
-  isStatTrak: true,
-  isSouvenir: true,
-  collection: true,
-  phase: true,
+export const KEY_SELECT = {
+  title: true,
+  productType: true,
+  platform: true,
+  region: true,
+  edition: true,
+  languages: true,
+  genres: true,
+  releaseYear: true,
+  validity: true,
 } as const;
 
-export function skinSummary(skin: SkinSummary | null | undefined): SkinSummary | null {
-  if (!skin) return null;
+export function keySummary(item: KeySummary | null | undefined): KeySummary | null {
+  if (!item) return null;
   return {
-    weaponType: skin.weaponType,
-    weapon: skin.weapon,
-    skinName: skin.skinName,
-    rarity: skin.rarity,
-    rarityColor: skin.rarityColor,
-    exterior: skin.exterior,
-    floatMin: skin.floatMin,
-    floatMax: skin.floatMax,
-    isStatTrak: skin.isStatTrak,
-    isSouvenir: skin.isSouvenir,
-    collection: skin.collection,
-    phase: skin.phase,
+    title: item.title,
+    productType: item.productType,
+    platform: item.platform,
+    region: item.region,
+    edition: item.edition,
+    languages: item.languages,
+    genres: item.genres,
+    releaseYear: item.releaseYear,
+    validity: item.validity,
   };
 }
 
 export type CatalogScope =
   | { kind: "all" }
   | { kind: "category"; category: CategoryRecord }
+  | { kind: "platform"; platform: PlatformDef }
   | { kind: "search"; query: string };
 
 export interface CatalogResult {
-  products: SkinProduct[];
+  products: CatalogProduct[];
   total: number;
   page: number;
   totalPages: number;
@@ -148,7 +137,9 @@ function searchWhere(query: string): Prisma.ProductWhereInput {
     OR: [
       { name: { contains: query, mode: "insensitive" } },
       { sku: { contains: query, mode: "insensitive" } },
-      { description: { contains: query, mode: "insensitive" } },
+      { item: { title: { contains: query, mode: "insensitive" } } },
+      { item: { developers: { has: query } } },
+      { item: { publishers: { has: query } } },
     ],
   };
 }
@@ -165,6 +156,7 @@ function scoreFor(name: string, query: string): number {
 async function loadRows(scope: CatalogScope, tree: CategoryTree): Promise<Row[]> {
   const where: Prisma.ProductWhereInput = { status: "ACTIVE" };
   if (scope.kind === "category") where.categories = { some: { categoryId: { in: tree.subtreeIds(scope.category.id) } } };
+  if (scope.kind === "platform") where.item = { platform: scope.platform.key };
   if (scope.kind === "search") {
     if (scope.query.length < 2 || mentionsSupplier(scope.query)) return [];
     Object.assign(where, searchWhere(scope.query));
@@ -182,44 +174,42 @@ async function loadRows(scope: CatalogScope, tree: CategoryTree): Promise<Row[]>
       createdAt: true,
       categories: { select: { categoryId: true } },
       _count: { select: { orderItems: true } },
-      skin: { select: SKIN_SELECT },
+      item: { select: { title: true, productType: true, platform: true, region: true, genres: true, languages: true, releaseYear: true, releaseDate: true } },
     },
   });
-  return rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    price: Number(r.price),
-    compare: r.comparePrice != null ? Number(r.comparePrice) : null,
-    quantity: r.quantity,
-    tracked: r.trackInventory,
-    brand: publicBrand(r.brand),
-    createdAt: r.createdAt.getTime(),
-    orders: r._count.orderItems,
-    cats: new Set(r.categories.map((c) => c.categoryId)),
-    score: scope.kind === "search" ? scoreFor(r.name, scope.query) : 0,
-    type: r.skin?.weaponType ?? null,
-    weapon: r.skin?.weapon ?? null,
-    weaponKey: r.skin ? weaponSlug(r.skin.weapon) : null,
-    rarity: r.skin?.rarity ?? null,
-    exterior: r.skin ? (r.skin.exterior ? r.skin.exterior.toLowerCase() : NOT_PAINTED) : null,
-    quality: r.skin ? (r.skin.isStatTrak ? "stattrak" : r.skin.isSouvenir ? "souvenir" : "normal") : null,
-    phase: r.skin?.phase ?? null,
-    phaseKey: r.skin?.phase ? slugify(r.skin.phase) : null,
-    collection: r.skin?.collection ?? null,
-    collectionKey: r.skin?.collection ? slugify(r.skin.collection) : null,
-    floatMin: r.skin?.floatMin ?? null,
-    floatMax: r.skin?.floatMax ?? null,
-  }));
+  return rows.map((r) => {
+    const languageLabels = new Map((r.item?.languages ?? []).map((l) => [slugify(l), l]));
+    return {
+      id: r.id,
+      name: r.item?.title ?? r.name,
+      price: Number(r.price),
+      compare: r.comparePrice != null ? Number(r.comparePrice) : null,
+      quantity: r.quantity,
+      tracked: r.trackInventory,
+      brand: publicBrand(r.brand),
+      createdAt: r.createdAt.getTime(),
+      orders: r._count.orderItems,
+      cats: new Set(r.categories.map((c) => c.categoryId)),
+      score: scope.kind === "search" ? scoreFor(r.item?.title ?? r.name, scope.query) : 0,
+      type: r.item?.productType ?? null,
+      platform: r.item?.platform ?? null,
+      region: r.item?.region ?? null,
+      genres: r.item?.genres ?? [],
+      languages: [...languageLabels.keys()],
+      languageLabels,
+      year: r.item?.releaseYear ? String(r.item.releaseYear) : null,
+      release: r.item?.releaseDate ? r.item.releaseDate.getTime() : 0,
+    };
+  });
 }
 
-const LIST_VALUE: Record<ListFilter, (row: Row) => string | null> = {
-  types: (r) => r.type,
-  weapons: (r) => r.weaponKey,
-  rarities: (r) => r.rarity,
-  exteriors: (r) => r.exterior,
-  qualities: (r) => r.quality,
-  phases: (r) => r.phaseKey,
-  collections: (r) => r.collectionKey,
+const LIST_VALUES: Record<ListFilter, (row: Row) => string[]> = {
+  types: (r) => (r.type ? [r.type] : []),
+  platforms: (r) => (r.platform ? [r.platform] : []),
+  regions: (r) => (r.region ? [r.region] : []),
+  genres: (r) => r.genres,
+  languages: (r) => r.languages,
+  years: (r) => (r.year ? [r.year] : []),
 };
 
 const available = (r: Row) => !r.tracked || r.quantity > 0;
@@ -237,14 +227,8 @@ function matcher(params: CatalogParams, categoryIds: Set<string> | null) {
     if (except !== "onSale" && params.onSale && !reduced(row)) return false;
     for (const filter of LIST_FILTERS) {
       if (except === filter || params[filter].length === 0) continue;
-      const value = LIST_VALUE[filter](row);
-      if (!value || !params[filter].includes(value)) return false;
-    }
-    if (except !== "float" && (params.floatMin !== null || params.floatMax !== null)) {
-      if (row.floatMin === null || row.floatMax === null) return false;
-      const lo = params.floatMin ?? 0;
-      const hi = params.floatMax ?? 1;
-      if (row.floatMax <= lo || row.floatMin >= hi) return false;
+      const values = LIST_VALUES[filter](row);
+      if (!values.some((v) => params[filter].includes(v))) return false;
     }
     return true;
   };
@@ -260,13 +244,11 @@ function sorter(sort: SortKey) {
     case "name-asc":
       return (a: Row, b: Row) => a.name.localeCompare(b.name, "en-GB");
     case "popular":
-      return (a: Row, b: Row) => b.orders - a.orders || byNewest(a, b);
-    case "rarity-desc":
-      return (a: Row, b: Row) => rarityRank(b.rarity) - rarityRank(a.rarity) || b.price - a.price || a.name.localeCompare(b.name, "en-GB");
-    case "float-asc":
-      return (a: Row, b: Row) => (a.floatMin ?? 2) - (b.floatMin ?? 2) || (a.floatMax ?? 2) - (b.floatMax ?? 2) || a.price - b.price;
+      return (a: Row, b: Row) => b.orders - a.orders || b.release - a.release || byNewest(a, b);
+    case "release-desc":
+      return (a: Row, b: Row) => b.release - a.release || a.name.localeCompare(b.name, "en-GB");
     case "relevance":
-      return (a: Row, b: Row) => b.score - a.score || Number(available(b)) - Number(available(a)) || a.name.localeCompare(b.name, "en-GB");
+      return (a: Row, b: Row) => b.score - a.score || Number(available(b)) - Number(available(a)) || b.release - a.release || a.name.localeCompare(b.name, "en-GB");
     default:
       return byNewest;
   }
@@ -277,7 +259,7 @@ function leafCategory(categories: { category: { name: string; slug: string; pare
   return leaf?.category ?? null;
 }
 
-export async function loadSkinProducts(ids: string[]): Promise<SkinProduct[]> {
+export async function loadKeyProducts(ids: string[]): Promise<CatalogProduct[]> {
   if (ids.length === 0) return [];
   const [records, newSince] = await Promise.all([
     prisma.product.findMany({
@@ -294,7 +276,7 @@ export async function loadSkinProducts(ids: string[]): Promise<SkinProduct[]> {
         createdAt: true,
         images: { orderBy: { sortOrder: "asc" }, take: 1, select: { url: true, alt: true } },
         categories: { select: { category: { select: { name: true, slug: true, parentId: true } } } },
-        skin: { select: SKIN_SELECT },
+        item: { select: KEY_SELECT },
       },
     }),
     newArrivalCutoff(),
@@ -317,7 +299,7 @@ export async function loadSkinProducts(ids: string[]): Promise<SkinProduct[]> {
         category: leaf?.name ?? null,
         createdAt: r.createdAt.toISOString(),
         isNew: isNewArrival(r.createdAt, newSince),
-        skin: skinSummary(r.skin),
+        key: keySummary(r.item),
       };
     });
 }
@@ -331,21 +313,16 @@ export async function queryCatalog(
   const rows = await loadRows(scope, tree);
   const hrefOpts = { fixed: options.fixed, defaultSort: options.defaultSort };
 
-  const paramCategory = scope.kind === "search" && params.category ? tree.bySlug.get(params.category) ?? null : null;
+  const paramCategory = scope.kind !== "category" && params.category ? tree.bySlug.get(params.category) ?? null : null;
   const categoryIds = paramCategory ? new Set(tree.subtreeIds(paramCategory.id)) : null;
   const passes = matcher(params, categoryIds);
 
-  const inSubtree = (row: Row, id: string) => {
-    const ids = tree.subtreeIds(id);
-    return ids.some((cid) => row.cats.has(cid));
-  };
+  const inSubtree = (row: Row, id: string) => tree.subtreeIds(id).some((cid) => row.cats.has(cid));
   const countIn = (id: string) => rows.filter((r) => passes(r, "category") && inSubtree(r, id)).length;
 
   let categoryTitle: CatalogFacets["categoryTitle"] = "category";
   let categories: CategoryOption[] = [];
-  if (scope.kind === "all") {
-    categories = [];
-  } else if (scope.kind === "category") {
+  if (scope.kind === "category") {
     const current = scope.category;
     const parent = current.parentId ? tree.byId.get(current.parentId) ?? null : null;
     const anchor = parent ?? current;
@@ -356,34 +333,13 @@ export async function queryCatalog(
       const anchorCount = siblingRows.filter((r) => passes(r, "category")).length;
       const siblingCount = (id: string) => siblingRows.filter((r) => passes(r, "category") && inSubtree(r, id)).length;
       categories = [
-        {
-          key: anchor.slug,
-          name: anchor.name,
-          count: anchorCount,
-          href: buildCatalogHref(`/catalog/${anchor.slug}`, params, {}, hrefOpts),
-          active: !parent,
-          depth: 0 as const,
-        },
-        ...siblings.map((c) => ({
-          key: c.slug,
-          name: c.name,
-          count: siblingCount(c.id),
-          href: buildCatalogHref(`/catalog/${c.slug}`, params, {}, hrefOpts),
-          active: c.id === current.id,
-          depth: 1 as const,
-        })),
+        { key: anchor.slug, name: `All ${anchor.name.toLowerCase()}`, count: anchorCount, href: buildCatalogHref(`/catalog/${anchor.slug}`, params, {}, hrefOpts), active: !parent, depth: 0 as const },
+        ...siblings.map((c) => ({ key: c.slug, name: c.name, count: siblingCount(c.id), href: buildCatalogHref(`/catalog/${c.slug}`, params, {}, hrefOpts), active: c.id === current.id, depth: 1 as const })),
       ].filter((o) => o.count > 0 || o.active);
     }
-  } else {
+  } else if (scope.kind === "search") {
     categories = tree.roots
-      .map((c) => ({
-        key: c.slug,
-        name: c.name,
-        count: countIn(c.id),
-        href: buildCatalogHref(options.basePath, params, { category: c.slug }, hrefOpts),
-        active: paramCategory?.id === c.id,
-        depth: 0 as const,
-      }))
+      .map((c) => ({ key: c.slug, name: c.name, count: countIn(c.id), href: buildCatalogHref(options.basePath, params, { category: c.slug }, hrefOpts), active: paramCategory?.id === c.id, depth: 0 as const }))
       .filter((o) => o.count > 0 || o.active);
   }
 
@@ -393,70 +349,40 @@ export async function queryCatalog(
   if (params.brand && !brandCounts.has(params.brand)) brands.push({ name: params.brand, count: 0 });
 
   const priceRows = rows.filter((r) => passes(r, "price"));
-  const price = priceRows.length
-    ? { min: Math.min(...priceRows.map((r) => r.price)), max: Math.max(...priceRows.map((r) => r.price)) }
-    : null;
+  const price = priceRows.length ? { min: Math.min(...priceRows.map((r) => r.price)), max: Math.max(...priceRows.map((r) => r.price)) } : null;
 
   const stockBase = rows.filter((r) => passes(r, "inStock"));
   const inStockCount = stockBase.filter(available).length;
   const onSaleCount = rows.filter((r) => passes(r, "onSale") && reduced(r)).length;
 
-  const listFacet = (filter: ListFilter, label: (key: string, sample: Row) => string, order: (key: string) => number, color?: (key: string) => string | null): FacetOption[] => {
+  const listFacet = (filter: ListFilter, label: (key: string, sample: Row) => string, order: (key: string) => number): FacetOption[] => {
     const counts = new Map<string, { count: number; sample: Row }>();
     for (const r of rows) {
-      const value = LIST_VALUE[filter](r);
-      if (!value || !passes(r, filter)) continue;
-      const entry = counts.get(value);
-      if (entry) entry.count += 1;
-      else counts.set(value, { count: 1, sample: r });
+      if (!passes(r, filter)) continue;
+      for (const value of LIST_VALUES[filter](r)) {
+        const entry = counts.get(value);
+        if (entry) entry.count += 1;
+        else counts.set(value, { count: 1, sample: r });
+      }
     }
-    const options: FacetOption[] = [...counts.entries()].map(([key, { count, sample }]) => ({
-      key,
-      label: label(key, sample),
-      count,
-      selected: params[filter].includes(key),
-      color: color ? color(key) : null,
-    }));
-    for (const key of params[filter]) {
-      if (!counts.has(key)) options.push({ key, label: key, count: 0, selected: true, color: null });
-    }
+    const options: FacetOption[] = [...counts.entries()].map(([key, { count, sample }]) => ({ key, label: label(key, sample), count, selected: params[filter].includes(key) }));
+    for (const key of params[filter]) if (!counts.has(key)) options.push({ key, label: key, count: 0, selected: true });
     return options.sort((a, b) => order(a.key) - order(b.key) || a.label.localeCompare(b.label, "en-GB"));
   };
-  const typeOrder = (key: string) => WEAPON_TYPES.findIndex((t) => t.key === key);
-  const weaponOrder = (key: string) => {
-    for (const [ti, t] of WEAPON_TYPES.entries()) {
-      const wi = t.weapons.findIndex((w) => weaponSlug(w) === key);
-      if (wi !== -1) return ti * 100 + wi;
-    }
-    return 9999;
-  };
-  const types = listFacet("types", (key) => WEAPON_TYPES.find((t) => t.key === key)?.label ?? key, typeOrder);
-  const weapons = listFacet("weapons", (_key, sample) => sample.weapon ?? _key, weaponOrder);
-  const rarities = listFacet(
-    "rarities",
-    (key) => RARITIES.find((r) => r.key === key)?.label ?? key,
-    (key) => -rarityRank(key),
-    (key) => RARITIES.find((r) => r.key === key)?.color ?? null,
-  );
-  const exteriors = listFacet(
-    "exteriors",
-    (key) => (key === NOT_PAINTED ? "Not painted" : EXTERIORS.find((e) => e.code.toLowerCase() === key)?.label ?? key),
-    (key) => (key === NOT_PAINTED ? 99 : EXTERIORS.findIndex((e) => e.code.toLowerCase() === key)),
-  );
-  const phases = listFacet("phases", (_key, sample) => sample.phase ?? _key, () => 0);
-  const qualities = listFacet("qualities", (key) => key, (key) => (QUALITY_KEYS as readonly string[]).indexOf(key));
-  const collections = listFacet("collections", (_key, sample) => sample.collection ?? _key, () => 0);
-  const floatRows = rows.filter((r) => r.floatMin !== null && r.floatMax !== null && passes(r, "float"));
-  const float = floatRows.length
-    ? { min: Math.min(...floatRows.map((r) => r.floatMin!)), max: Math.max(...floatRows.map((r) => r.floatMax!)) }
-    : null;
+
+  const types = listFacet("types", (key) => productTypeDef(key)?.label ?? key, (key) => PRODUCT_TYPES.findIndex((t) => t.key === key));
+  const platforms = listFacet("platforms", (key) => platformDef(key)?.label ?? key, (key) => PLATFORMS.findIndex((p) => p.key === key));
+  const regions = listFacet("regions", (key) => regionDef(key)?.label ?? key, (key) => REGIONS.findIndex((r) => r.key === key));
+  const genres = listFacet("genres", (key) => genreDef(key)?.label ?? key, (key) => GENRES.findIndex((g) => g.key === key));
+  const languages = listFacet("languages", (key, sample) => sample.languageLabels.get(key) ?? key, (key) => (key === "english" ? -1 : 0));
+  const years = listFacet("years", (key) => key, (key) => -Number(key));
 
   const matched = rows.filter((r) => passes(r)).sort(sorter(params.sort));
   const total = matched.length;
   const totalPages = Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE));
   const page = Math.min(params.page, totalPages);
   const pageIds = matched.slice((page - 1) * CATALOG_PAGE_SIZE, page * CATALOG_PAGE_SIZE).map((r) => r.id);
-  const products = await loadSkinProducts(pageIds);
+  const products = await loadKeyProducts(pageIds);
 
   return {
     products,
@@ -466,23 +392,7 @@ export async function queryCatalog(
     pageSize: CATALOG_PAGE_SIZE,
     scopeTotal: rows.length,
     activeCategoryName: paramCategory?.name ?? null,
-    facets: {
-      categoryTitle,
-      categories,
-      brands,
-      price,
-      inStockCount,
-      onSaleCount,
-      narrowingInStock: inStockCount > 0 && inStockCount < stockBase.length,
-      types,
-      weapons,
-      rarities,
-      exteriors,
-      qualities,
-      phases,
-      collections,
-      float,
-    },
+    facets: { categoryTitle, categories, brands, price, inStockCount, onSaleCount, narrowingInStock: inStockCount > 0 && inStockCount < stockBase.length, types, platforms, regions, genres, languages, years },
   };
 }
 

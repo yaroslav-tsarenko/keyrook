@@ -14,9 +14,9 @@ import { formatPrice } from "@/lib/utils/format-price";
 import { COMPANY } from "@/lib/company";
 
 const EMPTY_LINKS = [
-  { href: "/catalog/knives", label: "Knives" },
-  { href: "/catalog/rifles", label: "Rifles" },
-  { href: "/catalog/gloves", label: "Gloves" },
+  { href: "/catalog/games", label: "Games" },
+  { href: "/catalog/gift-cards", label: "Gift cards" },
+  { href: "/catalog/subscriptions", label: "Subscriptions" },
 ];
 
 export function CartSheet() {
@@ -54,7 +54,7 @@ export function CartSheet() {
               ))}
             </ul>
             <Button as={Link} href="/catalog" variant="outline" onClick={closeSheet} className="mt-4">
-              Browse all skins
+              Browse the catalogue
             </Button>
           </div>
         ) : (

@@ -34,8 +34,6 @@ export interface OrderDetail {
   paymentStatus: string;
   paymentMethod: string | null;
   notes: string | null;
-  steamId: string | null;
-  tradeUrl: string | null;
   waiverAcceptedAt: string | null;
   waiverVersion: string | null;
   currency: string;
@@ -48,7 +46,7 @@ export interface OrderDetail {
     quantity: number;
     price: number;
     total: number;
-    sihOrder: { id: string; status: string; sihStatus: string | null; sihError: string | null; costPrice: number; senderOfferId: string | null; protectionStatus: string | null; updatedAt: string } | null;
+    keyOrder: { id: string; status: string; supplierStatus: string | null; supplierError: string | null; costPrice: number; supplierOrderId: string | null; updatedAt: string; _count: { keys: number } } | null;
   }[];
   createdAt: string;
   updatedAt: string;

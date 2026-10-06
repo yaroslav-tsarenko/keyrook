@@ -1,4 +1,4 @@
-import { SkinGridSkeleton } from "@/components/skin/SkinTray";
+import { CardGridSkeleton } from "@/components/product/ProductCard";
 
 export default function CategoryLoading() {
   return (
@@ -10,10 +10,10 @@ export default function CategoryLoading() {
             <span key={i} className="block h-12 border-b border-line" />
           ))}
         </div>
-        <SkinGridSkeleton count={12} />
+        <CardGridSkeleton count={12} />
       </div>
       <span role="status" className="sr-only">
-        Loading skins
+        Loading products
       </span>
     </div>
   );
