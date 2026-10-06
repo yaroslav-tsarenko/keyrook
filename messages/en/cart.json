@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "title": "Your cart",
+    "description": "Check the Counter-Strike 2 skins in your cart before you check out."
+  },
+  "title": "Your cart",
+  "itemCount": "{count, plural, one {# item} other {# items}}",
+  "itemsLabel": "Items in your cart",
+  "summary": "Order summary",
+  "checkout": "Checkout",
+  "checkoutWithTotal": "Checkout · {total}",
+  "continueShopping": "Continue browsing",
+  "saveForLater": "Save for later",
+  "removed": "Removed from your cart",
+  "limitPerOrder": "One order can hold up to {max} items.",
+  "limits": "One order can hold up to {perOrder} items. Each skin is a single item.",
+  "empty": {
+    "title": "Your cart is empty",
+    "subtitle": "Skins you add will wait here until you check out. Prices are confirmed again before payment.",
+    "action": "Browse skins",
+    "links": {
+      "knives": "Knives",
+      "gloves": "Gloves",
+      "rifles": "Rifles"
+    }
+  },
+  "deliveryNote": "No delivery charge. Each item is delivered by {method} to the Steam account you confirm at checkout."
+}

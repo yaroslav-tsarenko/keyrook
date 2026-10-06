@@ -1,0 +1,11 @@
+{
+  "siteDescription": "CS2 skins with exterior, rarity and price in plain view. Pay by card; we send the skin to your Steam account as a trade offer.",
+  "ogFrom": "From {price}",
+  "ogItems": "{count, plural, one {# item} other {# items}}",
+  "ogShop": "Shop",
+  "ogProductAlt": "{name} from {brand}",
+  "ogCategoryAlt": "{name} at {brand}",
+  "catalogTitle": "Counter-Strike 2 skins, knives and gloves",
+  "ogDelivery": "Delivered by {method}",
+  "ogGuarantee": "Refund if not delivered within {hours} hours"
+}

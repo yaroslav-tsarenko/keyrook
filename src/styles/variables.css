@@ -1,0 +1,214 @@
+:root {
+  --color-primary: #eceae5;
+  --color-secondary: #1c1e21;
+
+  --color-bg: #121315;
+  --color-bg-secondary: #17181b;
+  --color-bg-tertiary: #0b0c0d;
+  --color-bg-warm: #1f1a13;
+  --color-raised: #1c1e21;
+  --color-stage: #18191c;
+  --color-on-stage: #eceae5;
+  --color-surface-dark: #0b0c0d;
+  --color-rig: #0d0e10;
+  --color-floor: #0b0c0d;
+
+  --color-text: #eceae5;
+  --color-text-secondary: #aaa7a0;
+  --color-text-tertiary: #8d8a83;
+
+  --color-accent: #f39a2e;
+  --color-accent-hover: #f7ae55;
+  --color-accent-light: #2b2116;
+  --color-on-accent: #16120c;
+  --color-accent-ink: #f39a2e;
+  --color-accent-edge: #f39a2e;
+  --color-accent-2: #ffe9c7;
+  --color-accent-3: var(--color-accent-ink);
+
+  --color-rule: #3a3d42;
+  --color-border: #2a2c30;
+  --color-border-hover: #3a3d42;
+  --color-border-control: #6b6e74;
+  --color-focus: #f39a2e;
+
+  --color-success: #62c38b;
+  --color-success-tint: #16251c;
+  --color-warning: #e8b26a;
+  --color-warning-tint: #2a2216;
+  --color-danger: #ff7d6e;
+  --color-danger-tint: #2e1a18;
+  --color-on-danger: #16120c;
+  --color-info: #9fb6c9;
+  --color-info-tint: #1a2128;
+
+  --rarity-consumer: #b0c3d9;
+  --rarity-industrial: #6aa2e0;
+  --rarity-milspec: #7890ff;
+  --rarity-restricted: #a882ff;
+  --rarity-classified: #e05ef0;
+  --rarity-covert: #f26b6b;
+  --rarity-gold: #eac54f;
+  --rarity: var(--color-border-hover);
+  --mark-stattrak: #e98b4a;
+  --mark-souvenir: #e4c46a;
+
+  --lamp-rgb: 255 233 199;
+  --color-lamp: rgb(var(--lamp-rgb));
+  --lamp-line: rgb(var(--lamp-rgb) / 0.55);
+  --lamp-pool-alpha: 0.08;
+  --stage-lamp: radial-gradient(ellipse 70% 62% at var(--lx, 50%) var(--ly, 0%), rgb(var(--lamp-rgb) / calc(var(--lamp-pool-alpha) * var(--lamp-level, 1))), transparent 72%);
+  --lamp-catch: inset 0 1px 0 rgb(255 255 255 / 0.05);
+
+  --color-scrim: rgb(5 6 7 / 0.72);
+
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.05);
+  --shadow-card-hover: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 20px 28px -18px rgb(0 0 0 / 0.85);
+  --shadow-lg: 0 0 0 1px #2a2c30, 0 18px 36px -18px rgb(0 0 0 / 0.75);
+  --shadow-xl: 0 0 0 1px #2a2c30, 0 32px 64px -24px rgb(0 0 0 / 0.85);
+  --shadow-accent: 0 0 0 2px #f39a2e;
+  --shadow-panel: -1px 0 0 #2a2c30, -32px 0 64px -32px rgb(0 0 0 / 0.8);
+  --shadow-panel-left: 1px 0 0 #2a2c30, 32px 0 64px -32px rgb(0 0 0 / 0.8);
+  --shadow-contact: rgb(0 0 0 / 0.55);
+
+  --radius-control: 2px;
+  --radius-tray: 4px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
+  --radius-pill: 2px;
+
+  --spine: 3px;
+  --lamp-inset: 12%;
+
+  --max-width: 1360px;
+  --header-height: 64px;
+  --header-height-compact: 56px;
+  --header-height-mobile: 56px;
+  --gutter: 16px;
+
+  --z-base: 0;
+  --z-tray-item: 1;
+  --z-sticky: 40;
+  --z-dropdown: 50;
+  --z-drawer: 60;
+  --z-modal: 70;
+  --z-toast: 80;
+  --z-cookie: 90;
+
+  --font-sans: var(--font-source-sans), "Source Sans 3 Variable", "Source Sans Fallback", "Segoe UI", sans-serif;
+  --font-display: var(--font-sofia-condensed), "Sofia Sans Condensed Variable", "Sofia Condensed Fallback", "Arial Narrow", sans-serif;
+  --font-mono: var(--font-martian), "Martian Mono Variable", "Martian Fallback", ui-monospace, Menlo, Consolas, monospace;
+
+  --ease-instrument: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --dur-micro: 140ms;
+  --dur-ui: 200ms;
+  --dur-panel: 280ms;
+  --dur-panel-close: 220ms;
+  --dur-reveal: 700ms;
+  --dur-reduced: 120ms;
+
+  --selection-bg: #f39a2e;
+  --selection-fg: #16120c;
+
+  color-scheme: dark;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 40px;
+  }
+}
+
+[data-theme="light"] {
+  --color-primary: #141517;
+  --color-secondary: #f6f6f5;
+
+  --color-bg: #e4e5e6;
+  --color-bg-secondary: #dadbdd;
+  --color-bg-tertiary: #cfd0d3;
+  --color-bg-warm: #efe4d2;
+  --color-raised: #f6f6f5;
+  --color-stage: #d6d7da;
+  --color-on-stage: #141517;
+  --color-surface-dark: #141517;
+  --color-rig: #f6f6f5;
+  --color-floor: #d3d4d7;
+
+  --color-text: #141517;
+  --color-text-secondary: #45474b;
+  --color-text-tertiary: #54565b;
+
+  --color-accent: #ec9524;
+  --color-accent-hover: #d9820f;
+  --color-accent-light: #f3e3cc;
+  --color-on-accent: #16120c;
+  --color-accent-ink: #8a4f00;
+  --color-accent-edge: #a8630c;
+  --color-accent-2: #fffaf0;
+
+  --color-rule: #a9abaf;
+  --color-border: #c4c5c8;
+  --color-border-hover: #a9abaf;
+  --color-border-control: #76787d;
+  --color-focus: #8a4f00;
+
+  --color-success: #1d6b42;
+  --color-success-tint: #d5e6da;
+  --color-warning: #874708;
+  --color-warning-tint: #f1e2cc;
+  --color-danger: #a8261d;
+  --color-danger-tint: #f3dcd8;
+  --color-on-danger: #ffffff;
+  --color-info: #38506a;
+  --color-info-tint: #d8e0e8;
+
+  --rarity-consumer: #4a5c70;
+  --rarity-industrial: #235a96;
+  --rarity-milspec: #2c45c0;
+  --rarity-restricted: #6030bf;
+  --rarity-classified: #8e1e99;
+  --rarity-covert: #ac2828;
+  --rarity-gold: #755700;
+  --mark-stattrak: #8f430c;
+  --mark-souvenir: #6f5a12;
+
+  --lamp-rgb: 255 250 240;
+  --lamp-line: rgb(255 255 255 / 0.95);
+  --lamp-pool-alpha: 0.38;
+  --lamp-catch: inset 0 1px 0 rgb(255 255 255 / 0.7);
+
+  --color-scrim: rgb(20 21 23 / 0.5);
+
+  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.7);
+  --shadow-card-hover: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 22px 32px -20px rgb(20 21 23 / 0.38);
+  --shadow-lg: 0 0 0 1px #c4c5c8, 0 18px 36px -20px rgb(20 21 23 / 0.32);
+  --shadow-xl: 0 0 0 1px #c4c5c8, 0 32px 64px -28px rgb(20 21 23 / 0.4);
+  --shadow-accent: 0 0 0 2px #8a4f00;
+  --shadow-panel: -1px 0 0 #c4c5c8, -32px 0 64px -32px rgb(20 21 23 / 0.35);
+  --shadow-panel-left: 1px 0 0 #c4c5c8, 32px 0 64px -32px rgb(20 21 23 / 0.35);
+  --shadow-contact: rgb(20 21 23 / 0.28);
+
+  --selection-bg: #ec9524;
+  --selection-fg: #16120c;
+
+  color-scheme: light;
+}
+
+::selection {
+  background: var(--selection-bg);
+  color: var(--selection-fg);
+}

@@ -1,0 +1,51 @@
+{
+  "indexTitle": "Policies",
+  "indexLead": "The terms {brand} trades on, written for how the store actually works: we sell Counter-Strike 2 items and deliver them by {method} after payment is confirmed.",
+  "indexMetaDescription": "Terms, privacy, cookies, refunds, delivery via Steam, payment, item guarantee, complaints and acceptable use for {brand}.",
+  "lastUpdated": "Last updated {date}",
+  "onThisPage": "On this page",
+  "policiesNav": "Policies",
+  "jumpTo": "Jump to policy",
+  "allPolicies": "All policies",
+  "home": "Home",
+  "read": "Read",
+  "openCookieSettings": "Open cookie settings",
+  "items": {
+    "terms": {
+      "title": "Terms and conditions",
+      "scope": "The agreement between you and {company} when you buy from {brand}."
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "scope": "What personal data we collect, why we use it, who processes it and your rights."
+    },
+    "cookies": {
+      "title": "Cookie policy",
+      "scope": "Every cookie and browser storage key the store uses, and how to change your choice."
+    },
+    "returns": {
+      "title": "Refunds",
+      "scope": "When we refund an item, the right to cancel before delivery begins, and how refunds are paid."
+    },
+    "shipping": {
+      "title": "Delivery via Steam",
+      "scope": "How trade offers are sent, what your Steam account needs, trade protection and failed deliveries."
+    },
+    "payment": {
+      "title": "Payment",
+      "scope": "Accepted cards, currencies, card security and when your card is charged."
+    },
+    "warranty": {
+      "title": "Item guarantee",
+      "scope": "A refund if an item is not delivered within {hours} hours or Steam reverses the trade."
+    },
+    "complaints": {
+      "title": "Complaints",
+      "scope": "How to raise a complaint, how quickly we reply and where you can take it next."
+    },
+    "acceptable-use": {
+      "title": "Acceptable use",
+      "scope": "Rules for using the website, your account and your linked Steam account."
+    }
+  }
+}

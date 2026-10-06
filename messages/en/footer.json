@@ -1,0 +1,19 @@
+{
+  "about": "About",
+  "contact": "Contact us",
+  "shipping": "Delivery via Steam",
+  "returns": "Refunds",
+  "warranty": "Item guarantee",
+  "payment": "Payment",
+  "faq": "Questions",
+  "privacy": "Privacy policy",
+  "terms": "Terms and conditions",
+  "cookies": "Cookie policy",
+  "complaints": "Complaints",
+  "acceptableUse": "Acceptable use",
+  "allPolicies": "All policies",
+  "cookieSettings": "Cookie settings",
+  "tradingName": "{brand} is a trading name of {company}.",
+  "copyright": "© {year} {storeName}. All rights reserved.",
+  "followUs": "Follow us"
+}

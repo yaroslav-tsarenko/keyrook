@@ -1,0 +1,469 @@
+@import "tailwindcss";
+@import "./variables.css";
+@import "./animations.css";
+@import "./motion.css";
+
+@source not "../../package.json";
+@source not "../../README.md";
+@source not "../../scripts";
+@source not "../../.claude";
+@source not "../lib/sih";
+@source not "../../.env.example";
+
+@custom-variant dark ([data-theme="dark"] &);
+@custom-variant hover-device (@media (hover: hover) and (pointer: fine));
+@custom-variant touch-device {
+  @media (hover: none), (pointer: coarse) {
+    @slot;
+  }
+}
+
+@theme inline {
+  --color-surface: var(--color-bg);
+  --color-surface-1: var(--color-bg-secondary);
+  --color-surface-2: var(--color-bg-tertiary);
+  --color-surface-warm: var(--color-bg-warm);
+  --color-raised: var(--color-raised);
+  --color-stage: var(--color-stage);
+  --color-on-stage: var(--color-on-stage);
+  --color-rig: var(--color-rig);
+  --color-floor: var(--color-floor);
+
+  --color-ink: var(--color-text);
+  --color-ink-muted: var(--color-text-secondary);
+  --color-ink-subtle: var(--color-text-tertiary);
+
+  --color-brand: var(--color-accent);
+  --color-brand-hover: var(--color-accent-hover);
+  --color-brand-soft: var(--color-accent-light);
+  --color-brand-2: var(--color-accent-2);
+  --color-on-brand: var(--color-on-accent);
+  --color-accent-ink: var(--color-accent-ink);
+  --color-accent-edge: var(--color-accent-edge);
+  --color-sale: var(--color-accent-3);
+  --color-lamp: var(--color-lamp);
+
+  --color-rule: var(--color-rule);
+  --color-line: var(--color-border);
+  --color-line-hover: var(--color-border-hover);
+  --color-control: var(--color-border-control);
+  --color-focus: var(--color-focus);
+  --color-scrim: var(--color-scrim);
+
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
+  --color-info: var(--color-info);
+  --color-success-tint: var(--color-success-tint);
+  --color-warning-tint: var(--color-warning-tint);
+  --color-danger-tint: var(--color-danger-tint);
+  --color-info-tint: var(--color-info-tint);
+  --color-on-danger: var(--color-on-danger);
+
+  --color-rarity: var(--rarity);
+  --color-rarity-consumer: var(--rarity-consumer);
+  --color-rarity-industrial: var(--rarity-industrial);
+  --color-rarity-milspec: var(--rarity-milspec);
+  --color-rarity-restricted: var(--rarity-restricted);
+  --color-rarity-classified: var(--rarity-classified);
+  --color-rarity-covert: var(--rarity-covert);
+  --color-rarity-gold: var(--rarity-gold);
+  --color-mark-stattrak: var(--mark-stattrak);
+  --color-mark-souvenir: var(--mark-souvenir);
+
+  --font-sans: var(--font-source-sans), "Source Sans 3 Variable", "Source Sans Fallback", "Segoe UI", sans-serif;
+  --font-display: var(--font-sofia-condensed), "Sofia Sans Condensed Variable", "Sofia Condensed Fallback", "Arial Narrow", sans-serif;
+  --font-mono: var(--font-martian), "Martian Mono Variable", "Martian Fallback", ui-monospace, Menlo, Consolas, monospace;
+
+  --text-step--2: 0.75rem;
+  --text-step--1: 0.875rem;
+  --text-step-0: 1.0625rem;
+  --text-step-1: clamp(1.1875rem, 1.12rem + 0.3vw, 1.328rem);
+  --text-step-2: clamp(1.375rem, 1.24rem + 0.65vw, 1.66rem);
+  --text-step-3: clamp(1.625rem, 1.38rem + 1.2vw, 2.075rem);
+  --text-step-4: clamp(1.875rem, 1.5rem + 1.9vw, 2.594rem);
+  --text-step-5: clamp(2.25rem, 1.7rem + 2.8vw, 3.242rem);
+  --text-step-6: clamp(2.75rem, 1.9rem + 4.2vw, 4.053rem);
+  --text-display-xl: clamp(3.5rem, 1.2rem + 7vw, 7.5rem);
+  --text-ui-md: 0.9375rem;
+  --text-ui-sm: 0.875rem;
+  --text-ui-xs: 0.8125rem;
+  --text-data: 0.875rem;
+  --text-data-sm: 0.75rem;
+
+  --radius-xs: 2px;
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-3xl: 4px;
+  --radius-4xl: 4px;
+  --radius-pill: var(--radius-pill);
+  --radius-control: var(--radius-control);
+  --radius-tray: var(--radius-tray);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-accent: var(--shadow-accent);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-panel: var(--shadow-panel);
+  --shadow-panel-left: var(--shadow-panel-left);
+  --shadow-lamp-catch: var(--lamp-catch);
+
+  --spacing-gutter: var(--gutter);
+
+  --container-read: 720px;
+  --container-narrow: 1120px;
+  --container-container: 1360px;
+  --container-shop: 1360px;
+  --container-wide: 1560px;
+
+  --ease-instrument: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+[data-rarity="consumer"] {
+  --rarity: var(--rarity-consumer);
+}
+
+[data-rarity="industrial"] {
+  --rarity: var(--rarity-industrial);
+}
+
+[data-rarity="milspec"] {
+  --rarity: var(--rarity-milspec);
+}
+
+[data-rarity="restricted"] {
+  --rarity: var(--rarity-restricted);
+}
+
+[data-rarity="classified"] {
+  --rarity: var(--rarity-classified);
+}
+
+[data-rarity="covert"] {
+  --rarity: var(--rarity-covert);
+}
+
+[data-rarity="gold"] {
+  --rarity: var(--rarity-gold);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    font-synthesis: none;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-synthesis: none;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--selection-fg);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-secondary);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-hover);
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-tertiary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: var(--dur-reduced) !important;
+      transition-property: opacity, color, background-color, border-color !important;
+    }
+  }
+}
+
+@layer components {
+  .stage {
+    --stage-lamp: radial-gradient(ellipse 70% 62% at var(--lx, 50%) var(--ly, 0%), rgb(var(--lamp-rgb) / calc(var(--lamp-pool-alpha) * var(--lamp-level, 1))), transparent 72%);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background-color: var(--color-stage);
+    background-image: var(--stage-lamp);
+    color: var(--color-on-stage);
+    transition: --lamp-level var(--dur-micro) var(--ease-std);
+  }
+
+  .stage::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: var(--lamp-inset);
+    right: var(--lamp-inset);
+    height: 1px;
+    z-index: 3;
+    pointer-events: none;
+    background: var(--lamp-line);
+    opacity: min(1, var(--lamp-level, 1));
+  }
+
+  .stage[data-lamp="off"] {
+    background-image: none;
+  }
+
+  .stage[data-lamp="off"]::before {
+    opacity: 0;
+  }
+
+  .stage-render {
+    position: absolute;
+    inset: 12% 9% 16% 9%;
+    z-index: 1;
+  }
+
+  .contact-shadow {
+    position: absolute;
+    left: 18%;
+    right: 18%;
+    bottom: 8%;
+    height: 10px;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(closest-side, var(--shadow-contact), transparent);
+  }
+
+  .tray {
+    --tray-edge: var(--color-border);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border-radius: var(--radius-tray);
+    background-color: var(--color-raised);
+    box-shadow: var(--shadow-card), 0 0 0 1px var(--tray-edge);
+    transition:
+      transform var(--dur-micro) var(--ease-instrument),
+      box-shadow var(--dur-micro) var(--ease-instrument);
+  }
+
+  [data-theme="light"] .tray {
+    --tray-edge: transparent;
+  }
+
+  .tray > .stage {
+    border-radius: var(--radius-tray) var(--radius-tray) 0 0;
+  }
+
+  .tray::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--spine);
+    z-index: 4;
+    pointer-events: none;
+    background: var(--rarity);
+    border-radius: var(--radius-tray) 0 0 var(--radius-tray);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .tray[data-lift]:is(:hover, :focus-within) {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-card-hover), 0 0 0 1px var(--tray-edge);
+    }
+  }
+
+  .tray:has([data-tray-link]:focus-visible) {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  .spine-row {
+    box-shadow: inset 2px 0 0 var(--rarity);
+  }
+
+  .lamp-rule {
+    position: relative;
+  }
+
+  .lamp-rule::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: var(--lamp-inset);
+    right: var(--lamp-inset);
+    height: 1px;
+    background: var(--lamp-line);
+    pointer-events: none;
+  }
+
+  .indicator-bar {
+    position: relative;
+  }
+
+  .indicator-bar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 16px;
+    height: 2px;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-micro) var(--ease-instrument);
+  }
+
+  .indicator-bar:is([aria-current], [data-active="true"])::after {
+    transform: scaleX(1);
+  }
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  font-stretch: 87.5%;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+@utility data {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  font-stretch: 100%;
+}
+
+@utility data-compact {
+  font-stretch: 87.5%;
+}
+
+@utility price {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-stretch: 100%;
+  letter-spacing: 0;
+}
+
+@utility label-caps {
+  font-family: var(--font-display);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+@utility measure {
+  max-width: 68ch;
+}
+
+@utility meta {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  letter-spacing: 0.005em;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+svg.lucide {
+  stroke-width: 1.5;
+  flex-shrink: 0;
+}
+
+@media print {
+  [data-print-hide] {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+}

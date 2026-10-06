@@ -1,0 +1,170 @@
+@keyframes tray-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes count-roll {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes lamp-on {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sheet-out-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes sheet-in-bottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheet-out-bottom {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes readout-led {
+  0%,
+  100% {
+    background-color: var(--color-border-hover);
+  }
+  20%,
+  50% {
+    background-color: var(--color-accent);
+  }
+}
+
+@utility animate-tray-in {
+  animation: tray-in var(--dur-ui) var(--ease-instrument) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: fade-in var(--dur-reduced) linear both;
+  }
+}
+
+@utility animate-panel-in {
+  animation: panel-in var(--dur-ui) var(--ease-instrument) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: fade-in var(--dur-reduced) linear both;
+  }
+}
+
+@utility animate-count-roll {
+  animation: count-roll var(--dur-ui) var(--ease-instrument) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@utility animate-lamp-on {
+  animation: lamp-on 160ms var(--ease-std) both;
+}
+
+@utility animate-rise-in {
+  animation: rise-in var(--dur-panel) var(--ease-instrument) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: fade-in var(--dur-reduced) linear both;
+  }
+}
+
+@utility animate-fade-in {
+  animation: fade-in var(--dur-micro) var(--ease-std) both;
+}
+
+@utility animate-sheet-in-right {
+  animation: sheet-in-right var(--dur-panel) var(--ease-instrument) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: fade-in var(--dur-reduced) linear both;
+  }
+}
+
+@utility animate-sheet-out-right {
+  animation: sheet-out-right var(--dur-panel-close) var(--ease-instrument) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: fade-in var(--dur-reduced) linear reverse both;
+  }
+}
+
+@utility animate-sheet-in-bottom {
+  animation: sheet-in-bottom var(--dur-panel) var(--ease-instrument) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: fade-in var(--dur-reduced) linear both;
+  }
+}
+
+@utility animate-sheet-out-bottom {
+  animation: sheet-out-bottom var(--dur-panel-close) var(--ease-instrument) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: fade-in var(--dur-reduced) linear reverse both;
+  }
+}

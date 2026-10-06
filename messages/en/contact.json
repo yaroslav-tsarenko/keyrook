@@ -1,0 +1,33 @@
+{
+  "title": "Contact us",
+  "metaDescription": "Email {brand} or use the contact form. We reply {replyTime}. Support hours: {supportHours}.",
+  "home": "Home",
+  "promise": "We answer every message {replyTime}. Support hours: {supportHours}.",
+  "tradingName": "{brand} is a trading name of {company}.",
+  "orderQuestions": "Order questions? Have your order number ready.",
+  "orderLinks": "How items arrive is in <delivery>Delivery via Steam</delivery>; when we refund is in our <returns>Refund policy</returns>.",
+  "faqLink": "Many questions are answered in <faq>Questions</faq>.",
+  "formTitle": "Send a message",
+  "name": "Name",
+  "email": "Email",
+  "orderNumber": "Order number",
+  "orderNumberHint": "Optional. You will find it in your order confirmation email.",
+  "subject": "Subject",
+  "subjectPlaceholder": "Choose a subject",
+  "subjects": {
+    "order": "Order",
+    "delivery": "Trade offer or delivery",
+    "returns": "Refund",
+    "product": "Item question",
+    "other": "Other"
+  },
+  "message": "Message",
+  "messageHint": "Include your order number and what happened. For a reversed trade, mention the date the item left your inventory.",
+  "send": "Send message",
+  "required": "Required",
+  "successTitle": "Message sent",
+  "success": "Thanks, we'll reply to {email} {replyTime}.",
+  "sendAnother": "Send another message",
+  "error": "Your message wasn't sent. Check your connection and try again; what you wrote is still here.",
+  "privacyNote": "We use these details only to answer your message. See our <privacy>Privacy policy</privacy>."
+}
