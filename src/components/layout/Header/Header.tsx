@@ -179,7 +179,7 @@ function StoreHeader() {
                 <span>{user ? "Account" : "Sign in"}</span>
               </Link>
               <button type="button" onClick={openSheet} data-cart-target="" className={cn(action, "min-w-11 justify-center max-lg:px-1.5")}>
-                <Archive size={20} aria-hidden="true" />
+                <Archive size={20} aria-hidden="true" data-cart-glyph="" />
                 <span className="hidden lg:inline">Cart</span>
                 <span className="sr-only" aria-live="polite">
                   {`, ${itemCount} ${itemCount === 1 ? "key" : "keys"}`}

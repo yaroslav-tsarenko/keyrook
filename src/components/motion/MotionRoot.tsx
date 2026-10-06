@@ -27,7 +27,6 @@ export function MotionRoot() {
     let cancelIdle: (() => void) | undefined;
 
     const start = () => {
-      if (media.matches) return;
       cancelIdle = onIdle(() => {
         import("@/lib/motion/engine").then(({ mountMotion }) => {
           if (!disposed) destroy = mountMotion(document);

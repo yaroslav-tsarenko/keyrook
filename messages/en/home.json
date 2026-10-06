@@ -1,4 +1,157 @@
 {
   "metaTitle": "{brand} — game keys, subscriptions and gift cards",
-  "metaDescription": "Game and DLC keys, subscriptions, gift cards and top-ups from {brand}. Platform, activation region and languages on every product; keys are issued to your account after payment is confirmed."
+  "metaDescription": "Game and DLC keys, subscriptions, gift cards and top-ups from {brand}. Platform, activation region and languages on every product; keys are issued to your account after payment is confirmed.",
+  "door": {
+    "eyebrow": "Game key store",
+    "title": "Game keys, kept under lock until they're yours.",
+    "leadCatalogue": "Games, DLC, gift cards and subscriptions for Steam, Epic, Xbox, PlayStation, Nintendo and more.",
+    "leadPayment": "Pay on a hosted card page with 3-D Secure;",
+    "leadDelivery": "your key is delivered to your account, usually within minutes after payment is confirmed.",
+    "searchLabel": "Search keys",
+    "searchPlaceholder": "Search {count} keys",
+    "searchSubmit": "Search",
+    "platformsLabel": "Platforms with the most keys in stock",
+    "readoutLabel": "Catalogue readout",
+    "inStock": "Keys in stock",
+    "platforms": "Platforms",
+    "onSale": "On sale",
+    "updated": "Catalogue updated",
+    "updatedUtc": "Updated, UTC",
+    "contentsLabel": "Keys behind the door",
+    "posterLabel": "Vault door"
+  },
+  "strip": {
+    "label": "How payment and delivery are handled",
+    "hosted": "Card details go on a hosted payment page",
+    "hostedLink": "Where card data goes",
+    "threeDS": "3-D Secure confirmation by your bank",
+    "threeDSLink": "The bank step",
+    "encrypted": "Keys encrypted at rest",
+    "encryptedLink": "What we store",
+    "invoice": "PDF invoice with every order",
+    "invoiceLink": "Payment policy",
+    "guarantee": "Replacement or refund if a key doesn't work",
+    "guaranteeLink": "Refund policy"
+  },
+  "vault": {
+    "title": "Pick your platform",
+    "lead": "Each locker shows how many keys are in stock for that platform and today's lowest price.",
+    "keys": "keys",
+    "from": "from",
+    "lockerLabel": "{name}: {count} keys in stock",
+    "inStock": "{count} keys in stock"
+  },
+  "deals": {
+    "title": "Price cuts",
+    "lead": "Keys priced below their recent price. The earlier price shown is the lowest price in the {days} days before the cut.",
+    "all": "All deals · {count}",
+    "railLabel": "Keys with the largest price cuts",
+    "previous": "Previous keys",
+    "next": "Next keys",
+    "position": "{from}–{to} of {total}"
+  },
+  "theater": {
+    "eyebrow": "How it works",
+    "title": "Watch a key leave the vault",
+    "lead": "Five short demos of the store, played with sample data: choosing a key, paying on the hosted page, revealing the key, redeeming it, and getting help if it doesn't work.",
+    "link": "Read how activation works"
+  },
+  "genres": {
+    "title": "Browse by genre",
+    "lead": "Every genre with keys in stock, counted from the catalogue.",
+    "all": "All games",
+    "rowLabel": "{label}: {count} keys"
+  },
+  "releases": {
+    "title": "New releases",
+    "lead": "Released in the last eight weeks and in stock now.",
+    "all": "All new releases",
+    "today": "Today",
+    "released": "Released {date}",
+    "rulerLabel": "{count} titles released in the last {weeks} weeks"
+  },
+  "prepaid": {
+    "giftTitle": "Gift cards",
+    "giftLead": "Store credit for the platform you play on. Check the card's region before you buy.",
+    "giftAll": "All gift cards",
+    "giftCard": "Gift card",
+    "valuesLabel": "{name} {region} values",
+    "subsTitle": "Subscriptions",
+    "subsLead": "Membership codes by service and length. Prices are per code; the region column says which accounts it works on.",
+    "subsAll": "All subscriptions",
+    "subsCaption": "Subscription prices by service and duration"
+  },
+  "activation": {
+    "title": "How activation works",
+    "lead": "Every key activates on the platform named on its page. Pick yours to see the steps.",
+    "choose": "Platform",
+    "need": "You need",
+    "steps": "Steps on {name}",
+    "guide": "Full guide for {name}",
+    "stillLabel": "Illustration of redeeming a key on {name}, with sample data",
+    "verified": "Steps checked {date}"
+  },
+  "ledger": {
+    "eyebrow": "Security",
+    "title": "What's in the vault, and what never is",
+    "lead": "Where each part of an order is kept, who can see it, and what happens when something goes wrong.",
+    "kept": "Kept, encrypted",
+    "keptKeys": "Your keys. Stored encrypted (AES-256) and decrypted only when you choose Reveal in your account.",
+    "keptKeysPlain": "Your keys. Kept in your account and shown only when you choose Reveal.",
+    "keptOrders": "Your orders and PDF invoices, for as long as the law requires ({years} years).",
+    "never": "Never stored by us",
+    "neverCard": "Your card number, expiry date and security code. You type them on the payment provider's hosted page, not on Keyrook.",
+    "neverBank": "Your bank's 3-D Secure confirmation happens between you and your bank.",
+    "wrong": "If something goes wrong",
+    "wrongKey": "A key that doesn't work is replaced, or refunded if no replacement is available.",
+    "wrongPayment": "If a payment fails, you aren't charged.",
+    "wrongReply": "We reply {replyTime}.",
+    "diagramTitle": "Where your card data goes",
+    "legend": "Card details (outlined squares) stop at the payment provider. Keyrook receives only the confirmation (filled squares).",
+    "legendCard": "Card details",
+    "legendConfirm": "Payment confirmation",
+    "legendKey": "Your key",
+    "boundary": "Card data stops here",
+    "nodeYou": "You",
+    "nodeHosted": "Hosted card page",
+    "nodeBank": "Your bank",
+    "nodeBankSub": "3-D Secure",
+    "nodeProvider": "Payment provider",
+    "nodeKeyrook": "Keyrook",
+    "nodeAccount": "Your account",
+    "stillCaption": "The 3-D Secure step, shown with sample data",
+    "receivesTitle": "Who receives what",
+    "receivesHosted": "Your card number, expiry date and security code, typed on the provider's page.",
+    "receivesBank": "Your approval of the payment, in your banking app or by code.",
+    "receivesProvider": "Processes the card payment.",
+    "receivesKeyrook": "Payment confirmed, the amount and your order number. Never the card number.",
+    "receivesAccount": "Your key, stored encrypted and decrypted only when you choose Reveal.",
+    "receivesAccountPlain": "Your key, shown when you choose Reveal."
+  },
+  "budget": {
+    "title": "Set a budget",
+    "lead": "Turn the dial to a price band. Bands are in your currency.",
+    "dialLabel": "Price band",
+    "under": "Under {max}",
+    "between": "{min}–{max}",
+    "over": "{min} and up",
+    "valueText": "{band}, {count} keys",
+    "count": "{count} keys",
+    "seeAll": "See all {count} keys {band}",
+    "bandUnder": "under {max}",
+    "bandBetween": "from {min} to {max}",
+    "bandOver": "from {min}",
+    "gridLabel": "Keys in this price band",
+    "unavailable": "Fewer than {min} keys in this band right now"
+  },
+  "questions": {
+    "title": "Questions",
+    "all": "All questions",
+    "contact": "Can't find it? <link>Contact us</link>"
+  },
+  "open": {
+    "title": "The door's open.",
+    "line": "Search the catalogue, or start with your platform.",
+    "contentsLabel": "Keys in the open vault"
+  }
 }

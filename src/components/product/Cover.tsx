@@ -40,18 +40,21 @@ export interface CoverProps {
   platformLabel?: string | null;
   className?: string;
   imageClassName?: string;
+  art?: ReactNode;
   children?: ReactNode;
 }
 
-export function Cover({ src, alt, aspect = "3/4", sizes, priority, compact = false, fit = "auto", width, height, platformLabel, className, imageClassName, children }: CoverProps) {
+export function Cover({ src, alt, aspect = "3/4", sizes, priority, compact = false, fit = "auto", width, height, platformLabel, className, imageClassName, art, children }: CoverProps) {
   const [failed, setFailed] = useState(false);
   const known = portraitFit(width, height);
   const [measured, setMeasured] = useState<"cover" | "contain" | null>(null);
   const resolved = fit !== "auto" ? fit : known ?? measured ?? (aspect === "3/4" ? "cover" : "contain");
   const show = Boolean(src) && !failed;
   return (
-    <div data-cover="" data-fit={show ? resolved : "empty"} className={cn("cover", ASPECT[aspect], className)}>
-      {show ? (
+    <div data-cover="" data-fit={art ? "cover" : show ? resolved : "empty"} className={cn("cover", ASPECT[aspect], className)}>
+      {art ? (
+        <div className="absolute inset-0">{art}</div>
+      ) : show ? (
         <Image
           src={src as string}
           alt={alt}

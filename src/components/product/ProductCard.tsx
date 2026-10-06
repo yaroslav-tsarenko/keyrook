@@ -23,12 +23,12 @@ function toNumber(value: number | string | null | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export function LabelRow({ face, size = "sm", edition = false, extra, className }: { face: ProductFace; size?: "sm" | "md"; edition?: boolean; extra?: ReactNode; className?: string }) {
+export function LabelRow({ face, size = "sm", edition = false, extra, className, demoId }: { face: ProductFace; size?: "sm" | "md"; edition?: boolean; extra?: ReactNode; className?: string; demoId?: string }) {
   if (!face.platform) return null;
   const spoken = [`Activates on ${face.platformShort}.`, `Region: ${face.region ?? face.regionTag}.`, face.kind === "game" ? null : `${face.typeSentence}.`, edition && face.edition ? `${face.edition}.` : null].filter(Boolean).join(" ");
   const md = size === "md";
   return (
-    <p data-label-row="" data-platform={face.tone} data-type={face.typeTone} className={cn("m-0 flex min-w-0 flex-wrap items-center gap-y-1.5", md ? "gap-x-2.5 text-[0.875rem]" : "gap-x-2 text-[0.6875rem] sm:text-[0.75rem]", className)}>
+    <p data-label-row="" data-demo={demoId} data-platform={face.tone} data-type={face.typeTone} className={cn("m-0 flex min-w-0 flex-wrap items-center gap-y-1.5", md ? "gap-x-2.5 text-[0.875rem]" : "gap-x-2 text-[0.6875rem] sm:text-[0.75rem]", className)}>
       <span className="sr-only">{spoken}</span>
       <span aria-hidden="true" className={cn("flex min-w-0 max-w-full items-center", md ? "gap-2.5" : "gap-1.5 sm:gap-2")}>
         <span className="flex min-w-0 items-center gap-1.5">
@@ -120,11 +120,12 @@ export interface ProductCardProps {
   fill?: boolean;
   demo?: boolean;
   demoId?: string;
+  demoCover?: ReactNode;
 }
 
-export function ProductCard({ product, variant = "standard", priority, sizes, headingLevel = 3, showCompare = true, className, aspect, readout, demo = false, demoId }: ProductCardProps) {
+export function ProductCard({ product, variant = "standard", priority, sizes, headingLevel = 3, showCompare = true, className, aspect, readout, demo = false, demoId, demoCover }: ProductCardProps) {
   if (variant === "feature") return <FeatureBox product={product} priority={priority} headingLevel={headingLevel} className={className} />;
-  return <DepositBox product={product} priority={priority} sizes={sizes} headingLevel={headingLevel} showCompare={showCompare} className={className} aspect={aspect} readout={readout} demo={demo} demoId={demoId} />;
+  return <DepositBox product={product} priority={priority} sizes={sizes} headingLevel={headingLevel} showCompare={showCompare} className={className} aspect={aspect} readout={readout} demo={demo} demoId={demoId} demoCover={demoCover} />;
 }
 
 function AddControl({ product, title, onAdd, adding }: { product: CatalogProduct; title: string; onAdd: (e: MouseEvent<HTMLElement>) => void; adding: boolean }) {
@@ -159,6 +160,7 @@ export function DepositBox({
   readout,
   demo = false,
   demoId,
+  demoCover,
 }: Omit<ProductCardProps, "variant" | "fill">) {
   const { add, inCart, openSheet, price, imageUrl } = useAddToCart(product);
   const [adding, setAdding] = useState(false);
@@ -204,10 +206,11 @@ export function DepositBox({
           sizes={sizes ?? COVER_SIZES.card}
           platformLabel={face.platformShort}
           className={cn(outOfStock && "opacity-55")}
+          art={demoCover}
         />
       </div>
       <div className="flex flex-1 flex-col px-3 pb-3 pt-3">
-        <LabelRow face={face} extra={outOfStock ? <Plate variant="neutral" size="sm" className="ml-auto">Out of stock</Plate> : null} />
+        <LabelRow face={face} demoId={demo && demoId ? `${demoId}-label` : undefined} extra={outOfStock ? <Plate variant="neutral" size="sm" className="ml-auto">Out of stock</Plate> : null} />
         <Heading className="m-0 mt-2 font-sans text-step-0 font-[640] leading-[1.3] tracking-normal text-ink [font-stretch:100%]">{title}</Heading>
         <p className="m-0 mt-1 min-h-[1.4em] truncate font-mono text-[0.75rem] leading-[1.4] text-ink-muted">{face.facts ?? ""}</p>
         {readout}

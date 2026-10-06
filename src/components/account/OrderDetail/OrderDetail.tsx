@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { FileDown } from "lucide-react";
@@ -32,6 +32,11 @@ export function keyPlateStatus(status: string): KeyPlateStatus {
 
 export function OrderKeys({ order, line }: { order: OrderView; line: OrderView["lines"][number] }) {
   const delivery = line.delivery;
+  const delivered = Boolean(delivery && delivery.status === "delivered" && delivery.keys.length);
+  const issuing = Boolean(delivery?.inFlight) && !delivered;
+  const [sawIssuing, setSawIssuing] = useState(issuing);
+  if (issuing && !sawIssuing) setSawIssuing(true);
+  const justIssued = delivered && sawIssuing;
   if (!delivery) return null;
   if (delivery.status === "delivered" && delivery.keys.length) {
     return (
@@ -51,6 +56,7 @@ export function OrderKeys({ order, line }: { order: OrderView; line: OrderView["
             issuedAt={k.issuedAt ?? delivery.finishedAt}
             revealedAt={k.revealedAt}
             orderNumber={order.number}
+            justIssued={justIssued}
           />
         ))}
       </div>

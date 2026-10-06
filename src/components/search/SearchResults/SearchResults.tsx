@@ -4,16 +4,16 @@ import { Search } from "lucide-react";
 import { EmptyBox } from "@/components/shared/EmptyState/EmptyState";
 import { Button } from "@/components/ui/Button";
 
-export function SearchForm({ query, label, placeholder, submit }: { query: string; label: string; placeholder: string; submit: string }) {
+export function SearchForm({ query, label, placeholder, submit, inputId = "search-page-input" }: { query: string; label: string; placeholder: string; submit: string; inputId?: string }) {
   return (
     <form role="search" action="/search" method="get" className="flex items-stretch gap-2">
-      <label htmlFor="search-page-input" className="sr-only">
+      <label htmlFor={inputId} className="sr-only">
         {label}
       </label>
       <div className="relative min-w-0 flex-1">
         <Search size={20} aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted" />
         <input
-          id="search-page-input"
+          id={inputId}
           name="q"
           type="search"
           defaultValue={query}

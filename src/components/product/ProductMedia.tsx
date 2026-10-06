@@ -33,7 +33,7 @@ export function ProductMedia({ images, title, videoId, platformLabel, aspect = "
   return (
     <div data-gallery={parts} className={cn("flex flex-col gap-4", className)}>
       {parts !== "strip" ? (
-        <div data-drawer-face="" className="plate p-2">
+        <div data-drawer-face="" data-depth="D3" className="plate p-2">
           <Cover src={cover?.url ?? null} alt={`${title} cover art`} aspect={aspect} priority sizes={COVER_SIZES.pdp} platformLabel={platformLabel} />
         </div>
       ) : null}

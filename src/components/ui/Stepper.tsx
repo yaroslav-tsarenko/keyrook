@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "./Button";
@@ -55,6 +55,8 @@ export function Stepper({
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const previous = useRef(current);
+  const [shown, setShown] = useState<{ index: number; direction: "none" | "forward" | "back" }>({ index: current, direction: "none" });
+  if (shown.index !== current) setShown({ index: current, direction: current > shown.index ? "forward" : "back" });
 
   useEffect(() => {
     if (previous.current === current) return;
@@ -96,7 +98,7 @@ export function Stepper({
       {done.length > 0 ? (
         <ul className="m-0 mb-8 flex list-none flex-col border-t border-line p-0">
           {done.map((step, index) => (
-            <li key={step.id} className="flex min-h-12 flex-wrap items-center gap-x-4 gap-y-1 border-b border-line py-2">
+            <li key={step.id} data-step-summary="" className="flex min-h-12 flex-wrap items-center gap-x-4 gap-y-1 border-b border-line py-2">
               <Check size={14} aria-hidden="true" className="text-ink-muted" />
               <span className="label-caps text-[0.75rem] text-ink-muted">{step.title}</span>
               <span className="min-w-0 flex-1 truncate text-ui-sm text-ink-muted">{step.summary}</span>
@@ -113,7 +115,7 @@ export function Stepper({
       ) : null}
 
       {active ? (
-        <section role="group" aria-labelledby={`${baseId}-title`} data-step={active.id} className="animate-panel-in">
+        <section key={active.id} role="group" aria-labelledby={`${baseId}-title`} data-step={active.id} data-direction={shown.direction} className="animate-panel-in">
           <h2 ref={headingRef} tabIndex={-1} id={`${baseId}-title`} className="m-0 mb-6 flex items-baseline gap-3 text-step-3 leading-[1.1] text-ink outline-none">
             <span className="font-mono text-data font-medium text-ink-muted [font-stretch:100%]">{String(current + 1).padStart(2, "0")}</span>
             {active.title}

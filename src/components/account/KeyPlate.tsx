@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState, type ReactNode } from "react";
+import { useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Copy, CopyCheck, Eye, EyeOff, MessageSquareWarning, SquareArrowOutUpRight } from "lucide-react";
@@ -19,6 +19,8 @@ import { activationFor } from "@/config/activation";
 import { STORE_POLICY } from "@/config/store-policy";
 import { useAuth } from "@/providers/AuthProvider";
 import type { KeySummary } from "@/lib/keys/taxonomy";
+import { runDecrypt } from "@/lib/motion/decrypt";
+import { decryptGlyph } from "@/lib/keys/decrypt";
 
 export type KeyPlateStatus = "issuing" | "ready" | "reported" | "replaced" | "refunded";
 
@@ -64,8 +66,9 @@ export function spellOut(value: string): string {
     .join(" ");
 }
 
-export function KeySlots({ value, masked, className, demoId }: { value: string; masked: boolean; className?: string; demoId?: string }) {
+export function KeySlots({ value, masked, progress, className, demoId }: { value: string; masked: boolean; progress?: number; className?: string; demoId?: string }) {
   const groups = groupsOf(value);
+  const decrypting = !masked && progress !== undefined && progress < 1;
   let index = 0;
   return (
     <div data-key-slots="" data-demo={demoId} aria-hidden="true" className={cn("flex flex-wrap items-center gap-y-2 key-code text-key", className)}>
@@ -78,9 +81,16 @@ export function KeySlots({ value, masked, className, demoId }: { value: string; 
           <span key={`g${gi}`} className="inline-flex">
             {group.map((ch) => {
               const i = index++;
+              const glyph = decrypting ? decryptGlyph(value, valueIndex(groups, gi, i), progress) : null;
               return (
-                <span key={i} data-slot={i} data-char={masked ? undefined : ch} className={cn("tumbler-slot", masked && "text-ink-muted")}>
-                  {ch}
+                <span
+                  key={i}
+                  data-slot={i}
+                  data-char={masked ? undefined : ch}
+                  data-phase={glyph?.phase}
+                  className={cn("tumbler-slot", (masked || glyph?.phase === "masked" || glyph?.phase === "scramble") && "text-ink-muted", glyph?.phase === "settled" && "text-accent-ink")}
+                >
+                  {glyph ? glyph.char : ch}
                 </span>
               );
             })}
@@ -89,6 +99,23 @@ export function KeySlots({ value, masked, className, demoId }: { value: string; 
       )}
     </div>
   );
+}
+
+function valueIndex(groups: string[][], groupIndex: number, slotIndex: number): number {
+  let seen = 0;
+  let position = 0;
+  for (let g = 0; g < groups.length; g++) {
+    const group = groups[g];
+    const separator = group.length === 1 && SEPARATOR.test(group[0]);
+    if (separator) {
+      position += 1;
+      continue;
+    }
+    if (g === groupIndex) return position + (slotIndex - seen);
+    seen += group.length;
+    position += group.length;
+  }
+  return position;
 }
 
 function stamp(iso: string | null | undefined) {
@@ -122,7 +149,9 @@ export interface KeyPlateProps {
   activationNotes?: string[];
   refundedAt?: string | null;
   demo?: boolean;
+  justIssued?: boolean;
   demoValue?: string;
+  demoState?: { masked: boolean; decrypt: number; copied: boolean };
   className?: string;
   children?: ReactNode;
 }
@@ -145,7 +174,9 @@ export function KeyPlate({
   activationNotes = [],
   refundedAt,
   demo = false,
+  justIssued = false,
   demoValue,
+  demoState,
   className,
 }: KeyPlateProps) {
   const face = productFace(title, keyInfo ?? null);
@@ -154,6 +185,8 @@ export function KeyPlate({
   const baseId = useId();
   const copyRef = useRef<HTMLButtonElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
+  const plateRef = useRef<HTMLElement>(null);
+  const decryptNext = useRef(false);
   const [revealed, setRevealed] = useState<Revealed | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -165,10 +198,19 @@ export function KeyPlate({
   const firstReveal = revealed?.revealedAt ?? revealedAt ?? null;
   const effective: KeyPlateStatus = reported && status === "ready" ? "reported" : status;
   const tag = STATUS_TAG[effective];
-  const masked = !revealed;
-  const value = revealed?.value ?? "";
+  const controlled = demo && demoState ? demoState : null;
+  const masked = controlled ? controlled.masked : !revealed;
+  const value = controlled ? (controlled.masked ? "" : (demoValue ?? "")) : (revealed?.value ?? "");
+  const copyState = controlled ? (controlled.copied ? "ok" : null) : copied;
   const pin = /\bPIN[:\s]+(\S+)/i.exec(value);
   const code = pin ? value.slice(0, pin.index).replace(/[\s:,;-]+(code)?$/i, "").replace(/^code[:\s]+/i, "").trim() : value;
+
+  useLayoutEffect(() => {
+    if (!revealed || !decryptNext.current) return;
+    decryptNext.current = false;
+    const slots = Array.from(plateRef.current?.querySelectorAll<HTMLElement>("[data-key-slots] [data-slot]") ?? []);
+    return runDecrypt(slots, () => copyRef.current?.focus());
+  }, [revealed]);
 
   const reveal = async () => {
     if (demo) {
@@ -181,9 +223,9 @@ export function KeyPlate({
       const res = await fetch(`/api/account/keys/${encodeURIComponent(keyId)}`, { method: "POST", cache: "no-store" });
       const body = await res.json().catch(() => ({}));
       if (!res.ok || typeof body.key !== "string") throw new Error(res.status === 429 ? "Too many requests. Wait a minute and try again." : "We couldn't show this key. Contact us with your order number.");
+      decryptNext.current = true;
       setRevealed({ value: body.key, type: typeof body.type === "string" ? body.type : keyType, revealedAt: typeof body.revealedAt === "string" ? body.revealedAt : null });
       setAnnounce("Key revealed");
-      window.setTimeout(() => copyRef.current?.focus(), 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "We couldn't show this key.");
     } finally {
@@ -215,8 +257,10 @@ export function KeyPlate({
 
   return (
     <article
+      ref={plateRef}
       data-key-plate=""
       data-decrypt=""
+      data-issued={justIssued ? "" : undefined}
       data-state={masked ? "masked" : "revealed"}
       data-status={effective}
       data-platform={face.tone}
@@ -296,7 +340,7 @@ export function KeyPlate({
           </dl>
         ) : (
           <>
-            <KeySlots value={masked ? maskFor(keyInfo?.platform) : value} masked={masked} demoId={demo ? "key" : undefined} />
+            <KeySlots value={masked ? maskFor(keyInfo?.platform) : value} masked={masked} progress={controlled && !controlled.masked ? controlled.decrypt : undefined} demoId={demo ? "key" : undefined} />
             {revealed ? (
               <span ref={textRef} className="sr-only key-code">
                 {value}
@@ -317,8 +361,8 @@ export function KeyPlate({
           ) : (
             <>
               {!isImage && !pin ? (
-                <Button ref={copyRef} variant="outline" onPress={() => copy(value)} startContent={copied === "ok" ? <CopyCheck size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />} data-demo={demo ? "copy" : undefined}>
-                  {copied === "ok" ? "Copied" : "Copy key"}
+                <Button ref={copyRef} variant="outline" onPress={() => copy(value)} startContent={copyState === "ok" ? <CopyCheck size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />} data-demo={demo ? "copy" : undefined}>
+                  {copyState === "ok" ? "Copied" : "Copy key"}
                 </Button>
               ) : null}
               {guide?.redeemUrl ? (
@@ -391,8 +435,8 @@ export function KeyPlate({
               {spellOut(value)}
             </p>
           ) : null}
-          {!demo && effective === "ready" ? (
-            <button type="button" onClick={() => setReportOpen(true)} className="btn-text mt-1 inline-flex min-h-10 cursor-pointer items-center gap-2 text-ui-sm font-[560] text-ink-muted hover-device:hover:text-ink">
+          {effective === "ready" ? (
+            <button type="button" onClick={() => (demo ? undefined : setReportOpen(true))} data-demo={demo ? "report" : undefined} className="btn-text mt-1 inline-flex min-h-10 cursor-pointer items-center gap-2 text-ui-sm font-[560] text-ink-muted hover-device:hover:text-ink">
               <MessageSquareWarning size={16} aria-hidden="true" />
               <span data-label="">Key not working? Report it</span>
             </button>

@@ -71,11 +71,9 @@ export function DialRuler({
         {detents.map((d, i) => (
           <span key={d.key} className="absolute bottom-0 h-3 w-px -translate-x-1/2 bg-ink" style={{ left: `${pct(i)}%` }} />
         ))}
-        <span
-          data-index-line=""
-          className="absolute bottom-0 h-3.5 w-0.5 -translate-x-1/2 bg-brand transition-[left] duration-[260ms] ease-[var(--ease-latch)]"
-          style={{ left: `${pct(active)}%` }}
-        />
+        <span data-index-track="" className="absolute inset-x-0 bottom-0 h-3.5 transition-transform duration-[260ms] ease-[var(--ease-latch)]" style={{ transform: `translateX(${pct(active)}%)` }}>
+          <span data-index-line="" className="absolute bottom-0 left-0 h-3.5 w-0.5 -translate-x-1/2 bg-brand" />
+        </span>
       </div>
       <ol className="relative m-0 mt-2.5 flex list-none justify-between p-0">
         {detents.map((d, i) => {

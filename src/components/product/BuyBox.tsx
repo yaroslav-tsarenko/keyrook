@@ -26,14 +26,18 @@ export interface BuyBoxProps {
   product: CatalogProduct;
   alternatives?: PlatformAlternative[];
   priceAvailable?: boolean;
+  demo?: boolean;
+  demoInCart?: boolean;
   className?: string;
 }
 
-export function BuyBox({ product, alternatives = [], priceAvailable = true, className }: BuyBoxProps) {
+export function BuyBox({ product, alternatives = [], priceAvailable = true, demo = false, demoInCart = false, className }: BuyBoxProps) {
   const router = useRouter();
   const { isSaved, toggle, pending } = useWishlist();
   const { cart } = useCart();
-  const { add, inCart, openSheet, price } = useAddToCart(product);
+  const cartState = useAddToCart(product);
+  const { add, openSheet, price } = cartState;
+  const inCart = demo ? demoInCart : cartState.inCart;
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const [barVisible, setBarVisible] = useState(false);
@@ -48,26 +52,29 @@ export function BuyBox({ product, alternatives = [], priceAvailable = true, clas
 
   useEffect(() => {
     const node = actionRef.current;
-    if (!node) return;
+    if (!node || demo) return;
     const observer = new IntersectionObserver(([entry]) => setBarVisible(!entry.isIntersecting && entry.boundingClientRect.top < 0), { threshold: 0 });
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [demo]);
 
   useEffect(() => {
+    if (demo) return;
     document.documentElement.style.setProperty("--sticky-bar-offset", barVisible && sellable ? "64px" : "0px");
     return () => {
       document.documentElement.style.removeProperty("--sticky-bar-offset");
     };
-  }, [barVisible, sellable]);
+  }, [barVisible, sellable, demo]);
 
   const source = (e: MouseEvent<HTMLElement>) => e.currentTarget.closest("[data-product]")?.querySelector("[data-cover]") ?? null;
   const addFrom = (e: MouseEvent<HTMLElement>) => {
+    if (demo) return;
     setAdding(true);
     add(source(e), quantity);
     window.setTimeout(() => setAdding(false), 160);
   };
   const buyNow = (e: MouseEvent<HTMLElement>) => {
+    if (demo) return;
     if (!inCart) add(source(e), quantity);
     router.push("/checkout");
   };
@@ -129,13 +136,19 @@ export function BuyBox({ product, alternatives = [], priceAvailable = true, clas
             <p className="m-0 flex items-center gap-2 text-ui-md text-ink">
               <Check size={16} aria-hidden="true" />
               In cart{inCartQty > 1 ? ` · ${inCartQty}` : ""} ·{" "}
-              <button type="button" onClick={openSheet} className="btn-text cursor-pointer font-[560] text-ink">
+              <button type="button" onClick={demo ? undefined : openSheet} className="btn-text cursor-pointer font-[560] text-ink">
                 <span data-label="">View cart</span>
               </button>
             </p>
-            <Button size="lg" fullWidth as={Link} href="/checkout">
-              Checkout
-            </Button>
+            {demo ? (
+              <Button size="lg" fullWidth data-demo="checkout">
+                Checkout
+              </Button>
+            ) : (
+              <Button size="lg" fullWidth as={Link} href="/checkout">
+                Checkout
+              </Button>
+            )}
           </div>
         ) : (
           <>
@@ -145,7 +158,7 @@ export function BuyBox({ product, alternatives = [], priceAvailable = true, clas
                 <span className="text-ui-sm text-ink-muted">Up to {cap} per order</span>
               </div>
             ) : null}
-            <Button size="lg" fullWidth onClick={addFrom} isLoading={adding} data-add="">
+            <Button size="lg" fullWidth onClick={addFrom} isLoading={adding} data-add="" data-demo={demo ? "add" : undefined}>
               Add to cart
             </Button>
             <Button size="lg" fullWidth variant="outline" onClick={buyNow}>
@@ -155,8 +168,8 @@ export function BuyBox({ product, alternatives = [], priceAvailable = true, clas
         )}
         <button
           type="button"
-          onClick={() => toggle(product.id)}
-          disabled={pending(product.id)}
+          onClick={() => (demo ? undefined : toggle(product.id))}
+          disabled={!demo && pending(product.id)}
           aria-pressed={pinned}
           className="btn-text inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 text-ui-md font-[560] text-ink disabled:cursor-wait"
         >
@@ -181,7 +194,7 @@ export function BuyBox({ product, alternatives = [], priceAvailable = true, clas
       </ul>
       <PaymentLogos height={20} className="mt-4" />
 
-      {sellable ? (
+      {sellable && !demo ? (
         <div
           data-sticky-buy=""
           aria-hidden={!barVisible}

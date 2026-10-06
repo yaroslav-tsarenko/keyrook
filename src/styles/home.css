@@ -1,0 +1,380 @@
+.door-wall {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.door-stage {
+  position: relative;
+  width: min(88vw, 620px);
+  margin-inline: auto;
+}
+
+.door-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.door-poster {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  perspective: 1400px;
+}
+
+.door-interior {
+  position: absolute;
+  inset: 4.5%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background-color: var(--color-bg-tertiary);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+.door-contents {
+  display: grid;
+  width: 68%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.door-contents a {
+  display: block;
+  padding: 3px;
+  background-color: var(--color-plate);
+  box-shadow: var(--edge-machined), 0 0 0 1px var(--color-border);
+}
+
+.door-contents a:focus-visible {
+  outline-offset: 2px;
+}
+
+.door-contents-small {
+  width: 70%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.door-leaf {
+  position: absolute;
+  inset: 0;
+  transform-origin: 2.5% 50%;
+  transform: rotateY(0deg);
+  transition: transform 1200ms var(--ease-in-out);
+  pointer-events: none;
+}
+
+.door-poster[data-door-state="ajar"] .door-leaf {
+  transform: rotateY(var(--door-angle, 35deg));
+}
+
+.door-poster[data-door-state="open"] .door-leaf {
+  transform: rotateY(80deg);
+}
+
+.door-poster:has([data-door-contents] a:focus-visible) .door-leaf {
+  transform: rotateY(62deg);
+}
+
+@media (max-width: 1023.98px) {
+  .door-contents {
+    width: 70%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  [data-door] .door-poster[data-door-state="closed"] .door-leaf {
+    transform: rotateY(32deg);
+  }
+}
+
+@media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+  [data-door] .door-poster[data-door-state="closed"] .door-leaf {
+    transform: rotateY(35deg);
+  }
+}
+
+.locker {
+  position: relative;
+  display: block;
+  height: 176px;
+  perspective: 900px;
+  background-color: var(--color-bg-tertiary);
+  box-shadow: var(--edge-machined-pressed), 0 0 0 1px var(--color-border);
+}
+
+.locker:focus-visible {
+  outline-offset: 3px;
+}
+
+.locker-inside {
+  position: absolute;
+  inset: 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.locker-cover {
+  display: block;
+  width: min(30%, 92px);
+  padding: 3px;
+  background-color: var(--color-plate);
+  box-shadow: 0 0 0 1px var(--color-border);
+  transition: transform var(--dur-panel) var(--ease-latch);
+}
+
+.locker-door {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  background-color: var(--color-plate);
+  box-shadow: var(--edge-machined), 0 0 0 1px var(--color-border);
+  transform-origin: 0 50%;
+  transition: transform var(--dur-panel) var(--ease-latch);
+}
+
+.locker-vents {
+  display: flex;
+  width: 42%;
+  max-width: 140px;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.locker-vents > span {
+  display: block;
+  height: 3px;
+  background-color: var(--color-bg-tertiary);
+  box-shadow: var(--edge-machined-pressed);
+}
+
+.locker-handle {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 6px;
+  height: 46px;
+  transform: translateY(-50%);
+  background-color: var(--color-border-control);
+  box-shadow: var(--edge-machined);
+}
+
+.locker[data-ajar] .locker-door {
+  transform: rotateY(18deg);
+}
+
+@media (min-width: 1024px) {
+  .locker {
+    height: 300px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .locker[data-ajar] .locker-door {
+    transform: none;
+  }
+
+  .locker:is(:hover, :focus-visible) .locker-door {
+    transform: rotateY(28deg);
+  }
+
+  .locker:is(:hover, :focus-visible) .locker-cover {
+    transform: translateY(-8px);
+  }
+
+  .locker:is(:hover, :focus-visible) [data-lamp] {
+    background-color: var(--color-lamp-on);
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .locker .locker-door,
+  .locker[data-ajar] .locker-door {
+    transform: rotateY(18deg);
+  }
+}
+
+.directory-row {
+  position: relative;
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 14px;
+  padding-block: 8px;
+}
+
+.directory-track {
+  position: relative;
+  display: flex;
+  min-width: 12px;
+  flex: 1;
+  align-items: center;
+  align-self: stretch;
+}
+
+.directory-rule {
+  height: 1px;
+  flex: 1;
+  background-color: var(--color-border);
+  transition: background-color var(--dur-micro) var(--ease-std);
+}
+
+.directory-peek {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .directory-row {
+    min-height: 56px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .directory-peek {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    display: flex;
+    gap: 4px;
+    margin-top: -20px;
+    padding-left: 10px;
+    background-color: var(--color-rig);
+    opacity: 0;
+    transform: translateX(16px);
+    transition:
+      opacity var(--dur-ui) var(--ease-std),
+      transform var(--dur-ui) var(--ease-latch);
+  }
+
+  .directory-row:is(:hover, :focus-visible) .directory-peek {
+    opacity: 1;
+    transform: none;
+  }
+
+  .directory-row:is(:hover, :focus-visible) .directory-rule {
+    background-color: var(--color-text);
+  }
+}
+
+.budget-dial {
+  --dial: 232px;
+  position: relative;
+  width: calc(var(--dial) * 1.72);
+  max-width: 100%;
+  height: calc(var(--dial) * 1.5);
+  margin-inline: auto;
+}
+
+.budget-dial-face {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--dial);
+  height: var(--dial);
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.budget-dial[data-dragging] .budget-dial-face {
+  cursor: grabbing;
+}
+
+.budget-dial-face:focus-visible {
+  outline-offset: 4px;
+}
+
+.budget-ring {
+  transform-origin: 150px 150px;
+  transform-box: view-box;
+  transition: transform var(--dur-panel) var(--ease-latch);
+}
+
+.budget-numeral {
+  transition: transform var(--dur-panel) var(--ease-latch);
+}
+
+.budget-readout {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.budget-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0 8px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform var(--dur-panel) var(--ease-latch),
+    color var(--dur-micro) var(--ease-std),
+    box-shadow var(--dur-micro) var(--ease-std);
+}
+
+.budget-label-on {
+  color: var(--color-text);
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--color-accent);
+}
+
+.budget-label:disabled {
+  color: var(--color-text-tertiary);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .budget-label:not(:disabled):hover {
+    color: var(--color-text);
+  }
+}
+
+.budget-dial[data-dragging] :is(.budget-ring, .budget-numeral, .budget-label) {
+  transition: none;
+}
+
+.budget-item {
+  animation: plate-in var(--dur-ui) var(--ease-latch) calc(var(--i, 0) * 40ms) both;
+}
+
+@media (min-width: 1024px) {
+  .budget-dial {
+    --dial: 248px;
+    margin-inline: 0;
+  }
+}
+
+@media (min-width: 1440px) {
+  .budget-dial {
+    --dial: 272px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .budget-dial {
+    --dial: 300px;
+  }
+}
+
+.th-mini-narrow .th-box {
+  max-width: 300px;
+}

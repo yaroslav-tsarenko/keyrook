@@ -10,7 +10,7 @@ export interface ReadoutLoaderProps {
 export function ReadoutLoader({ label = "Loading", block = false, className }: ReadoutLoaderProps) {
   const loader = <DialLoader label={label} className={className} />;
   if (!block) return loader;
-  return <div className="flex items-center justify-center px-4 py-16">{loader}</div>;
+  return <div className="flex min-h-[100svh] items-start justify-center px-4 py-16">{loader}</div>;
 }
 
 export function SkeletonBar({ className }: { className?: string }) {

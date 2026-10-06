@@ -2,6 +2,7 @@
 
 import { CardGrid, FeatureBox, ProductCard, type CatalogProduct } from "@/components/product/ProductCard";
 import { shelfAspect } from "@/components/product/product-face";
+import { ResultsSettle } from "@/components/motion/ResultsSettle";
 
 interface ProductGridProps {
   products: CatalogProduct[];
@@ -21,6 +22,7 @@ export function ProductGrid({ products, feature, columns = 4, priorityCount = 0,
       {rest.map((product, index) => (
         <ProductCard key={product.id} product={product} priority={index < priorityCount} headingLevel={headingLevel} aspect={aspect} />
       ))}
+      <ResultsSettle keys={products.map((p) => `/product/${p.slug}`)} />
     </CardGrid>
   );
 }
