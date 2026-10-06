@@ -3,21 +3,23 @@
     "overview": "Your account",
     "orders": "Your orders",
     "order": "Order details",
-    "saved": "Saved items",
+    "saved": "Pinned keys",
     "addresses": "Your addresses",
     "profile": "Your details",
-    "description": "Your Keyrook account: orders, keys, saved products and details."
+    "description": "Your Keyrook account: keys, orders, pinned keys and details.",
+    "keys": "Keys"
   },
   "nav": {
     "label": "Account",
     "account": "Account",
     "overview": "Overview",
-    "orders": "Orders and keys",
-    "saved": "Saved",
+    "orders": "Orders",
+    "saved": "Pinned",
     "addresses": "Billing addresses",
     "profile": "Profile",
     "signOut": "Sign out",
-    "loading": "Loading your account"
+    "loading": "Loading your account",
+    "keys": "Keys"
   },
   "loadError": "Something went wrong loading this page.",
   "retry": "Try again",
@@ -56,8 +58,8 @@
         "body": "Name, email, phone, date of birth and password"
       },
       "saved": {
-        "title": "Saved",
-        "body": "Products you saved for later"
+        "title": "Pinned",
+        "body": "Keys you pinned for later"
       },
       "orders": {
         "title": "Orders and keys",
@@ -115,9 +117,9 @@
     "liveUpdates": "This page updates while your keys are being issued."
   },
   "saved": {
-    "title": "Saved",
-    "emptyTitle": "Nothing saved yet",
-    "emptyBody": "Select Save on any product to keep it here.",
+    "title": "Pinned",
+    "emptyTitle": "Nothing pinned yet",
+    "emptyBody": "Choose Pin on any key to keep it here.",
     "browse": "Browse the catalogue"
   },
   "addresses": {

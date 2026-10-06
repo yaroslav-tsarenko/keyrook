@@ -46,13 +46,13 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const result = await queryCatalog({ kind: "all" }, { ...params, category: null }, { basePath: "/catalog", defaultSort: "popular" });
   const typeIndex = tree.roots
     .filter((c) => (counts.get(c.id) ?? 0) > 0)
-    .map((c) => ({ slug: c.slug, label: c.name, count: counts.get(c.id) ?? 0, href: `/catalog/${c.slug}` }));
+    .map((c) => ({ slug: c.slug, label: c.slug === "dlc" ? "DLC" : c.name, count: counts.get(c.id) ?? 0, href: `/catalog/${c.slug}` }));
   const total = tree.roots.reduce((sum, c) => sum + (counts.get(c.id) ?? 0), 0);
 
   return (
     <div className="mx-auto max-w-container px-gutter pb-24">
-      <Breadcrumbs items={[{ label: t("home"), href: "/" }, { label: t("allCategoriesTitle") }]} />
-      <CategoryOpener name={t("allCategoriesTitle")} count={total} lead={t("catalogLead", { categories: typeIndex.length })} typeIndex={typeIndex} />
+      <Breadcrumbs items={[{ label: t("home"), href: "/" }, { label: "Catalogue" }]} />
+      <CategoryOpener name={t("allCategoriesTitle")} count={total} lead={t("catalogLead")} typeIndex={typeIndex} typeIndexLabel="Keys by type" />
 
       <CatalogBrowser
         basePath="/catalog"

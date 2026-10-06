@@ -2,12 +2,12 @@ import { cn } from "@/lib/utils/cn";
 
 export type ButtonVariant = "primary" | "secondary" | "tertiary" | "outline" | "ghost" | "danger" | "danger-soft" | "light" | "flat" | "bordered" | "account";
 export type ButtonColor = "primary" | "danger" | "success" | "warning" | "default";
-type Kind = "indicator" | "outline" | "text" | "danger" | "danger-text" | "account";
+type Kind = "key" | "steel" | "text" | "danger" | "danger-text";
 
 const SIZE: Record<"sm" | "md" | "lg", string> = {
-  sm: "h-9 px-3.5 text-[0.875rem]",
-  md: "h-11 px-5 text-[1rem]",
-  lg: "h-[52px] px-7 text-[1.125rem]",
+  sm: "h-9 px-3.5 text-[0.8125rem]",
+  md: "h-11 px-5 text-[0.875rem]",
+  lg: "h-[52px] px-7 text-[0.9375rem]",
 };
 
 const TEXT_SIZE: Record<"sm" | "md" | "lg", string> = {
@@ -17,17 +17,15 @@ const TEXT_SIZE: Record<"sm" | "md" | "lg", string> = {
 };
 
 function resolveKind(variant: ButtonVariant, color?: ButtonColor): Kind {
-  if (variant === "account") return "account";
   if (color === "danger") {
-    return variant === "flat" || variant === "light" || variant === "ghost" || variant === "tertiary" || variant === "danger-soft"
-      ? "danger-text"
-      : "danger";
+    return variant === "flat" || variant === "light" || variant === "ghost" || variant === "tertiary" || variant === "danger-soft" ? "danger-text" : "danger";
   }
   switch (variant) {
     case "secondary":
     case "outline":
     case "bordered":
-      return "outline";
+    case "account":
+      return "steel";
     case "tertiary":
     case "ghost":
     case "light":
@@ -38,38 +36,32 @@ function resolveKind(variant: ButtonVariant, color?: ButtonColor): Kind {
     case "danger-soft":
       return "danger-text";
     default:
-      return "indicator";
+      return "key";
   }
 }
 
-const BOXED_DISABLED = "rounded-control bg-surface-1 text-ink-subtle";
+const PRESS = "active:translate-y-px active:shadow-machined-pressed";
 
 function kindClasses(kind: Kind, disabled: boolean) {
-  if (kind === "indicator") {
-    if (disabled) return BOXED_DISABLED;
-    return cn(
-      "rounded-control bg-brand text-on-brand shadow-[inset_0_1px_0_rgb(255_255_255/0.22)] [[data-theme=light]_&]:border [[data-theme=light]_&]:border-accent-edge",
-      "hover-device:hover:bg-brand-hover hover-device:hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.4)] active:translate-y-px",
-    );
-  }
-  if (kind === "account") {
-    if (disabled) return BOXED_DISABLED;
-    return "rounded-control bg-ink text-surface hover-device:hover:bg-ink-muted active:translate-y-px";
+  if (kind === "key") {
+    if (disabled) return "bg-surface-1 text-ink-subtle";
+    return cn("bg-brand text-on-brand shadow-machined [[data-theme=light]_&]:border [[data-theme=light]_&]:border-accent-edge", "hover-device:hover:bg-brand-hover", PRESS);
   }
   if (kind === "danger") {
-    if (disabled) return BOXED_DISABLED;
-    return "rounded-control bg-danger text-on-danger hover-device:hover:brightness-[1.06] active:translate-y-px";
+    if (disabled) return "bg-surface-1 text-ink-subtle";
+    return cn("bg-danger text-on-danger shadow-machined hover-device:hover:brightness-[1.05]", PRESS);
   }
-  if (kind === "outline") {
-    if (disabled) return "rounded-control border border-line text-ink-subtle";
-    return "rounded-control border border-control text-ink hover-device:hover:border-ink hover-device:hover:bg-raised active:translate-y-px active:bg-brand-soft";
+  if (kind === "steel") {
+    if (disabled) return "border border-line bg-surface-1 text-ink-subtle";
+    return cn("border border-control bg-plate text-ink shadow-machined hover-device:hover:border-ink hover-device:hover:bg-raised", PRESS);
   }
+  const base = "btn-text font-sans font-[560] normal-case tracking-normal [font-stretch:100%]";
   if (kind === "danger-text") {
-    if (disabled) return "text-ink-subtle";
-    return "font-sans font-semibold normal-case tracking-normal text-danger decoration-1 underline-offset-4 hover-device:hover:underline";
+    if (disabled) return cn(base, "text-ink-subtle");
+    return cn(base, "text-danger");
   }
-  if (disabled) return "font-sans font-semibold normal-case tracking-normal text-ink-subtle";
-  return "font-sans font-semibold normal-case tracking-normal text-ink decoration-1 underline-offset-4 hover-device:hover:underline active:underline active:decoration-accent-ink";
+  if (disabled) return cn(base, "text-ink-subtle");
+  return cn(base, "text-ink active:text-accent-ink");
 }
 
 export function buttonClasses({
@@ -91,11 +83,17 @@ export function buttonClasses({
 }) {
   const kind = resolveKind(variant, color);
   if (isIconOnly) {
+    if (kind === "steel" || kind === "key") {
+      return cn(
+        "relative inline-flex size-10 shrink-0 items-center justify-center touch-device:size-11 transition-[color,background-color,border-color,box-shadow,transform] duration-[120ms]",
+        kindClasses(kind, disabled),
+        disabled ? "cursor-not-allowed" : "cursor-pointer",
+        className,
+      );
+    }
     return cn(
-      "relative inline-flex shrink-0 items-center justify-center size-10 touch-device:size-11 rounded-control transition-colors duration-[140ms]",
-      disabled
-        ? "text-ink-subtle cursor-not-allowed"
-        : cn(kind === "danger" || kind === "danger-text" ? "text-danger" : "text-ink", "cursor-pointer hover-device:hover:bg-raised active:bg-brand-soft"),
+      "relative inline-flex size-10 shrink-0 items-center justify-center touch-device:size-11 transition-colors duration-[120ms]",
+      disabled ? "cursor-not-allowed text-ink-subtle" : cn(kind === "danger" || kind === "danger-text" ? "text-danger" : "text-ink", "cursor-pointer hover-device:hover:bg-raised active:bg-surface-1"),
       className,
     );
   }
@@ -103,7 +101,7 @@ export function buttonClasses({
   return cn(
     "relative inline-flex items-center justify-center gap-2 whitespace-nowrap select-none leading-none",
     !isText && "label-caps",
-    "transition-[transform,color,background-color,border-color,box-shadow,filter] duration-[140ms] ease-[var(--ease-instrument)]",
+    "transition-[transform,color,background-color,border-color,box-shadow,filter] duration-[120ms] ease-[var(--ease-latch)]",
     "focus-visible:outline-offset-2",
     isText ? TEXT_SIZE[size] : SIZE[size],
     kindClasses(kind, disabled),
@@ -112,4 +110,3 @@ export function buttonClasses({
     className,
   );
 }
-

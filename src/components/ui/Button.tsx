@@ -3,6 +3,7 @@
 import React from "react";
 import { cn } from "@/lib/utils/cn";
 import { buttonClasses, type ButtonVariant } from "./button-classes";
+import { DialLoader } from "./Dial";
 
 export { buttonClasses };
 
@@ -27,14 +28,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function ButtonLoader({ className }: { className?: string }) {
   return (
-    <span aria-hidden="true" className={cn("pointer-events-none absolute inset-0 flex items-center justify-center gap-1", className)}>
-      {[0, 1, 2].map((i) => (
-        <span
-          key={i}
-          className="size-1 bg-current opacity-40 [animation:readout-led_420ms_steps(1,end)_infinite] motion-reduce:animate-none"
-          style={{ animationDelay: `${i * 140}ms` }}
-        />
-      ))}
+    <span aria-hidden="true" className={cn("pointer-events-none absolute inset-0 flex items-center justify-center", className)}>
+      <DialLoader size={16} label="Working" />
     </span>
   );
 }
@@ -88,7 +83,7 @@ export function Button({
     </>
   ) : (
     <>
-      <span className={cn("inline-flex items-center gap-2 [&_svg]:size-[18px]", isLoading && "invisible")}>
+      <span data-label="" className={cn("inline-flex items-center gap-2 [&_svg]:size-[18px]", isLoading && "invisible")}>
         {startContent}
         {children}
         {endContent}

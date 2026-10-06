@@ -6,7 +6,10 @@ import { prisma } from "@/lib/prisma";
 import { PLATFORMS, platformBySlug, PRODUCT_TYPES, categorySlugFor } from "@/lib/keys/taxonomy";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs/Breadcrumbs";
 import { CatalogBrowser } from "@/components/catalog/CatalogBrowser";
-import { CategoryOpener } from "@/components/catalog/CategoryOpener";
+import { PlatformOpener } from "@/components/catalog/CategoryOpener";
+import { EmptyState } from "@/components/shared/EmptyState/EmptyState";
+import { platformInfo } from "@/lib/catalog/platforms";
+import { activationFor } from "@/config/activation";
 import { queryCatalog } from "@/components/catalog/catalog-query";
 import { hasActiveFilters, parseCatalogParams, type RawSearchParams } from "@/components/catalog/catalog-url";
 
@@ -18,10 +21,15 @@ interface PlatformPageProps {
 async function platformStats(platform: string) {
   const rows = await prisma.keyItem.groupBy({
     by: ["productType"],
-    where: { platform, product: { status: "ACTIVE" } },
+    where: { platform, product: { status: "ACTIVE", quantity: { gt: 0 } } },
     _count: { _all: true },
   });
   return new Map(rows.map((r) => [r.productType, r._count._all]));
+}
+
+async function platformMinPrice(platform: string): Promise<number | null> {
+  const row = await prisma.product.aggregate({ where: { status: "ACTIVE", quantity: { gt: 0 }, item: { platform } }, _min: { price: true } });
+  return row._min.price != null ? Number(row._min.price) : null;
 }
 
 export async function generateMetadata({ params, searchParams }: PlatformPageProps): Promise<Metadata> {
@@ -46,43 +54,64 @@ export default async function PlatformPage({ params, searchParams }: PlatformPag
   const t = await getTranslations("catalog");
   const query = parseCatalogParams(await searchParams, "popular");
   const basePath = `/platform/${platform.slug}`;
-  const [counts, result] = await Promise.all([platformStats(platform.key), queryCatalog({ kind: "platform", platform }, { ...query, category: null }, { basePath, defaultSort: "popular" })]);
+  const info = platformInfo(platform.key);
+  const guide = activationFor(platform.key);
+  const [counts, minPrice, result] = await Promise.all([platformStats(platform.key), platformMinPrice(platform.key), queryCatalog({ kind: "platform", platform }, { ...query, category: null }, { basePath, defaultSort: "popular" })]);
   const total = [...counts.values()].reduce((a, b) => a + b, 0);
-  if (total === 0 && !hasActiveFilters(query)) notFound();
 
   const typeIndex = PRODUCT_TYPES.filter((type) => (counts.get(type.key) ?? 0) > 0).map((type) => ({
     slug: type.slug,
-    label: type.label,
+    label: type.key === "dlc" ? "DLC" : type.label,
     count: counts.get(type.key) ?? 0,
     href: `/catalog/${categorySlugFor(type.key, platform.key)}`,
   }));
-  const related = PLATFORMS.filter((p) => p.key !== platform.key && p.key !== "other")
-    .slice(0, 4)
-    .map((p) => ({ name: p.label, href: `/platform/${p.slug}` }));
+  const others = await prisma.keyItem.groupBy({ by: ["platform"], where: { product: { status: "ACTIVE", quantity: { gt: 0 } }, platform: { not: platform.key } }, _count: { _all: true } });
+  const related = PLATFORMS.filter((p) => p.key !== "other" && others.some((o) => o.platform === p.key)).map((p) => ({ name: platformInfo(p.key).short, href: `/platform/${p.slug}` }));
 
   return (
     <div className="mx-auto max-w-container px-gutter pb-24">
-      <Breadcrumbs items={[{ label: t("home"), href: "/" }, { label: t("allCategoriesTitle"), href: "/catalog" }, { label: platform.label }]} />
-      <CategoryOpener
-        name={`${platform.label} keys`}
-        count={total}
-        lead={`Everything here activates on ${platform.label} and needs ${platform.account}. Check the activation region on each product before you buy.`}
-        typeIndex={typeIndex}
-        typeIndexLabel={`${platform.label} by product type`}
-      />
-      <CatalogBrowser
-        basePath={basePath}
-        params={{ ...query, category: null, page: result.page }}
-        products={result.products}
-        total={result.total}
-        page={result.page}
-        totalPages={result.totalPages}
-        facets={result.facets}
-        defaultSort="popular"
-        related={related}
-        headingId="platform-results"
-        heading={t("resultsIn", { name: platform.label })}
-      />
+      <Breadcrumbs items={[{ label: t("home"), href: "/" }, { label: "Catalogue", href: "/catalog" }, { label: info.short }]} />
+      {total === 0 && !hasActiveFilters(query) ? (
+        <EmptyState title={`No ${info.short} keys in stock right now`} subtitle="Try another platform's locker." headingLevel={1}>
+          <ul className="m-0 flex list-none flex-wrap justify-center gap-x-6 gap-y-2 p-0">
+            {related.map((r) => (
+              <li key={r.href}>
+                <a href={r.href} className="text-ui-md font-[560] text-ink underline-offset-4 hover-device:hover:underline">
+                  {r.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </EmptyState>
+      ) : (
+        <>
+          <PlatformOpener
+            name={`${info.short} keys`}
+            count={total}
+            minPrice={minPrice}
+            sentence={guide?.sentence ?? `Activates on ${platform.label}. You need ${platform.account}.`}
+            guideHref={guide ? `/how-activation-works#${platform.slug}` : null}
+            guideLabel={`How to redeem on ${info.short}`}
+            typeIndex={typeIndex}
+            tone={info.tone}
+          />
+          <CatalogBrowser
+            basePath={basePath}
+            params={{ ...query, category: null, page: result.page }}
+            products={result.products}
+            total={result.total}
+            page={result.page}
+            totalPages={result.totalPages}
+            facets={result.facets}
+            defaultSort="popular"
+            related={related.slice(0, 4)}
+            headingId="platform-results"
+            heading={t("resultsIn", { name: platform.label })}
+            hide={["platforms"]}
+            feature={query.sort === "popular" ? result.products[0] ?? null : null}
+          />
+        </>
+      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     deviceSizes: [...IMAGE_VARIANT_WIDTHS],
     imageSizes: [],
   },
+  redirects: async () => [{ source: "/how-it-works", destination: "/how-activation-works", permanent: true }],
   headers: async () => [
     {
       source: "/(.*)",

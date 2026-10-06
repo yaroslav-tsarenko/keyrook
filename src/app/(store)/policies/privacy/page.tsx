@@ -16,7 +16,7 @@ const purposes: { purpose: string; data: string; basis: string }[] = [
   { purpose: `Checking you are ${F.minAge} or over`, data: "Date of birth", basis: "Contract and legitimate interests" },
   { purpose: "Answering messages and complaints", data: "Name, email, order number, the content of your message, the IP address it was sent from", basis: "Contract and legitimate interests" },
   { purpose: "Refunds, chargebacks and fraud prevention", data: "Order details, payment result and transaction reference, IP address", basis: "Legal obligation and legitimate interests" },
-  { purpose: "Not selling to restricted countries and territories", data: "Billing country and address", basis: "Legal obligation" },
+  { purpose: "Not taking orders from restricted countries and territories", data: "Billing country and address", basis: "Legal obligation" },
   { purpose: "Accounting and tax records", data: "Order and refund records", basis: "Legal obligation" },
   { purpose: "Newsletter, only if you sign up", data: "Email address", basis: "Consent" },
   { purpose: "Keeping the website secure and working", data: "IP address, browser and device type, pages requested, error logs", basis: "Legitimate interests" },

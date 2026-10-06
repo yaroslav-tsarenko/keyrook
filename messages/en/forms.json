@@ -22,7 +22,7 @@
   "city": "Town or city",
   "postcode": "Postcode",
   "country": "Country",
-  "countryHint": "We sell to customers in the United Kingdom and the European Union.",
+  "countryHint": "We serve customers in the United Kingdom and the European Union.",
   "countryPlaceholder": "Choose a country",
   "errors": {
     "generic": "Check this field.",
@@ -36,7 +36,7 @@
     "phoneRequired": "Enter a phone number.",
     "phoneInvalid": "Enter a phone number using digits only, without the country code.",
     "countryRequired": "Choose a country.",
-    "countryNotServed": "We only sell to customers in the United Kingdom and EU member states.",
+    "countryNotServed": "We only serve customers in the United Kingdom and EU member states.",
     "postcodeRequired": "Enter a postcode.",
     "postcodeInvalid": "Enter a valid postcode.",
     "streetRequired": "Enter the street address.",

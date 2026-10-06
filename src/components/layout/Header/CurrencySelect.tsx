@@ -22,9 +22,8 @@ export function CurrencySelect({ size = "xs", className, showLabel = false }: { 
           value={currency}
           onChange={(e) => setCurrency(e.target.value as Currency)}
           className={cn(
-            "cursor-pointer appearance-none rounded-control border border-transparent bg-transparent font-mono text-ink transition-colors duration-[140ms]",
-            "hover-device:hover:border-control",
-            size === "xs" ? "h-9 pl-2.5 pr-7 text-[0.8125rem] text-ink-muted hover-device:hover:text-ink" : "h-11 border-control bg-raised pl-3.5 pr-10 text-data",
+            "cursor-pointer appearance-none border font-mono text-ink transition-colors duration-[120ms]",
+            size === "xs" ? "h-8 border-transparent bg-transparent pl-2 pr-6 text-[0.8125rem] text-ink-muted hover-device:hover:border-control hover-device:hover:text-ink" : "h-11 border-control bg-raised pl-3.5 pr-10 text-data shadow-machined-pressed",
           )}
         >
           {CURRENCIES.map((code) => (
@@ -33,7 +32,7 @@ export function CurrencySelect({ size = "xs", className, showLabel = false }: { 
             </option>
           ))}
         </select>
-        <ChevronDown size={16} aria-hidden="true" className={cn("pointer-events-none absolute top-1/2 -translate-y-1/2 text-ink-muted", size === "xs" ? "right-1.5 size-3.5" : "right-3.5")} />
+        <ChevronDown size={14} aria-hidden="true" className={cn("pointer-events-none absolute top-1/2 -translate-y-1/2 text-ink-muted", size === "xs" ? "right-1.5" : "right-3.5")} />
       </div>
     </div>
   );

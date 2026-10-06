@@ -1,75 +1,94 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { AlignRight, ChevronDown, CircleUser, Search, ShoppingCart } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Archive, ChevronDown, Menu, Search, UserKey } from "lucide-react";
 import { Wordmark } from "@/components/layout/BrandMark";
+import { Lamp } from "@/components/ui/Lamp";
+import { Tumbler } from "@/components/ui/Tumbler";
 import { useCart } from "@/providers/CartProvider";
 import { useAuth } from "@/providers/AuthProvider";
-import { catalogSlugFromPath, findRootSlug, useCategoryTree } from "@/lib/hooks/useCategoryTree";
-import { RIG_LINKS, navCategory } from "@/config/navigation";
-import { productTypeDef } from "@/lib/keys/taxonomy";
+import { searchCountLabel, useStoreIndex } from "@/lib/hooks/useStoreIndex";
+import { STORE_POLICY } from "@/config/store-policy";
 import { cn } from "@/lib/utils/cn";
 import { BRAND } from "@/lib/brand";
 import { ThemeToggle } from "./ThemeToggle";
 import { CurrencySelect } from "./CurrencySelect";
-import { CatalogBoard } from "./CatalogBoard";
+import { VaultMap } from "./VaultMap";
 import { MobileMenu } from "./MobileMenu";
 import { SearchDialog } from "@/components/search/SearchDialog/SearchDialog";
 import { CartSheet } from "@/components/cart/CartSheet/CartSheet";
 import { CheckoutHeader } from "@/components/checkout/CheckoutFrame";
 
-const navLink = cn(
-  "indicator-bar label-caps relative inline-flex h-full items-center whitespace-nowrap text-[0.9375rem] text-ink-muted transition-colors duration-[140ms]",
-  "after:!bottom-[calc(50%-14px)] hover-device:hover:text-ink aria-[current]:text-ink data-[active=true]:text-ink",
+const RAIL: { href: string; label: string; wide?: boolean }[] = [
+  { href: "/catalog/games", label: "Games" },
+  { href: "/catalog/dlc", label: "DLC", wide: true },
+  { href: "/catalog/gift-cards", label: "Gift cards" },
+  { href: "/catalog/subscriptions", label: "Subscriptions", wide: true },
+  { href: "/deals", label: "Deals" },
+  { href: "/new-releases", label: "New releases", wide: true },
+];
+
+const railLink = cn(
+  "active-bar label-caps relative inline-flex h-full items-center whitespace-nowrap text-[0.8125rem] text-ink-muted transition-colors duration-[120ms]",
+  "hover-device:hover:text-ink aria-[current]:text-ink data-[active=true]:text-ink",
 );
 
-const action = "relative inline-flex h-10 cursor-pointer items-center gap-2 whitespace-nowrap rounded-control px-2 text-ui-md font-semibold text-ink transition-colors duration-[140ms] hover-device:hover:bg-raised";
+const action = "relative inline-flex h-11 cursor-pointer items-center gap-2 whitespace-nowrap px-2.5 text-ui-md font-[560] text-ink transition-colors duration-[120ms] hover-device:hover:bg-raised";
 
-export function CartCount({ count, bump }: { count: number; bump: number }) {
+export function CartCount({ count }: { count: number; bump?: number }) {
   if (count <= 0) return null;
-  return (
-    <span data-cart-count="" className="inline-flex h-5 min-w-5 items-center justify-center overflow-hidden rounded-control bg-brand px-1 font-mono text-[0.6875rem] font-semibold leading-none text-on-brand">
-      <span key={bump} className={cn("inline-block", bump > 0 && "animate-count-roll")}>
-        {count > 99 ? "99+" : count}
-      </span>
-    </span>
-  );
+  return <Tumbler value={count > 99 ? "99" : count} size="xs" label={`${count} in cart`} slotClassName="!bg-brand !text-on-brand !shadow-none" />;
 }
 
-function CatalogFilterProbe({ onChange }: { onChange: (slug: string | null) => void }) {
-  const params = useSearchParams();
-  const types = (params.get("type") ?? "").split(",").filter(Boolean);
-  const slug = types.length === 1 ? productTypeDef(types[0])?.slug ?? null : null;
-  useEffect(() => onChange(slug), [slug, onChange]);
-  return null;
+function active(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`) || pathname.startsWith(`${href}-`);
 }
 
 function StoreHeader() {
   const pathname = usePathname();
-  const [filterSlug, setFilterSlug] = useState<string | null>(null);
-  const { itemCount, cartBounce, openSheet, isSheetOpen } = useCart();
+  const { itemCount, openSheet, isSheetOpen } = useCart();
   const { user } = useAuth();
-  const categories = useCategoryTree();
-  const boardId = useId();
-  const [boardOpen, setBoardOpen] = useState(false);
+  const index = useStoreIndex();
+  const mapId = useId();
+  const [mapOpen, setMapOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [compact, setCompact] = useState(false);
-  const boardTimer = useRef<number | undefined>(undefined);
-  const boardTrigger = useRef<HTMLButtonElement>(null);
-  const anyOpen = boardOpen || mobileOpen || searchOpen || isSheetOpen;
+  const [railHidden, setRailHidden] = useState(false);
+  const mapTimer = useRef<number | undefined>(undefined);
+  const mapTrigger = useRef<HTMLButtonElement>(null);
+  const anyOpen = mapOpen || mobileOpen || searchOpen || isSheetOpen;
 
   useEffect(() => {
-    const onScroll = () => setCompact(window.scrollY > 80);
+    let lastY = window.scrollY;
+    let upTravel = 0;
+    const onScroll = () => {
+      const y = window.scrollY;
+      const dy = y - lastY;
+      lastY = y;
+      setCompact(y > 120);
+      if (y <= 120) {
+        upTravel = 0;
+        setRailHidden(false);
+        return;
+      }
+      if (dy > 0) {
+        upTravel = 0;
+        setRailHidden(true);
+      } else if (dy < 0) {
+        upTravel -= dy;
+        if (upTravel >= 40) setRailHidden(false);
+      }
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
-    setBoardOpen(false);
+    setMapOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -84,148 +103,156 @@ function StoreHeader() {
     return () => document.removeEventListener("keydown", onKey);
   }, [anyOpen]);
 
-  const openBoard = useCallback((delay: number) => {
-    window.clearTimeout(boardTimer.current);
-    boardTimer.current = window.setTimeout(() => setBoardOpen(true), delay);
+  const openMap = useCallback((delay: number) => {
+    window.clearTimeout(mapTimer.current);
+    mapTimer.current = window.setTimeout(() => setMapOpen(true), delay);
   }, []);
 
-  const closeBoard = useCallback((delay: number, restoreFocus = false) => {
-    window.clearTimeout(boardTimer.current);
-    boardTimer.current = window.setTimeout(() => {
-      setBoardOpen(false);
-      if (restoreFocus) boardTrigger.current?.focus();
+  const closeMap = useCallback((delay: number, restoreFocus = false) => {
+    window.clearTimeout(mapTimer.current);
+    mapTimer.current = window.setTimeout(() => {
+      setMapOpen(false);
+      if (restoreFocus) mapTrigger.current?.focus();
     }, delay);
   }, []);
 
   useEffect(() => {
-    if (!boardOpen) return;
+    if (!mapOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeBoard(0, true);
+      if (e.key === "Escape") closeMap(0, true);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [boardOpen, closeBoard]);
+  }, [mapOpen, closeMap]);
 
-  const catalogSlug = catalogSlugFromPath(pathname);
-  const filteredSlug = pathname === "/catalog" ? filterSlug : null;
-  const activeRoot = findRootSlug(categories, catalogSlug ?? filteredSlug) ?? catalogSlug ?? filteredSlug;
-  const boardActive = (pathname === "/catalog" && !filteredSlug) || (activeRoot !== null && !RIG_LINKS.includes(activeRoot));
+  const catalogueActive = pathname === "/catalog" || pathname.startsWith("/platform/") || pathname.startsWith("/genre/");
   const persona = user?.firstName ?? user?.name ?? null;
+  const placeholder = searchCountLabel(index?.total);
+  const tierTwoHidden = railHidden && !mapOpen;
 
   return (
     <>
-      <Suspense fallback={null}>
-        <CatalogFilterProbe onChange={setFilterSlug} />
-      </Suspense>
       <div aria-hidden="true" className="h-[var(--header-height-mobile)] shrink-0 lg:h-[var(--header-height)]" />
       <header
         data-header=""
         data-header-state={compact ? "compact" : "top"}
+        data-rail={tierTwoHidden ? "hidden" : "shown"}
         data-print-hide=""
         onPointerLeave={() => {
-          if (boardOpen) closeBoard(250);
+          if (mapOpen) closeMap(250);
         }}
         className="fixed inset-x-0 top-0 z-40"
       >
         <div
-          data-rig=""
+          data-tier="counter"
           className={cn(
-            "relative border-b border-line bg-rig text-ink transition-[height] duration-[200ms] ease-[var(--ease-instrument)]",
+            "relative z-[2] border-b border-line bg-rig text-ink transition-[height] duration-[200ms] ease-[var(--ease-latch)]",
             "h-[var(--header-height-mobile)]",
-            compact ? "lg:h-[var(--header-height-compact)]" : "lg:h-[var(--header-height)]",
+            compact ? "lg:h-[var(--header-height-compact)]" : "lg:h-[var(--header-tier-1)]",
           )}
         >
-          <div className="mx-auto flex h-full max-w-container items-center justify-between gap-4 px-gutter xl:gap-6">
+          <div className="mx-auto flex h-full max-w-container items-center justify-between gap-4 px-gutter lg:gap-8">
             <Link href="/" aria-label={`${BRAND.name}, home`} className="flex shrink-0 items-center text-ink">
-              <Wordmark className="h-[22px] w-auto lg:h-[26px]" />
+              <Wordmark className="h-[22px] w-auto lg:h-[27px]" />
             </Link>
 
-            <nav aria-label="Main" className="hidden h-full min-w-0 items-center gap-5 lg:flex 2xl:gap-6">
-              {RIG_LINKS.map((slug) => {
-                const cat = navCategory(slug);
-                const current = catalogSlug === slug ? "page" : activeRoot === slug ? "true" : undefined;
-                return (
-                  <Link key={slug} href={`/catalog/${slug}`} aria-current={current} className={cn(navLink, "hidden xl:inline-flex")}>
-                    {cat?.short ?? slug}
-                  </Link>
-                );
-              })}
-              <button
-                ref={boardTrigger}
-                type="button"
-                data-board-trigger=""
-                data-active={boardActive || undefined}
-                aria-expanded={boardOpen}
-                aria-controls={boardId}
-                onClick={() => {
-                  window.clearTimeout(boardTimer.current);
-                  setBoardOpen((v) => !v);
-                }}
-                onPointerEnter={(e) => {
-                  if (e.pointerType === "mouse") openBoard(150);
-                }}
-                onPointerLeave={(e) => {
-                  if (e.pointerType === "mouse" && !boardOpen) window.clearTimeout(boardTimer.current);
-                }}
-                className={cn(navLink, "cursor-pointer gap-1", boardOpen && "text-ink")}
-              >
-                <span className="xl:hidden">Shop</span>
-                <span className="hidden xl:inline">All products</span>
-                <ChevronDown size={16} aria-hidden="true" />
-              </button>
-            </nav>
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              aria-haspopup="dialog"
+              data-search-trigger=""
+              className="group hidden h-11 max-w-[640px] flex-1 cursor-pointer items-center gap-3 border border-control bg-raised pl-3.5 pr-1.5 text-left text-ui-md text-ink-subtle shadow-machined-pressed transition-colors duration-[120ms] hover-device:hover:border-ink-muted lg:flex"
+            >
+              <Search size={18} aria-hidden="true" className="text-ink-muted" />
+              <span className="flex-1 truncate">{placeholder}</span>
+              <kbd aria-hidden="true" className="tumbler-slot text-[0.75rem] text-ink-muted">
+                /
+              </kbd>
+            </button>
 
-            <div className="flex items-center gap-1 lg:gap-2">
-              <button
-                type="button"
-                onClick={() => setSearchOpen(true)}
-                className="hidden h-9 w-[200px] cursor-pointer items-center gap-2 rounded-control border border-control bg-raised px-3 text-left text-ui-md text-ink-subtle shadow-lamp-catch transition-colors duration-[140ms] hover-device:hover:border-ink-muted lg:flex 2xl:w-[240px]"
-              >
-                <Search size={16} aria-hidden="true" className="text-ink-muted" />
-                <span className="flex-1">Search games</span>
-                <kbd className="rounded-[1px] border border-line px-1.5 font-mono text-[0.6875rem] leading-[1.3] text-ink-muted">/</kbd>
-              </button>
+            <div className="flex items-center gap-0.5 lg:gap-1">
               <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search" className={cn(action, "w-11 justify-center px-0 lg:hidden")}>
                 <Search size={20} aria-hidden="true" />
               </button>
-              <CurrencySelect className="hidden lg:flex" />
-              <ThemeToggle className="hidden lg:flex" />
               <Link href={user ? "/account" : "/auth/login"} className={cn(action, "hidden lg:inline-flex")} aria-label={user ? `Account${persona ? `, ${persona}` : ""}` : "Sign in"}>
-                <CircleUser size={20} aria-hidden="true" />
-                <span className="hidden max-w-[14ch] truncate 2xl:inline">{user ? persona ?? "Account" : "Sign in"}</span>
+                <UserKey size={20} aria-hidden="true" />
+                <span>{user ? "Account" : "Sign in"}</span>
               </Link>
-              <button
-                type="button"
-                onClick={openSheet}
-                aria-label={`Cart, ${itemCount} ${itemCount === 1 ? "item" : "items"}`}
-                data-cart-target=""
-                className={cn(action, "-mr-2 min-w-11 justify-center lg:mr-0")}
-              >
-                <ShoppingCart size={20} aria-hidden="true" />
+              <button type="button" onClick={openSheet} data-cart-target="" className={cn(action, "min-w-11 justify-center max-lg:px-1.5")}>
+                <Archive size={20} aria-hidden="true" />
                 <span className="hidden lg:inline">Cart</span>
-                <CartCount count={itemCount} bump={cartBounce} />
+                <span className="sr-only" aria-live="polite">
+                  {`, ${itemCount} ${itemCount === 1 ? "key" : "keys"}`}
+                </span>
+                <CartCount count={itemCount} />
               </button>
-              <button type="button" onClick={() => setMobileOpen(true)} aria-label="Menu" className={cn(action, "-mr-2 w-11 justify-center px-0 lg:hidden")}>
-                <AlignRight size={20} aria-hidden="true" />
+              <button type="button" onClick={() => setMobileOpen(true)} aria-label="Catalogue" className={cn(action, "-mr-2 w-11 justify-center px-0 lg:hidden")}>
+                <Menu size={20} aria-hidden="true" />
               </button>
             </div>
           </div>
-          <div className="hidden lg:block">
-            <CatalogBoard
-              id={boardId}
-              open={boardOpen}
-              categories={categories}
-              activeSlug={catalogSlug}
-              onClose={(restore) => closeBoard(0, restore)}
-              onPointerEnter={() => window.clearTimeout(boardTimer.current)}
-              onPointerLeave={() => closeBoard(250)}
-            />
+        </div>
+
+        <div
+          data-tier="rail"
+          className={cn(
+            "relative z-[1] hidden h-[var(--header-tier-2)] border-b border-line bg-rig text-ink transition-transform duration-[200ms] ease-[var(--ease-latch)] lg:block",
+            tierTwoHidden && "-translate-y-full",
+          )}
+          inert={tierTwoHidden}
+        >
+          <div className="mx-auto flex h-full max-w-container items-center justify-between gap-6 px-gutter">
+            <nav aria-label="Main" className="flex h-full min-w-0 items-center gap-6">
+              <button
+                ref={mapTrigger}
+                type="button"
+                data-board-trigger=""
+                data-active={catalogueActive || undefined}
+                aria-expanded={mapOpen}
+                aria-controls={mapId}
+                onClick={() => {
+                  window.clearTimeout(mapTimer.current);
+                  setMapOpen((v) => !v);
+                }}
+                onPointerEnter={(e) => {
+                  if (e.pointerType === "mouse") openMap(150);
+                }}
+                onPointerLeave={(e) => {
+                  if (e.pointerType === "mouse" && !mapOpen) window.clearTimeout(mapTimer.current);
+                }}
+                className={cn(railLink, "cursor-pointer gap-1", mapOpen && "text-ink")}
+              >
+                Catalogue
+                <ChevronDown size={14} aria-hidden="true" className={cn("transition-transform duration-[180ms]", mapOpen && "rotate-180")} />
+              </button>
+              {RAIL.map((link) => (
+                <Link key={link.href} href={link.href} aria-current={active(pathname, link.href) ? "page" : undefined} className={cn(railLink, link.wide && "max-xl:hidden")}>
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="flex h-full items-center gap-3">
+              <p className="m-0 flex items-center gap-2 text-[0.8125rem] text-ink-muted">
+                <Lamp on />
+                <span className="max-2xl:hidden">{STORE_POLICY.delivery.headline.replace(/\.$/, "")}</span>
+                <Link href="/policies/shipping" className="underline-offset-4 hover-device:hover:underline 2xl:hidden">
+                  Delivery
+                </Link>
+              </p>
+              <span aria-hidden="true" className="h-5 w-px bg-line" />
+              <CurrencySelect />
+              <ThemeToggle />
+            </div>
           </div>
+        </div>
+
+        <div className="hidden lg:block">
+          <VaultMap id={mapId} open={mapOpen} index={index} onClose={(restore) => closeMap(0, restore)} onPointerEnter={() => window.clearTimeout(mapTimer.current)} onPointerLeave={() => closeMap(250)} />
         </div>
       </header>
 
-      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} categories={categories} activeSlug={catalogSlug} activeRoot={activeRoot} />
-      <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} categories={categories} />
+      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} index={index} pathname={pathname} />
+      <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} index={index} />
       <CartSheet />
     </>
   );

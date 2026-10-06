@@ -1,6 +1,6 @@
 import { GENRES, PLATFORMS, PRODUCT_TYPES, REGIONS } from "@/lib/keys/taxonomy";
 
-export const SORT_KEYS = ["newest", "price-asc", "price-desc", "popular", "name-asc", "relevance", "release-desc"] as const;
+export const SORT_KEYS = ["newest", "price-asc", "price-desc", "popular", "name-asc", "relevance", "release-desc", "discount"] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
 
 export const CATALOG_PAGE_SIZE = 24;

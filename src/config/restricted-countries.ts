@@ -16,7 +16,7 @@ export const RESTRICTED_TERRITORIES = [
 ] as const;
 
 export const RESTRICTED_TERRITORIES_STATEMENT =
-  "We do not sell to, deliver to or accept orders from the temporarily occupied territories of Ukraine (Crimea, the Donetsk and Luhansk regions, and the occupied parts of the Zaporizhzhia and Kherson regions).";
+  "We do not deliver to or accept orders from the temporarily occupied territories of Ukraine (Crimea, the Donetsk and Luhansk regions, and the occupied parts of the Zaporizhzhia and Kherson regions).";
 
 export const RESTRICTED_COUNTRY_CODES: ReadonlySet<string> = new Set(RESTRICTED_COUNTRIES.map((c) => c.code));
 

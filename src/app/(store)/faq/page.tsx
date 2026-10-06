@@ -47,7 +47,7 @@ export default async function FaqPage() {
       <Breadcrumbs items={[{ label: t("home"), href: "/" }, { label: t("title") }]} />
 
       <header className="measure">
-        <h1 className="m-0 text-step-5 font-[650] leading-none tracking-[-0.01em] text-ink">{t("title")}</h1>
+        <h1 className="m-0 text-step-5 leading-[1.04] text-ink">{t("title")}</h1>
         <p className="mt-5 text-step-1 leading-[1.5] text-ink-muted [&_a]:text-ink [&_a]:underline [&_a]:decoration-1 [&_a]:underline-offset-4">
           {t.rich("lead", { ...VALUES, ...linkTags })}
         </p>
@@ -68,13 +68,13 @@ export default async function FaqPage() {
               aria-labelledby={`${group.id}-title`}
               className={index === 0 ? "scroll-mt-32" : "mt-16 scroll-mt-32 lg:mt-20"}
             >
-              <h2 id={`${group.id}-title`} className="m-0 mb-5 text-step-3 font-semibold leading-[1.1] text-ink">
+              <h2 id={`${group.id}-title`} className="m-0 mb-5 text-step-3 leading-[1.15] text-ink">
                 {group.title}
               </h2>
               <Accordion>
                 {group.items.map((item) => (
                   <AccordionItem key={item.key} id={`${group.id}-${item.key}`} title={item.q} headingLevel={3}>
-                    <div className="measure text-step-0 leading-[1.7] text-ink-muted [&_a]:font-semibold [&_a]:text-ink [&_a]:underline [&_a]:decoration-1 [&_a]:underline-offset-4">
+                    <div className="measure text-step-0 leading-[1.7] text-ink-muted [&_a]:font-[560] [&_a]:text-ink [&_a]:underline [&_a]:decoration-1 [&_a]:underline-offset-4">
                       {item.a}
                     </div>
                   </AccordionItem>
@@ -84,7 +84,7 @@ export default async function FaqPage() {
           ))}
 
           <section aria-labelledby="faq-help" className="mt-20 border-t border-line pt-10 lg:mt-24">
-            <h2 id="faq-help" className="m-0 text-step-3 font-semibold leading-[1.1] text-ink">
+            <h2 id="faq-help" className="m-0 text-step-3 leading-[1.15] text-ink">
               {t("stillNeedHelp")}
             </h2>
             <p className="measure mt-3 text-step-0 leading-[1.6] text-ink-muted">{t("stillNeedHelpBody", VALUES)}</p>

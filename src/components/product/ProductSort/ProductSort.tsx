@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { Select } from "@/components/ui/Select";
 import type { SortKey } from "@/components/catalog/catalog-url";
 
-const LABEL_KEY: Record<SortKey, "sortNewest" | "sortPriceAsc" | "sortPriceDesc" | "sortPopular" | "sortName" | "sortRelevance" | "sortRelease"> = {
+const LABEL_KEY: Record<SortKey, "sortNewest" | "sortPriceAsc" | "sortPriceDesc" | "sortPopular" | "sortName" | "sortRelevance" | "sortRelease" | "sortDiscount"> = {
   relevance: "sortRelevance",
   newest: "sortNewest",
   "price-asc": "sortPriceAsc",
@@ -12,9 +12,10 @@ const LABEL_KEY: Record<SortKey, "sortNewest" | "sortPriceAsc" | "sortPriceDesc"
   popular: "sortPopular",
   "name-asc": "sortName",
   "release-desc": "sortRelease",
+  discount: "sortDiscount",
 };
 
-export const CATALOG_SORTS: SortKey[] = ["popular", "release-desc", "price-asc", "price-desc", "name-asc"];
+export const CATALOG_SORTS: SortKey[] = ["popular", "price-asc", "price-desc", "discount", "release-desc", "newest", "name-asc"];
 
 interface ProductSortProps {
   value: string;
@@ -33,7 +34,7 @@ export function ProductSort({ value, onChange, options = CATALOG_SORTS, classNam
       onChange={(e) => onChange(e.target.value as SortKey)}
       options={options.map((key) => ({ value: key, label: t(LABEL_KEY[key]) }))}
       wrapperClassName={className}
-      className="min-w-[11.5rem] rounded-control"
+      className="min-w-[9.5rem] lg:min-w-[11.5rem]"
     />
   );
 }

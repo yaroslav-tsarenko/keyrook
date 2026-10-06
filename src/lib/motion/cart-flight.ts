@@ -63,12 +63,12 @@ export function flyToCart(detail: CartAddDetail | undefined) {
       { transform: "translate(0px, 0px) scale(1)", opacity: MOTION_LIMITS.cartGhostOpacity },
       { transform: `translate(${endX - startX}px, ${endY - startY}px) scale(${scale})`, opacity: 0.35 },
     ],
-    { duration: MOTION_DURATION.cartFlight, easing: cssEase("instrument"), fill: "forwards" },
+    { duration: MOTION_DURATION.cartFlight, easing: cssEase("latch"), fill: "forwards" },
   );
 
   const land = () => {
     ghost.remove();
-    target.el.animate([{ transform: "translateY(1px)" }, { transform: "translateY(0)" }], { duration: MOTION_DURATION.micro, easing: cssEase("instrument") });
+    target.el.animate([{ transform: "translateY(1px)" }, { transform: "translateY(0)" }], { duration: MOTION_DURATION.micro, easing: cssEase("latch") });
     window.setTimeout(() => delete target.el.dataset.arriving, MOTION_DURATION.ui + 40);
   };
   flight.finished.then(land, () => {

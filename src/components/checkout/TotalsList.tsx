@@ -43,7 +43,7 @@ export function TotalsList({ totals, currency, showCurrencyCode = false, totalSi
         </div>
       ) : null}
       <div className={cn(row, "mt-1 border-t border-line pt-3")}>
-        <dt className="text-step-0 font-semibold text-ink">
+        <dt className="text-step-0 font-[560] text-ink">
           {totalLabel}
           {showCurrencyCode ? <span className="text-ink-muted"> ({currency})</span> : null}
         </dt>

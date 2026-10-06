@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, LockKeyhole } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { Wordmark } from "@/components/layout/BrandMark";
 import { CurrencySelect } from "@/components/layout/Header/CurrencySelect";
 import { PaymentLogos } from "@/components/shared/PaymentLogos/PaymentLogos";
@@ -15,18 +15,18 @@ export function CheckoutHeader() {
   const t = useTranslations("checkout.frame");
   return (
     <header data-header="" data-header-state="checkout" data-print-hide="" className="shrink-0 border-b border-line bg-rig text-ink">
-      <div className="mx-auto flex h-[var(--header-height-mobile)] max-w-narrow items-center justify-between gap-4 px-gutter lg:h-[var(--header-height)]">
+      <div className="mx-auto flex h-[var(--header-height-mobile)] max-w-narrow items-center justify-between gap-4 px-gutter lg:h-[var(--header-tier-1)]">
         <Link href="/" aria-label={t("home", { brand: BRAND.name })} className="flex shrink-0 items-center text-ink">
-          <Wordmark className="h-[22px] w-auto lg:h-[26px]" />
+          <Wordmark className="h-[22px] w-auto lg:h-[27px]" />
         </Link>
-        <p className="label-caps m-0 flex items-center gap-2 text-[0.9375rem] text-ink">
-          <LockKeyhole size={16} aria-hidden="true" />
+        <p className="label-caps m-0 flex items-center gap-2 whitespace-nowrap text-[0.75rem] text-ink sm:text-[0.8125rem]">
+          <ShieldCheck size={16} aria-hidden="true" className="shrink-0" />
           <span className="max-[389px]:sr-only">{t("secure")}</span>
         </p>
         <div className="flex items-center gap-2">
           <CurrencySelect className="max-sm:hidden" />
-          <Link href="/cart" className="inline-flex min-h-11 items-center gap-1 text-ui-md font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline">
-            <ChevronLeft size={16} aria-hidden="true" />
+          <Link href="/cart" className="inline-flex min-h-11 items-center gap-1.5 text-ui-md font-[560] text-ink decoration-1 underline-offset-4 hover-device:hover:underline">
+            <ArrowLeft size={16} aria-hidden="true" />
             <span className="max-sm:sr-only">{t("backToBag")}</span>
           </Link>
         </div>
@@ -65,7 +65,7 @@ export function CheckoutFooter() {
             </p>
             <p className="meta m-0 text-ink-muted">{t("copyright", { year, brand: BRAND.name })}</p>
           </div>
-          <PaymentLogos height={24} className="self-start md:self-center" />
+          <PaymentLogos height={24} strip className="self-start md:self-center" />
         </div>
       </div>
     </footer>

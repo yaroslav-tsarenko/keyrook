@@ -53,7 +53,7 @@ const sections: PolicySection[] = [
           and do not take orders from anyone under {F.minAge}.
         </p>
         <p>
-          We sell to consumers buying products for their own use. You may not buy products to resell them. The details you give us (name,
+          We supply consumers buying products for their own use. You may not buy products to resell them. The details you give us (name,
           email, phone, date of birth and billing address) must be accurate and your own, and the card you pay with must be yours or used with
           its holder&rsquo;s permission.
         </p>
@@ -62,19 +62,19 @@ const sections: PolicySection[] = [
   },
   {
     id: "where-we-sell",
-    title: "Where we sell",
+    title: "Where we deliver",
     body: (
       <>
-        <p>We sell to customers in the {F.marketCountries}. Checkout only accepts billing addresses in these countries.</p>
+        <p>We serve customers in the {F.marketCountries}. Checkout only accepts billing addresses in these countries.</p>
         <p>
-          We do not sell to, deliver to or accept orders or accounts from {F.restrictedCountries}, or from {F.restrictedTerritories}. These
+          We do not deliver to or accept orders or accounts from {F.restrictedCountries}, or from {F.restrictedTerritories}. These
           countries and territories are excluded from registration and checkout. We do not list keys whose activation region is limited to
           any of them. If we find that an order is connected to one of them, for example through the billing address or payment card, we
           cancel it and refund the full amount paid.
         </p>
         <p>
           You must not use a VPN, proxy, false address or someone else&rsquo;s card to hide where you are or to get around a restriction. We
-          do not sell keys that need a VPN to activate.
+          do not offer keys that need a VPN to activate.
         </p>
       </>
     ),
@@ -96,7 +96,7 @@ const sections: PolicySection[] = [
           the affected order and refund it.
         </p>
         <p>
-          We do not sell pre-orders. Every product listed can be delivered straight after payment.
+          We do not offer pre-orders. Every product listed can be delivered straight after payment.
         </p>
       </>
     ),
@@ -116,7 +116,7 @@ const sections: PolicySection[] = [
           governed by the platform that issues it.
         </p>
         <p>
-          {F.brand} is not affiliated with or endorsed by the platforms and publishers whose products it sells. We are not responsible for
+          {F.brand} is not affiliated with or endorsed by the platforms and publishers whose products it offers. We are not responsible for
           platform outages, a platform&rsquo;s decision about your account for reasons unrelated to the key, or changes a publisher makes to a
           game or service after you redeem it. This does not limit our duty to deliver a key that matches its description.
         </p>
@@ -322,7 +322,7 @@ const sections: PolicySection[] = [
     title: "Trademarks and content",
     body: (
       <p>
-        Game titles, platform names, logos, cover art and screenshots belong to their owners and are shown to identify the products we sell.
+        Game titles, platform names, logos, cover art and screenshots belong to their owners and are shown to identify the products we offer.
         Their use does not mean the owner sponsors or endorses {F.brand}. The rest of the site&rsquo;s text, design and software belongs to{" "}
         {F.company}.
       </p>

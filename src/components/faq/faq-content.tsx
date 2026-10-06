@@ -41,7 +41,7 @@ export const faqLinkTags = {
   warranty: (chunks: ReactNode) => <Link href="/policies/warranty">{chunks}</Link>,
   privacy: (chunks: ReactNode) => <Link href="/policies/privacy">{chunks}</Link>,
   policies: (chunks: ReactNode) => <Link href="/policies">{chunks}</Link>,
-  howto: (chunks: ReactNode) => <Link href="/how-it-works">{chunks}</Link>,
+  howto: (chunks: ReactNode) => <Link href="/how-activation-works">{chunks}</Link>,
 };
 
 export const faqPlainTags = {

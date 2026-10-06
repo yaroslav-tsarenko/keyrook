@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/providers/CartProvider";
 import { Button } from "@/components/ui/Button";
-import { ProductCover } from "@/components/product/ProductCover";
+import { Cover } from "@/components/product/Cover";
 
 interface CartToastProps {
   toastId?: string | number;
@@ -21,14 +21,14 @@ export function CartToast({ toastId, name, imageUrl, quantity }: CartToastProps)
   };
 
   return (
-    <div role="status" className="relative flex w-[min(380px,calc(100vw-32px))] gap-3 rounded-control bg-raised p-4 pr-11 text-ink shadow-[inset_2px_0_0_var(--color-accent),var(--shadow-lg)]">
-      <div className="w-[72px] shrink-0 overflow-hidden rounded-tray">
-        <ProductCover src={imageUrl} alt="" compact sizes="72px" />
+    <div role="status" data-cart-toast="" className="relative flex w-[min(380px,calc(100vw-32px))] gap-3 border-l-2 border-brand bg-raised p-3 pr-11 text-ink shadow-lg">
+      <div className="w-[48px] shrink-0">
+        <Cover src={imageUrl} alt="" compact sizes="48px" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <p className="eyebrow m-0">Added to cart{quantity > 1 ? ` · ${quantity}` : ""}</p>
-        <p className="m-0 truncate text-ui-md font-semibold text-ink">{name}</p>
-        <div className="mt-2 flex items-center gap-4">
+        <p className="m-0 truncate text-ui-md font-[560] text-ink">{name}</p>
+        <div className="mt-1.5 flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
@@ -44,7 +44,7 @@ export function CartToast({ toastId, name, imageUrl, quantity }: CartToastProps)
           </Button>
         </div>
       </div>
-      <button type="button" onClick={dismiss} aria-label="Close" className="absolute right-1.5 top-1.5 flex size-9 cursor-pointer items-center justify-center rounded-control text-ink-muted hover-device:hover:text-ink">
+      <button type="button" onClick={dismiss} aria-label="Close" className="absolute right-1 top-1 flex size-9 cursor-pointer items-center justify-center text-ink-muted hover-device:hover:text-ink">
         <X size={16} aria-hidden="true" />
       </button>
     </div>

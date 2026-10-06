@@ -1,87 +1,111 @@
 :root {
-  --color-primary: #eceae5;
-  --color-secondary: #1c1e21;
+  --color-primary: #e4ebe7;
+  --color-secondary: #19211f;
 
-  --color-bg: #121315;
-  --color-bg-secondary: #17181b;
-  --color-bg-tertiary: #0b0c0d;
-  --color-bg-warm: #1f1a13;
-  --color-raised: #1c1e21;
-  --color-stage: #18191c;
-  --color-on-stage: #eceae5;
-  --color-surface-dark: #0b0c0d;
-  --color-rig: #0d0e10;
-  --color-floor: #0b0c0d;
+  --color-bg: #0f1513;
+  --color-bg-secondary: #131a18;
+  --color-bg-tertiary: #090d0c;
+  --color-raised: #19211f;
+  --color-plate: #1e2725;
+  --color-stage: #0b100f;
+  --color-on-stage: #e4ebe7;
+  --color-surface-dark: #090d0c;
+  --color-rig: #0c110f;
+  --color-floor: #080b0a;
 
-  --color-text: #eceae5;
-  --color-text-secondary: #aaa7a0;
-  --color-text-tertiary: #8d8a83;
+  --color-text: #e4ebe7;
+  --color-text-secondary: #a2aea9;
+  --color-text-tertiary: #87948f;
 
-  --color-accent: #f39a2e;
-  --color-accent-hover: #f7ae55;
-  --color-accent-light: #2b2116;
-  --color-on-accent: #16120c;
-  --color-accent-ink: #f39a2e;
-  --color-accent-edge: #f39a2e;
-  --color-accent-2: #ffe9c7;
-  --color-accent-3: var(--color-accent-ink);
+  --color-accent: #46d39a;
+  --color-accent-hover: #72e0b2;
+  --color-accent-light: #15291f;
+  --color-on-accent: #04120b;
+  --color-accent-ink: #46d39a;
+  --color-accent-edge: #46d39a;
+  --color-bg-warm: var(--color-accent-light);
+  --color-steel-hi: #c9d3cf;
+  --color-accent-2: var(--color-steel-hi);
+  --color-accent-3: var(--color-text);
+  --color-lamp-on: var(--color-accent);
+  --color-lamp-off: #2b3532;
+  --color-deal: var(--color-text);
+  --color-on-deal: var(--color-bg);
+  --color-logo-strip: #f5f7f5;
 
-  --color-rule: #3a3d42;
-  --color-border: #2a2c30;
-  --color-border-hover: #3a3d42;
-  --color-border-control: #6b6e74;
-  --color-focus: #f39a2e;
+  --color-rule: #3a4743;
+  --color-border: #26302d;
+  --color-border-hover: #3a4743;
+  --color-border-control: #6c7a75;
+  --color-focus: #46d39a;
 
-  --color-success: #62c38b;
-  --color-success-tint: #16251c;
-  --color-warning: #e8b26a;
-  --color-warning-tint: #2a2216;
-  --color-danger: #ff7d6e;
+  --color-success: #8ed8b6;
+  --color-success-tint: #132520;
+  --color-warning: #e9b96b;
+  --color-warning-tint: #2a2215;
+  --color-danger: #ff8b7d;
   --color-danger-tint: #2e1a18;
-  --color-on-danger: #16120c;
-  --color-info: #9fb6c9;
-  --color-info-tint: #1a2128;
+  --color-on-danger: #140807;
+  --color-info: #a0c1d7;
+  --color-info-tint: #16212a;
 
-  --lamp-rgb: 255 233 199;
-  --color-lamp: rgb(var(--lamp-rgb));
-  --lamp-line: rgb(var(--lamp-rgb) / 0.55);
-  --lamp-pool-alpha: 0.08;
-  --stage-lamp: radial-gradient(ellipse 70% 62% at var(--lx, 50%) var(--ly, 0%), rgb(var(--lamp-rgb) / calc(var(--lamp-pool-alpha) * var(--lamp-level, 1))), transparent 72%);
-  --lamp-catch: inset 0 1px 0 rgb(255 255 255 / 0.05);
+  --platform-steam: #9cc3e6;
+  --platform-epic: #d3dad7;
+  --platform-ea: #ff8f6b;
+  --platform-ubisoft: #62b2f5;
+  --platform-gog: #c99bf2;
+  --platform-battlenet: #56cfe8;
+  --platform-xbox: #8fd16b;
+  --platform-playstation: #8ea7ff;
+  --platform-nintendo: #ff7a86;
+  --platform-rockstar: #f0c95a;
+  --platform-other: #a2aea9;
+  --platform: var(--platform-other);
 
-  --color-scrim: rgb(5 6 7 / 0.72);
+  --type-game: #e4ebe7;
+  --type-dlc: #b3beff;
+  --type-giftcard: #f3a9c6;
+  --type-subscription: #86d7e0;
+  --type-software: #c9c2a8;
+  --type: var(--type-game);
+
+  --steel-grain: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.018) 0 1px, transparent 1px 3px);
+  --edge-machined: inset 0 1px 0 rgb(255 255 255 / 0.06), inset 0 -1px 0 rgb(0 0 0 / 0.45);
+  --edge-machined-pressed: inset 0 1px 0 rgb(0 0 0 / 0.45), inset 0 -1px 0 rgb(255 255 255 / 0.04);
+  --engrave: 0 1px 0 rgb(0 0 0 / 0.55);
+  --bolt: 6px;
+
+  --color-scrim: rgb(4 7 6 / 0.74);
 
   --shadow-sm: none;
   --shadow-md: none;
-  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.05);
-  --shadow-card-hover: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 20px 28px -18px rgb(0 0 0 / 0.85);
-  --shadow-lg: 0 0 0 1px #2a2c30, 0 18px 36px -18px rgb(0 0 0 / 0.75);
-  --shadow-xl: 0 0 0 1px #2a2c30, 0 32px 64px -24px rgb(0 0 0 / 0.85);
-  --shadow-accent: 0 0 0 2px #f39a2e;
-  --shadow-panel: -1px 0 0 #2a2c30, -32px 0 64px -32px rgb(0 0 0 / 0.8);
-  --shadow-panel-left: 1px 0 0 #2a2c30, 32px 0 64px -32px rgb(0 0 0 / 0.8);
-  --shadow-contact: rgb(0 0 0 / 0.55);
+  --shadow-card: var(--edge-machined);
+  --shadow-card-hover: var(--edge-machined), 0 14px 22px -14px rgb(0 0 0 / 0.9);
+  --shadow-lg: 0 0 0 1px #26302d, 0 18px 32px -18px rgb(0 0 0 / 0.8);
+  --shadow-xl: 0 0 0 1px #26302d, 0 30px 60px -26px rgb(0 0 0 / 0.88);
+  --shadow-accent: 0 0 0 2px #46d39a;
+  --shadow-panel: -1px 0 0 #26302d, -28px 0 56px -28px rgb(0 0 0 / 0.85);
+  --shadow-panel-left: 1px 0 0 #26302d, 28px 0 56px -28px rgb(0 0 0 / 0.85);
 
-  --radius-control: 2px;
-  --radius-tray: 4px;
-  --radius-sm: 2px;
-  --radius-md: 2px;
-  --radius-lg: 4px;
-  --radius-xl: 4px;
-  --radius-2xl: 4px;
-  --radius-pill: 2px;
-
-  --spine: 3px;
-  --lamp-inset: 12%;
+  --radius-control: 0px;
+  --radius-tray: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-pill: 0px;
 
   --max-width: 1360px;
-  --header-height: 64px;
+  --header-tier-1: 64px;
+  --header-tier-2: 40px;
+  --header-height: 104px;
   --header-height-compact: 56px;
   --header-height-mobile: 56px;
   --gutter: 16px;
 
   --z-base: 0;
-  --z-tray-item: 1;
+  --z-box-item: 1;
   --z-sticky: 40;
   --z-dropdown: 50;
   --z-drawer: 60;
@@ -89,23 +113,24 @@
   --z-toast: 80;
   --z-cookie: 90;
 
-  --font-sans: var(--font-source-sans), "Source Sans 3 Variable", "Source Sans Fallback", "Segoe UI", sans-serif;
-  --font-display: var(--font-sofia-condensed), "Sofia Sans Condensed Variable", "Sofia Condensed Fallback", "Arial Narrow", sans-serif;
-  --font-mono: var(--font-martian), "Martian Mono Variable", "Martian Fallback", ui-monospace, Menlo, Consolas, monospace;
+  --font-sans: var(--font-mona), "Mona Sans Variable", "Mona Fallback", "Segoe UI", sans-serif;
+  --font-display: var(--font-hubot), "Hubot Sans Variable", "Hubot Fallback", Verdana, sans-serif;
+  --font-mono: var(--font-redhat-mono), "Red Hat Mono Variable", "Red Hat Mono Fallback", ui-monospace, Menlo, Consolas, monospace;
 
-  --ease-instrument: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-latch: cubic-bezier(0.3, 0, 0.1, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
-  --dur-micro: 140ms;
-  --dur-ui: 200ms;
-  --dur-panel: 280ms;
-  --dur-panel-close: 220ms;
-  --dur-reveal: 700ms;
+  --dur-micro: 120ms;
+  --dur-ui: 180ms;
+  --dur-panel: 260ms;
+  --dur-panel-close: 200ms;
+  --dur-reveal: 640ms;
+  --dur-tumbler: 520ms;
   --dur-reduced: 120ms;
 
-  --selection-bg: #f39a2e;
-  --selection-fg: #16120c;
+  --selection-bg: #46d39a;
+  --selection-fg: #04120b;
 
   color-scheme: dark;
 }
@@ -123,66 +148,83 @@
 }
 
 [data-theme="light"] {
-  --color-primary: #141517;
-  --color-secondary: #f6f6f5;
+  --color-primary: #0f1513;
+  --color-secondary: #f5f7f5;
 
-  --color-bg: #e4e5e6;
-  --color-bg-secondary: #dadbdd;
-  --color-bg-tertiary: #cfd0d3;
-  --color-bg-warm: #efe4d2;
-  --color-raised: #f6f6f5;
-  --color-stage: #d6d7da;
-  --color-on-stage: #141517;
-  --color-surface-dark: #141517;
-  --color-rig: #f6f6f5;
-  --color-floor: #d3d4d7;
+  --color-bg: #e3e7e4;
+  --color-bg-secondary: #d9dedb;
+  --color-bg-tertiary: #cdd3d0;
+  --color-raised: #f5f7f5;
+  --color-plate: #ecefed;
+  --color-stage: #d2d8d5;
+  --color-on-stage: #0f1513;
+  --color-surface-dark: #0f1513;
+  --color-rig: #f5f7f5;
+  --color-floor: #d5dad7;
 
-  --color-text: #141517;
-  --color-text-secondary: #45474b;
-  --color-text-tertiary: #54565b;
+  --color-text: #0f1513;
+  --color-text-secondary: #3e4945;
+  --color-text-tertiary: #505b57;
 
-  --color-accent: #ec9524;
-  --color-accent-hover: #d9820f;
-  --color-accent-light: #f3e3cc;
-  --color-on-accent: #16120c;
-  --color-accent-ink: #8a4f00;
-  --color-accent-edge: #a8630c;
-  --color-accent-2: #fffaf0;
+  --color-accent: #0f7a50;
+  --color-accent-hover: #0a6642;
+  --color-accent-light: #d2e6dc;
+  --color-on-accent: #ffffff;
+  --color-accent-ink: #0a6642;
+  --color-accent-edge: #0a6642;
+  --color-steel-hi: #ffffff;
+  --color-lamp-off: #b7c0bc;
 
-  --color-rule: #a9abaf;
-  --color-border: #c4c5c8;
-  --color-border-hover: #a9abaf;
-  --color-border-control: #76787d;
-  --color-focus: #8a4f00;
+  --color-rule: #a3ada9;
+  --color-border: #c3cac7;
+  --color-border-hover: #a3ada9;
+  --color-border-control: #6b7773;
+  --color-focus: #0a6642;
 
-  --color-success: #1d6b42;
-  --color-success-tint: #d5e6da;
-  --color-warning: #874708;
-  --color-warning-tint: #f1e2cc;
-  --color-danger: #a8261d;
+  --color-success: #156a49;
+  --color-success-tint: #d3e6dc;
+  --color-warning: #80500c;
+  --color-warning-tint: #f0e2cc;
+  --color-danger: #a62a20;
   --color-danger-tint: #f3dcd8;
   --color-on-danger: #ffffff;
-  --color-info: #38506a;
-  --color-info-tint: #d8e0e8;
+  --color-info: #2e5672;
+  --color-info-tint: #d6e0e8;
 
-  --lamp-rgb: 255 250 240;
-  --lamp-line: rgb(255 255 255 / 0.95);
-  --lamp-pool-alpha: 0.38;
-  --lamp-catch: inset 0 1px 0 rgb(255 255 255 / 0.7);
+  --platform-steam: #24557f;
+  --platform-epic: #2e3533;
+  --platform-ea: #a3361a;
+  --platform-ubisoft: #14589c;
+  --platform-gog: #6e2f9e;
+  --platform-battlenet: #0b6478;
+  --platform-xbox: #2d6b12;
+  --platform-playstation: #2d48b8;
+  --platform-nintendo: #b0202f;
+  --platform-rockstar: #705500;
+  --platform-other: #3e4945;
 
-  --color-scrim: rgb(20 21 23 / 0.5);
+  --type-game: #0f1513;
+  --type-dlc: #3a47a8;
+  --type-giftcard: #962e5b;
+  --type-subscription: #0e6670;
+  --type-software: #5b5236;
 
-  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.7);
-  --shadow-card-hover: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 22px 32px -20px rgb(20 21 23 / 0.38);
-  --shadow-lg: 0 0 0 1px #c4c5c8, 0 18px 36px -20px rgb(20 21 23 / 0.32);
-  --shadow-xl: 0 0 0 1px #c4c5c8, 0 32px 64px -28px rgb(20 21 23 / 0.4);
-  --shadow-accent: 0 0 0 2px #8a4f00;
-  --shadow-panel: -1px 0 0 #c4c5c8, -32px 0 64px -32px rgb(20 21 23 / 0.35);
-  --shadow-panel-left: 1px 0 0 #c4c5c8, 32px 0 64px -32px rgb(20 21 23 / 0.35);
-  --shadow-contact: rgb(20 21 23 / 0.28);
+  --steel-grain: repeating-linear-gradient(90deg, rgb(15 21 19 / 0.025) 0 1px, transparent 1px 3px);
+  --edge-machined: inset 0 1px 0 rgb(255 255 255 / 0.9), inset 0 -1px 0 rgb(15 21 19 / 0.12);
+  --edge-machined-pressed: inset 0 1px 0 rgb(15 21 19 / 0.14), inset 0 -1px 0 rgb(255 255 255 / 0.7);
+  --engrave: 0 1px 0 rgb(255 255 255 / 0.8);
 
-  --selection-bg: #ec9524;
-  --selection-fg: #16120c;
+  --color-scrim: rgb(15 21 19 / 0.48);
+
+  --shadow-card-hover: var(--edge-machined), 0 16px 24px -16px rgb(15 21 19 / 0.35);
+  --shadow-lg: 0 0 0 1px #c3cac7, 0 18px 32px -20px rgb(15 21 19 / 0.3);
+  --shadow-xl: 0 0 0 1px #c3cac7, 0 30px 60px -28px rgb(15 21 19 / 0.38);
+  --shadow-accent: 0 0 0 2px #0a6642;
+  --shadow-panel: -1px 0 0 #c3cac7, -28px 0 56px -28px rgb(15 21 19 / 0.32);
+  --shadow-panel-left: 1px 0 0 #c3cac7, 28px 0 56px -28px rgb(15 21 19 / 0.32);
+
+  --selection-bg: #0f7a50;
+  --selection-fg: #ffffff;
 
   color-scheme: light;
 }
@@ -191,3 +233,20 @@
   background: var(--selection-bg);
   color: var(--selection-fg);
 }
+
+[data-platform="steam"] { --platform: var(--platform-steam); }
+[data-platform="epic"] { --platform: var(--platform-epic); }
+[data-platform="ea"] { --platform: var(--platform-ea); }
+[data-platform="ubisoft"] { --platform: var(--platform-ubisoft); }
+[data-platform="gog"] { --platform: var(--platform-gog); }
+[data-platform="battlenet"] { --platform: var(--platform-battlenet); }
+[data-platform="xbox"] { --platform: var(--platform-xbox); }
+[data-platform="playstation"] { --platform: var(--platform-playstation); }
+[data-platform="nintendo"] { --platform: var(--platform-nintendo); }
+[data-platform="rockstar"] { --platform: var(--platform-rockstar); }
+[data-platform="other"] { --platform: var(--platform-other); }
+[data-type="game"] { --type: var(--type-game); }
+[data-type="dlc"] { --type: var(--type-dlc); }
+[data-type="giftcard"] { --type: var(--type-giftcard); }
+[data-type="subscription"] { --type: var(--type-subscription); }
+[data-type="software"] { --type: var(--type-software); }

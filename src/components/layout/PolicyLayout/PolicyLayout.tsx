@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs/Breadcrumbs";
 import { Accordion, AccordionItem } from "@/components/ui/Accordion";
 import { Plate } from "@/components/ui/Plate";
+import { Lamp } from "@/components/ui/Lamp";
 import { COMPANY } from "@/lib/company";
 import { BRAND } from "@/lib/brand";
 import { POLICY_FACTS } from "@/lib/policy-facts";
@@ -34,7 +35,7 @@ export const policyProse = cn(
   "[&_ul]:mt-4 [&_ul]:flex [&_ul]:list-disc [&_ul]:flex-col [&_ul]:gap-2 [&_ul]:pl-5 [&_ol]:mt-4 [&_ol]:flex [&_ol]:list-decimal [&_ol]:flex-col [&_ol]:gap-2 [&_ol]:pl-5",
   "[&_li]:pl-1 [&_li::marker]:text-ink-subtle",
   "[&_a]:underline [&_a]:decoration-1 [&_a]:underline-offset-4 hover-device:[&_a:hover]:decoration-2",
-  "[&_strong]:font-semibold",
+  "[&_strong]:font-[640]",
   "[&_h3]:mt-8 [&_h3]:font-display [&_h3]:text-step-1 [&_h3]:leading-[1.25] [&_h3]:text-ink",
 );
 
@@ -44,7 +45,7 @@ export const policyTable = cn(
   "[&_td]:border-b [&_td]:border-line [&_td]:py-3.5 [&_td]:pr-4 [&_td]:align-top",
 );
 
-const sideLinkCls = "relative block py-2 text-ui-md text-ink-muted transition-colors duration-[140ms] hover-device:hover:text-ink";
+const sideLinkCls = "relative flex items-center gap-3 py-2 text-ui-md text-ink-muted transition-colors duration-[120ms] hover-device:hover:text-ink";
 
 export function policyMetadata(slug: PolicySlug, description: string) {
   return async function generateMetadata(): Promise<Metadata> {
@@ -82,8 +83,9 @@ export async function PolicyLayout({ slug, title: titleProp, lastUpdated = POLIC
                       <Link
                         href={entry.href}
                         aria-current={active ? "page" : undefined}
-                        className={cn(sideLinkCls, "pl-4 before:absolute before:inset-y-2.5 before:left-0 before:w-0.5 before:bg-brand before:opacity-0 aria-[current=page]:before:opacity-100", active && "font-semibold text-ink")}
+                        className={cn(sideLinkCls, active && "font-[560] text-ink")}
                       >
+                        <Lamp on={active} />
                         {entry.title}
                       </Link>
                     </li>
@@ -122,7 +124,7 @@ export async function PolicyLayout({ slug, title: titleProp, lastUpdated = POLIC
           ) : null}
 
           <header className="measure">
-            <h1 className="m-0 text-step-5 font-[650] leading-none tracking-[-0.01em] text-ink">{title}</h1>
+            <h1 className="m-0 text-step-5 leading-[1.04] text-ink">{title}</h1>
             {lastUpdated ? (
               <div className="mt-5">
                 <Plate variant="neutral">
@@ -155,9 +157,9 @@ export async function PolicyLayout({ slug, title: titleProp, lastUpdated = POLIC
           {sections ? (
             <div className="measure">
               {sections.map((section, index) => (
-                <section key={section.id} id={section.id} aria-labelledby={`${section.id}-title`} className="scroll-mt-28 border-t border-line pt-8 mt-12 first:mt-12">
-                  <h2 id={`${section.id}-title`} className="m-0 flex gap-3 text-step-3 font-semibold leading-[1.1] text-ink">
-                    <span className="tabular shrink-0 text-ink-subtle">{index + 1}.</span>
+                <section key={section.id} id={section.id} aria-labelledby={`${section.id}-title`} className="mt-12 scroll-mt-32 border-t border-line pt-8 first:mt-12">
+                  <h2 id={`${section.id}-title`} className="m-0 flex items-baseline gap-3 text-step-3 leading-[1.15] text-ink">
+                    <span className="shrink-0 font-mono text-step-0 font-medium text-ink-subtle [font-stretch:100%]">{String(index + 1).padStart(2, "0")}</span>
                     <span>{section.title}</span>
                   </h2>
                   <div className={cn(policyProse, "mt-5")}>{section.body}</div>
@@ -176,7 +178,7 @@ export async function PolicyLayout({ slug, title: titleProp, lastUpdated = POLIC
 export function SellerBlock() {
   return (
     <dl className="m-0 mt-5 grid grid-cols-1 gap-x-8 gap-y-3 border-y border-line py-5 text-ui-sm sm:grid-cols-[auto_minmax(0,1fr)]">
-      <dt className="text-ink-muted">Seller</dt>
+      <dt className="text-ink-muted">Merchant</dt>
       <dd className="m-0 font-medium text-ink">{COMPANY.name}, trading as {BRAND.name}</dd>
       <dt className="text-ink-muted">Company number</dt>
       <dd className="m-0 text-ink">{COMPANY.companyNumber}</dd>

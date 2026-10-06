@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { JsonLd } from "@/components/shared/SEO/JsonLd";
 import { SITE_URL } from "@/lib/brand";
 import { cn } from "@/lib/utils/cn";
@@ -31,12 +31,16 @@ export function Breadcrumbs({ items, className, withJsonLd = true }: Breadcrumbs
   return (
     <nav aria-label="Breadcrumb" className={cn("meta pb-4 pt-5", className)}>
       {withJsonLd ? <JsonLd data={jsonLd} /> : null}
-      <ol className="m-0 hidden list-none flex-wrap items-center gap-1.5 p-0 sm:flex">
+      <ol className="m-0 hidden list-none flex-wrap items-center gap-2 p-0 sm:flex">
         {items.map((item, index) => {
           const last = index === items.length - 1;
           return (
-            <li key={`${item.label}-${index}`} className="flex min-w-0 items-center gap-1.5">
-              {index > 0 ? <ChevronRight size={12} aria-hidden="true" className="text-ink-subtle" /> : null}
+            <li key={`${item.label}-${index}`} className="flex min-w-0 items-center gap-2">
+              {index > 0 ? (
+                <span aria-hidden="true" className="font-mono text-ink-subtle">
+                  /
+                </span>
+              ) : null}
               {item.href && !last ? (
                 <Link href={item.href} className="text-ink-muted underline-offset-4 hover-device:hover:text-ink hover-device:hover:underline">
                   {item.label}
@@ -51,8 +55,8 @@ export function Breadcrumbs({ items, className, withJsonLd = true }: Breadcrumbs
         })}
       </ol>
       {parent?.href ? (
-        <Link href={parent.href} className="inline-flex min-h-11 items-center gap-1 text-ink-muted hover:text-ink sm:hidden">
-          <ChevronLeft size={16} aria-hidden="true" />
+        <Link href={parent.href} className="inline-flex min-h-11 items-center gap-1.5 text-ink-muted hover:text-ink sm:hidden">
+          <ArrowLeft size={16} aria-hidden="true" />
           {parent.label}
         </Link>
       ) : null}

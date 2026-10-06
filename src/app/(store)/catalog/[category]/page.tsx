@@ -7,6 +7,10 @@ import { CatalogBrowser } from "@/components/catalog/CatalogBrowser";
 import { CategoryOpener } from "@/components/catalog/CategoryOpener";
 import { categoryCounts, categoryStats, getCategoryTree, queryCatalog, type CategoryRecord, type CategoryTree } from "@/components/catalog/catalog-query";
 import { hasActiveFilters, parseCatalogParams, type RawSearchParams } from "@/components/catalog/catalog-url";
+import { GiftCardShelf, SubscriptionTimetable } from "@/components/catalog/Prepaid";
+import { giftCardGroups, subscriptionTimetable } from "@/lib/catalog/prepaid";
+import { platformBySlug } from "@/lib/keys/taxonomy";
+import { platformInfo } from "@/lib/catalog/platforms";
 
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
@@ -73,31 +77,59 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
   const index = tree
     .children(anchor.id)
-    .map((c) => ({ slug: c.slug, label: c.name, count: counts.get(c.id) ?? 0, href: `/catalog/${c.slug}`, active: c.id === category.id }))
+    .map((c) => {
+      const platformSlug = c.slug.slice(anchor.slug.length + 1);
+      const platformKey = platformBySlug(platformSlug)?.key ?? null;
+      return { slug: c.slug, label: c.name, count: counts.get(c.id) ?? 0, href: `/catalog/${c.slug}`, active: c.id === category.id, platform: platformKey ? platformInfo(platformKey).tone : null };
+    })
     .filter((c) => c.count > 0)
     .sort((a, b) => b.count - a.count);
 
   const related = relatedRoots(tree, counts, root).map((c) => ({ name: c.name, href: `/catalog/${c.slug}` }));
+  const rootOnly = !parent && !hasActiveFilters(query) && query.page === 1;
+  const [timetable, giftGroups] = await Promise.all([
+    rootOnly && root.slug === "subscriptions" ? subscriptionTimetable(60) : Promise.resolve(null),
+    rootOnly && root.slug === "gift-cards" ? giftCardGroups() : Promise.resolve(null),
+  ]);
+  const icon = root.slug === "dlc" || root.slug === "gift-cards" || root.slug === "subscriptions" ? (root.slug as "dlc" | "gift-cards" | "subscriptions") : null;
+  const title = parent ? `${parent.slug === "dlc" ? "DLC" : parent.name} for ${category.name}` : category.slug === "dlc" ? "DLC" : category.name;
 
   return (
     <div className="mx-auto max-w-container px-gutter pb-24">
       <Breadcrumbs
         items={[
           { label: t("home"), href: "/" },
-          { label: t("allCategoriesTitle"), href: "/catalog" },
+          { label: "Catalogue", href: "/catalog" },
           ...chain.slice(0, -1).map((c) => ({ label: c.name, href: `/catalog/${c.slug}` })),
           { label: category.name },
         ]}
       />
       <CategoryOpener
-        name={parent ? `${parent.name} for ${category.name}` : category.name}
+        name={title}
         count={stats.count}
         lead={parent ? parent.description : category.description}
-        minPrice={stats.minPrice}
-        maxPrice={stats.maxPrice}
+        note={root.slug === "dlc" ? <p className="m-0 text-ui-md text-ink">DLC needs the base game on the same platform and region.</p> : null}
+        icon={icon}
         index={index}
-        indexLabel={`${anchor.name} by platform`}
+        indexLabel={`${anchor.slug === "dlc" ? "DLC" : anchor.name} by platform`}
       />
+      {timetable && timetable.rows.length ? (
+        <section aria-labelledby="timetable-title" className="mb-14">
+          <h2 id="timetable-title" className="m-0 mb-4 text-step-3 leading-[1.1] text-ink">
+            Durations and prices
+          </h2>
+          <SubscriptionTimetable table={timetable} caption="Subscription prices by service and duration" />
+        </section>
+      ) : null}
+      {giftGroups && giftGroups.length ? (
+        <section aria-labelledby="blanks-title" className="mb-14">
+          <h2 id="blanks-title" className="m-0 mb-2 text-step-3 leading-[1.1] text-ink">
+            Card values by platform
+          </h2>
+          <p className="m-0 mb-6 text-ui-md text-ink-muted">Check the card&apos;s region before you buy. A card adds balance only to an account set to that region.</p>
+          <GiftCardShelf groups={giftGroups} />
+        </section>
+      ) : null}
       <CatalogBrowser
         basePath={basePath}
         params={{ ...query, category: null, page: result.page }}
@@ -110,6 +142,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         related={related}
         headingId="category-results"
         heading={t("resultsIn", { name: category.name })}
+        hide={["types", ...(parent ? (["platforms"] as const) : [])]}
       />
     </div>
   );

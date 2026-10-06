@@ -4,21 +4,23 @@ import type { ReactNode } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
-export function FilterChip({ label, onRemove, className }: { label: string; onRemove: () => void; className?: string }) {
+export function FilterChip({ label, onRemove, platform, className }: { label: string; onRemove: () => void; platform?: string | null; className?: string }) {
   return (
     <span
+      data-platform={platform ?? undefined}
       className={cn(
-        "inline-flex h-8 items-center gap-0.5 rounded-control border border-control bg-raised pl-3 text-ui-sm font-semibold text-ink transition-colors duration-[140ms]",
+        "inline-flex h-8 items-center gap-1.5 border border-control bg-raised pl-3 text-ui-sm font-[560] text-ink transition-colors duration-[120ms]",
         "has-[button:hover]:border-ink",
         className,
       )}
     >
+      {platform ? <span aria-hidden="true" className="size-1.5 shrink-0 bg-platform" /> : null}
       <span className="whitespace-nowrap">{label}</span>
       <button
         type="button"
         onClick={onRemove}
         aria-label={`Remove filter: ${label}`}
-        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-control text-ink-muted hover-device:hover:text-ink"
+        className="-ml-1 flex h-8 w-8 cursor-pointer items-center justify-center text-ink-muted hover-device:hover:text-ink"
       >
         <X size={14} aria-hidden="true" />
       </button>
@@ -31,8 +33,8 @@ export function FilterChipRow({ children, onClearAll, className }: { children: R
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
       {children}
       {onClearAll ? (
-        <button type="button" onClick={onClearAll} className="ml-1 min-h-8 cursor-pointer text-ui-sm font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline">
-          Clear all
+        <button type="button" onClick={onClearAll} className="btn-text ml-2 min-h-8 cursor-pointer text-ui-sm font-[560] text-ink">
+          <span data-label="">Clear all</span>
         </button>
       ) : null}
     </div>

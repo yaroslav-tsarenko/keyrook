@@ -1,18 +1,17 @@
-import type { SVGProps } from "react";
-
-const WORD_PATH = "M65 0Q55 0 55 -11L55 -644Q55 -655 65 -655L157 -655Q167 -655 167 -644L167 -480Q167 -460 166.5 -436.5Q166 -413 165 -389.5Q164 -366 162 -345L165 -345Q180 -375 196 -408Q212 -441 231 -475L342 -649Q344 -655 354 -655L462 -655Q468 -655 469.5 -651Q471 -647 468 -641L306 -386L486 -14Q489 -8 487 -4Q485 0 479 0L368 0Q360 0 356 -8L228 -288L167 -200L167 -11Q167 0 157 0ZM690 8Q601 8 556.5 -36.5Q512 -81 512 -171L512 -318Q512 -409 557 -455Q602 -501 687 -501Q775 -501 819 -455Q863 -409 863 -318L863 -231Q863 -220 853 -220L621 -220L621 -171Q621 -124 637.5 -103Q654 -82 690 -82Q721 -82 736 -95Q751 -108 750 -135Q750 -147 760 -147L846 -147Q854 -147 856 -136Q857 -65 815.5 -28.5Q774 8 690 8ZM621 -295L754 -295L754 -326Q754 -370 738.5 -390.5Q723 -411 689 -411Q654 -411 637.5 -390.5Q621 -370 621 -326ZM1008 185Q1002 185 1000 181Q998 177 1000 172L1050 -3L910 -479Q908 -486 910 -489Q913 -492 918 -492L1015 -492Q1024 -492 1027 -482L1075 -282Q1083 -250 1089.5 -214Q1096 -178 1102 -145L1104 -145Q1110 -178 1117 -214.5Q1124 -251 1130 -282L1179 -483Q1181 -492 1190 -492L1286 -492Q1291 -492 1294 -489Q1296 -486 1294 -479L1106 176Q1104 185 1095 185ZM1367 0Q1357 0 1357 -11L1357 -367Q1357 -403 1356 -430.5Q1355 -458 1353 -480Q1352 -487 1356 -490Q1358 -492 1362 -492L1441 -492Q1449 -492 1451 -482Q1454 -464 1456 -439Q1457 -430 1457 -423Q1471 -441 1487 -457Q1507 -476 1529 -488.5Q1551 -501 1574 -501Q1581 -501 1586 -500.5Q1591 -500 1595 -498Q1601 -496 1602.5 -493Q1604 -490 1604 -484Q1604 -462 1603.5 -437Q1603 -412 1601 -389Q1600 -379 1590 -380Q1584 -381 1577 -382Q1570 -383 1562 -383Q1545 -383 1526.5 -375Q1508 -367 1491 -353Q1478 -343 1467 -330L1467 -11Q1467 0 1457 0ZM1826 8Q1740 8 1693 -38Q1646 -84 1646 -174L1646 -318Q1646 -408 1692.5 -454.5Q1739 -501 1826 -501Q1912 -501 1958.5 -454.5Q2005 -408 2005 -318L2005 -174Q2005 -84 1959 -38Q1913 8 1826 8ZM1826 -89Q1862 -89 1878.5 -110.5Q1895 -132 1895 -179L1895 -313Q1895 -361 1878.5 -382Q1862 -403 1826 -403Q1790 -403 1773 -382Q1756 -361 1756 -313L1756 -179Q1756 -132 1773 -110.5Q1790 -89 1826 -89ZM2262 8Q2176 8 2129 -38Q2082 -84 2082 -174L2082 -318Q2082 -408 2128.5 -454.5Q2175 -501 2262 -501Q2348 -501 2394.5 -454.5Q2441 -408 2441 -318L2441 -174Q2441 -84 2395 -38Q2349 8 2262 8ZM2262 -89Q2298 -89 2314.5 -110.5Q2331 -132 2331 -179L2331 -313Q2331 -361 2314.5 -382Q2298 -403 2262 -403Q2226 -403 2209 -382Q2192 -361 2192 -313L2192 -179Q2192 -132 2209 -110.5Q2226 -89 2262 -89ZM2537 0Q2527 0 2527 -11L2527 -672Q2527 -683 2537 -683L2627 -683Q2637 -683 2637 -672L2637 -422Q2637 -390 2636.5 -355.5Q2636 -321 2634 -288L2636 -288Q2648 -312 2661 -335.5Q2674 -359 2689 -382L2759 -486Q2763 -492 2770 -492L2875 -492Q2882 -492 2883 -488Q2884 -484 2881 -479L2753 -293L2892 -14Q2895 -9 2893 -4.5Q2891 0 2885 0L2782 0Q2774 0 2770 -7L2677 -205L2637 -151L2637 -11Q2637 0 2627 0Z";
-
-const K_PATH = "M65 0Q55 0 55 -11L55 -644Q55 -655 65 -655L157 -655Q167 -655 167 -644L167 -480Q167 -460 166.5 -436.5Q166 -413 165 -389.5Q164 -366 162 -345L165 -345Q180 -375 196 -408Q212 -441 231 -475L342 -649Q344 -655 354 -655L462 -655Q468 -655 469.5 -651Q471 -647 468 -641L306 -386L486 -14Q489 -8 487 -4Q485 0 479 0L368 0Q360 0 356 -8L228 -288L167 -200L167 -11Q167 0 157 0Z";
+import { useId, type SVGProps } from "react";
+import { MONOGRAM_K, MONOGRAM_TICKS, WORDMARK } from "@/lib/brand-mark";
 
 type MarkProps = Omit<SVGProps<SVGSVGElement>, "children"> & {
   title?: string;
 };
 
-export function Wordmark({ title, className, ...rest }: MarkProps) {
+export function Wordmark({ title, className, ticks = true, ...rest }: MarkProps & { ticks?: boolean }) {
+  const maskId = `km${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const labelled = Boolean(title);
+  const { width, height, letters, dial, index } = WORDMARK;
   return (
     <svg
-      viewBox="15 -723 2920 948"
+      viewBox={`0 0 ${width} ${height}`}
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       role={labelled ? "img" : undefined}
@@ -21,16 +20,33 @@ export function Wordmark({ title, className, ...rest }: MarkProps) {
       focusable="false"
       {...rest}
     >
-      <path d={WORD_PATH} fill="currentColor" />
+      {ticks ? (
+        <defs>
+          <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width={width} height={height}>
+            <rect width={width} height={height} fill="white" />
+            <path d={WORDMARK.ticks} fill="black" />
+          </mask>
+        </defs>
+      ) : null}
+      <path d={letters} fill="currentColor" />
+      <path d={dial} fill="currentColor" mask={ticks ? `url(#${maskId})` : undefined} />
+      <rect x={index.x} y={index.y} width={index.width} height={index.height} fill="var(--color-accent)" />
     </svg>
   );
 }
 
 export function Monogram({ title, className, size, ...rest }: MarkProps & { size?: number }) {
   const labelled = Boolean(title);
+  const tile = 512;
+  const c = tile / 2;
+  const r = tile * 0.39;
+  const cap = tile * 0.34;
+  const s = cap / MONOGRAM_K.cap;
+  const kx = c + 4 - (MONOGRAM_K.width * s) / 2 - MONOGRAM_K.left * s;
+  const ky = c + 6 - cap / 2;
   return (
     <svg
-      viewBox="0 0 512 512"
+      viewBox={`0 0 ${tile} ${tile}`}
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -41,9 +57,12 @@ export function Monogram({ title, className, size, ...rest }: MarkProps & { size
       focusable="false"
       {...rest}
     >
-      <rect width="512" height="512" fill="var(--color-surface-dark)" />
-      <path transform="translate(-16.0 583.5)" d={K_PATH} fill="currentColor" />
-      <rect x="352" y="583.5" width="48" height="12" fill="var(--color-accent)" transform="translate(0 -12)" />
+      <rect width={tile} height={tile} fill="var(--color-surface-dark)" />
+      {Array.from({ length: MONOGRAM_TICKS / 2 }, (_, i) => i).filter((i) => i > 0).map((i) => (
+        <rect key={i} x={-2} y={-r} width={i % 5 === 0 ? 6 : 3} height={i % 5 === 0 ? 26 : 14} fill="var(--color-text-tertiary)" transform={`translate(${c} ${c}) rotate(${i * 7.2})`} />
+      ))}
+      <path d={MONOGRAM_K.path} fill="currentColor" transform={`translate(${kx} ${ky}) scale(${s})`} />
+      <rect x={c - 6} y={c - r - 14} width={12} height={58} fill="var(--color-accent)" />
     </svg>
   );
 }

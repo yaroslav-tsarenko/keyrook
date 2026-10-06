@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm, type FieldPath } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LockKeyhole } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { Stepper, type StepperErrorSummary } from "@/components/ui/Stepper";
 import { Input } from "@/components/ui/Field";
 import { Checkbox } from "@/components/ui/Choice";
@@ -29,6 +29,7 @@ import { formatPrice } from "@/lib/utils/format-price";
 import { STORE_POLICY } from "@/config/store-policy";
 import { COMPANY } from "@/lib/company";
 import { BRAND } from "@/lib/brand";
+import { regionLabel, regionSentence } from "@/lib/catalog/platforms";
 import { CheckoutCounter } from "./CheckoutCounter";
 import { TotalsList } from "./TotalsList";
 import { quotePayloadItems, useCheckoutQuote, type QuoteProblem } from "./useCheckoutQuote";
@@ -125,6 +126,7 @@ export function CheckoutView() {
   const [paymentFailed, setPaymentFailed] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [acceptedChanges, setAcceptedChanges] = useState("");
+  const [regionChecked, setRegionChecked] = useState(false);
   const prefilled = useRef(false);
 
   const form = useForm<CheckoutFormData>({
@@ -300,7 +302,7 @@ export function CheckoutView() {
   if (cart.items.length === 0 && !submitting) {
     return (
       <div className="mx-auto max-w-narrow px-gutter py-12">
-        <h1 className="m-0 text-step-5 font-[650] leading-none text-ink">{t("title")}</h1>
+        <h1 className="m-0 text-step-5 leading-none text-ink">{t("title")}</h1>
         <EmptyState title={t("empty.title")} subtitle={t("empty.subtitle")} actionLabel="Browse the catalogue" actionHref="/catalog" align="start" className="px-0" />
       </div>
     );
@@ -309,20 +311,27 @@ export function CheckoutView() {
   const counterProps = { items: cart.items, totals, currency, quote, loading };
 
   const accountPanel = !user ? (
-    <div className="flex flex-col items-start gap-4">
-      <p className="m-0 max-w-[52ch] text-step-0 text-ink">Your keys are issued to your {BRAND.name} account, so checkout starts with signing in.</p>
-      <Button as={Link} href={`/auth/login?next=${encodeURIComponent(CHECKOUT_PATH)}`} size="lg">
-        Sign in
-      </Button>
-      <Link href={`/auth/register?next=${encodeURIComponent(CHECKOUT_PATH)}`} className="min-h-11 py-2 text-ui-md font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline">
-        Create an account
-      </Link>
+    <div className="flex flex-col items-start gap-5">
+      <p className="m-0 max-w-[52ch] text-step-0 text-ink">Your keys are kept in your account, so you&apos;ll need one to receive them.</p>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button as={Link} href={`/auth/login?next=${encodeURIComponent(CHECKOUT_PATH)}`} size="lg">
+          Sign in
+        </Button>
+        <Button as={Link} href={`/auth/register?next=${encodeURIComponent(CHECKOUT_PATH)}`} size="lg" variant="outline">
+          Create account
+        </Button>
+      </div>
       <p className="m-0 text-ui-sm text-ink-muted">Your cart stays as it is while you sign in.</p>
     </div>
   ) : (
     <div className="flex flex-col gap-2">
-      <p className="m-0 text-step-0 text-ink">Signed in as {user.email}</p>
-      <p className="m-0 max-w-[60ch] text-ui-sm text-ink-muted">Keys appear on the order page in this account once your payment is confirmed. We email you when they are ready.</p>
+      <p className="m-0 text-step-0 text-ink">
+        Signed in as <span className="font-[560]">{user.email}</span>
+      </p>
+      <p className="m-0 max-w-[60ch] text-ui-sm text-ink-muted">{BRAND.name} keeps your keys in this account. They appear on the order page once your payment is confirmed, and we email you when they&apos;re ready.</p>
+      <Link href={`/auth/login?next=${encodeURIComponent(CHECKOUT_PATH)}`} className="mt-1 w-fit text-ui-sm font-[560] text-ink underline underline-offset-4">
+        Not you? Switch account
+      </Link>
     </div>
   );
 
@@ -375,13 +384,13 @@ export function CheckoutView() {
           dialError={fe(formState.errors.contact?.phoneCountry?.message)}
           required={false}
         />
-        <p className="m-0 text-ui-sm text-ink-muted">{t("contact.phoneOptional")}</p>
       </div>
     </div>
   );
 
   const payLabel = quoteReady && quote ? t("review.pay", { amount: formatPrice(quote.totals.total, quote.currency) }) : t("review.payPending");
-  const accepted = Boolean(values.acceptedPolicies) && Boolean(values.acceptedWaiver);
+  const regionRequired = STORE_POLICY.checkout.requireRegionCheck;
+  const accepted = Boolean(values.acceptedPolicies) && Boolean(values.acceptedWaiver) && (!regionRequired || regionChecked);
   const lines =
     quote && quote.currency === currency
       ? quote.lines
@@ -400,6 +409,7 @@ export function CheckoutView() {
   const changeSignature = priceChanges.map((c) => `${c.productId}:${c.now}`).join("|");
   const priceIssueOpen = priceChanges.length > 0 && acceptedChanges !== changeSignature;
   const provider = STORE_POLICY.payment.providerName ?? "our payment provider";
+  const providerPossessive = STORE_POLICY.payment.providerName ? `${STORE_POLICY.payment.providerName}'s` : "our payment provider's";
 
   const reviewPanel = (
     <div className="flex flex-col gap-7">
@@ -433,7 +443,18 @@ export function CheckoutView() {
             const item = cart.items.find((i) => i.productId === line.productId);
             return (
               <li key={`${line.productId}-${index}`} className="py-3">
-                <ProductRow name={line.name} imageUrl={imageFor.get(line.productId) ?? null} keyInfo={item?.key} meta={line.quantity > 1 ? <span className="font-mono text-[0.75rem] text-ink-muted">{line.quantity} keys</span> : null} aside={<span className="font-mono text-data text-ink">{formatPrice(line.total, currency)}</span>} />
+                <ProductRow
+                  name={line.name}
+                  imageUrl={imageFor.get(line.productId) ?? null}
+                  keyInfo={item?.key}
+                  meta={
+                    <>
+                      {line.quantity > 1 ? <span className="font-mono text-[0.75rem] text-ink-muted">{line.quantity} keys</span> : null}
+                      {item?.key ? <span className="text-ui-sm text-ink-muted">Region: {regionLabel(item.key.region)}. {regionSentence(item.key.region)}.</span> : null}
+                    </>
+                  }
+                  aside={<span className="font-mono text-data text-ink">{formatPrice(line.total, currency)}</span>}
+                />
               </li>
             );
           })}
@@ -441,7 +462,8 @@ export function CheckoutView() {
         <TotalsList totals={totals} currency={currency} showCurrencyCode totalSize="md" className="mt-4" />
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 border-t border-line pt-5">
+        {regionRequired ? <Checkbox id="co-region" label="I've checked the platform and region of each key." checked={regionChecked} onChange={(e) => setRegionChecked(e.target.checked)} /> : null}
         <Checkbox
           id="co-accept"
           label={t.rich("review.accept", {
@@ -464,8 +486,8 @@ export function CheckoutView() {
           label={
             <>
               {STORE_POLICY.waiver.text}{" "}
-              <Link href="/policies/returns#withdrawal" target="_blank" className="font-semibold underline underline-offset-4">
-                Refunds policy
+              <Link href="/policies/returns#withdrawal" target="_blank" className="font-[560] underline underline-offset-4">
+                Refund policy
               </Link>
             </>
           }
@@ -495,7 +517,7 @@ export function CheckoutView() {
             size="lg"
             isDisabled={!accepted || !quoteReady || !user || priceIssueOpen}
             isLoading={submitting}
-            startContent={<LockKeyhole size={18} aria-hidden="true" />}
+            startContent={<ShieldCheck size={18} aria-hidden="true" />}
             className="max-sm:w-full"
           >
             {payLabel}
@@ -503,8 +525,13 @@ export function CheckoutView() {
         </div>
         <div className="flex flex-col gap-3 border-t border-line pt-5">
           <PaymentLogos height={28} />
-          <p className="m-0 text-ui-sm text-ink-muted">Card payments are processed securely by {provider}. We never see or store your full card number.</p>
-          <p className="m-0 text-ui-sm text-ink-muted">{t("review.threeDs")}</p>
+          {STORE_POLICY.payment.hostedPage ? (
+            <p className="m-0 max-w-[60ch] text-ui-sm text-ink-muted">
+              You&apos;ll enter your card details on {providerPossessive} hosted payment page{STORE_POLICY.payment.threeDSecure ? " with 3-D Secure" : ""}. We never see or store your card number.
+            </p>
+          ) : (
+            <p className="m-0 text-ui-sm text-ink-muted">Card payments are processed securely by {provider}. We never see or store your full card number.</p>
+          )}
         </div>
       </div>
     </div>
@@ -512,7 +539,7 @@ export function CheckoutView() {
 
   return (
     <div className="mx-auto max-w-narrow px-gutter pb-20 pt-8 lg:pt-12">
-      <h1 className="m-0 mb-6 text-step-5 font-[650] leading-none tracking-[-0.01em] text-ink lg:mb-10">{t("title")}</h1>
+      <h1 className="m-0 mb-6 text-step-5 leading-[1.04] text-ink lg:mb-10">{t("title")}</h1>
 
       <div className="mb-6 border-y border-line lg:hidden">
         <AccordionItem title={`Show summary · ${formatPrice(totals.total, currency)}`} open={summaryOpen} onOpenChange={setSummaryOpen} headingLevel={2} flush className="border-b-0">
@@ -555,14 +582,14 @@ export function CheckoutView() {
             hideActions={step === LAST_STEP}
             errorSummary={errorSummary}
             steps={[
-              { id: "account", title: "Account", summary: user ? `Signed in as ${user.email}` : undefined, content: accountPanel },
-              { id: "billing", title: "Receipt and billing", summary: [contactSummary, values.contact?.email, billingSummary].filter(Boolean).join(" · ") || undefined, content: billingPanel },
-              { id: "review", title: "Review and pay", content: reviewPanel },
+              { id: "account", title: "Account", short: "Account", summary: user ? `Signed in as ${user.email}` : undefined, content: accountPanel },
+              { id: "billing", title: "Billing details", short: "Details", summary: [contactSummary, values.contact?.email, billingSummary].filter(Boolean).join(" · ") || undefined, content: billingPanel },
+              { id: "review", title: "Review and pay", short: "Review & pay", content: reviewPanel },
             ]}
           />
         </form>
         <aside aria-label={t("counter.title")} className="hidden lg:col-span-5 lg:block">
-          <div className="sticky top-6 rounded-control bg-raised p-6 shadow-[var(--shadow-card),0_0_0_1px_var(--color-border)]">
+          <div className="plate sticky top-6 p-6">
             <CheckoutCounter {...counterProps} />
           </div>
         </aside>

@@ -6,16 +6,16 @@ import { useTranslations } from "next-intl";
 import { FileDown } from "lucide-react";
 import { ReadoutLoader } from "@/components/ui/ReadoutLoader";
 import { Button } from "@/components/ui/Button";
+import { Tumbler } from "@/components/ui/Tumbler";
 import { ProductRow } from "@/components/product/ProductCard";
-import { PurchaseTimeline } from "@/components/account/PurchaseTimeline";
-import { KeyVault } from "@/components/account/KeyVault/KeyVault";
-import { AccordionItem } from "@/components/ui/Accordion";
-import { platformDef } from "@/lib/keys/taxonomy";
+import { OrderTimeline } from "@/components/account/OrderTimeline";
+import { KeyPlate, type KeyPlateStatus } from "@/components/account/KeyPlate";
 import { orderTimelineStatus } from "../OrderHistory/OrderHistory";
 import { EmptyState } from "@/components/shared/EmptyState/EmptyState";
 import { TotalsList } from "@/components/checkout/TotalsList";
 import { formatPrice } from "@/lib/utils/format-price";
 import { addressLines, type OrderView } from "@/lib/orders";
+import { STORE_POLICY } from "@/config/store-policy";
 import { AccountPageHeader } from "../AccountSidebar/AccountSidebar";
 import { OrderStatus } from "../OrderHistory/OrderStatus";
 import { useAccountData } from "../useAccountData";
@@ -24,21 +24,40 @@ import { formatOrderDate } from "../format";
 
 const POLL_MS = 15_000;
 
-function ActivationSteps({ platform }: { platform: string }) {
-  const def = platformDef(platform);
-  if (!def) return null;
-  return (
-    <div className="border-y border-line">
-      <AccordionItem title={`How to redeem on ${def.label}`} headingLevel={3} flush className="border-b-0">
-        <p className="m-0 mb-2 text-ui-sm text-ink-muted">You need {def.account}.</p>
-        <ol className="m-0 flex list-decimal flex-col gap-1.5 pl-5 text-ui-md text-ink">
-          {def.redeem.map((step) => (
-            <li key={step}>{step}</li>
-          ))}
-        </ol>
-      </AccordionItem>
-    </div>
-  );
+export function keyPlateStatus(status: string): KeyPlateStatus {
+  if (status === "delivered") return "ready";
+  if (status === "refunded" || status === "refund_pending" || status === "failed") return "refunded";
+  return "issuing";
+}
+
+export function OrderKeys({ order, line }: { order: OrderView; line: OrderView["lines"][number] }) {
+  const delivery = line.delivery;
+  if (!delivery) return null;
+  if (delivery.status === "delivered" && delivery.keys.length) {
+    return (
+      <div className="flex flex-col gap-4">
+        {delivery.keys.map((k, i) => (
+          <KeyPlate
+            key={k.id}
+            keyId={k.id}
+            title={line.name}
+            productSlug={line.slug}
+            keyInfo={line.key}
+            index={i + 1}
+            total={delivery.keys.length}
+            status="ready"
+            keyType={k.type}
+            revealedBefore={k.revealed}
+            issuedAt={k.issuedAt ?? delivery.finishedAt}
+            revealedAt={k.revealedAt}
+            orderNumber={order.number}
+          />
+        ))}
+      </div>
+    );
+  }
+  if (delivery.inFlight) return <KeyPlate keyId={line.id} title={line.name} productSlug={line.slug} keyInfo={line.key} status="issuing" orderNumber={order.number} />;
+  return null;
 }
 
 export function OrderDetail({ id }: { id: string }) {
@@ -66,7 +85,14 @@ export function OrderDetail({ id }: { id: string }) {
 
   return (
     <div>
-      <AccountPageHeader title={t("title", { number: order.number })} aside={<OrderStatus state={order.state} />}>
+      <AccountPageHeader
+        title={
+          <>
+            Order <Tumbler value={order.number} size="md" label={order.number} motion className="ml-1 align-[0.12em]" />
+          </>
+        }
+        aside={<OrderStatus state={order.state} />}
+      >
         <p className="m-0 font-mono text-data text-ink-muted">{t("placedOn", { date: formatOrderDate(order.createdAt, true) })}</p>
       </AccountPageHeader>
 
@@ -76,25 +102,20 @@ export function OrderDetail({ id }: { id: string }) {
         </h2>
         <ul className="m-0 flex list-none flex-col border-t border-rule p-0">
           {order.lines.map((line) => (
-            <li key={line.id} className="flex flex-col gap-6 border-b border-line py-6">
-              <ProductRow
-                name={line.name}
-                href={line.slug ? `/product/${line.slug}` : null}
-                imageUrl={line.imageUrl}
-                keyInfo={line.key}
-                size="md"
-                aside={<span className="price text-step-1 text-ink">{formatPrice(line.total, order.currency)}</span>}
-              />
-              <PurchaseTimeline
+            <li key={line.id} className="flex flex-col gap-7 border-b border-line py-7">
+              <ProductRow name={line.name} href={line.slug ? `/product/${line.slug}` : null} imageUrl={line.imageUrl} keyInfo={line.key} size="md" aside={<span className="price text-step-1 text-ink">{formatPrice(line.total, order.currency)}</span>} />
+              <OrderTimeline
                 size="large"
-                status={orderTimelineStatus(order, line)}
+                status={order.state === "paymentFailed" ? "payment_failed" : orderTimelineStatus(order, line)}
+                createdAt={order.createdAt}
                 paidAt={order.paidAt}
                 finishedAt={line.delivery?.finishedAt}
                 refundedAt={line.delivery?.refundedAt}
+                revealedAt={line.delivery?.keys.find((k) => k.revealedAt)?.revealedAt ?? null}
+                showRevealed
               />
               {line.delivery?.note ? <p className="m-0 text-ui-md text-ink">{line.delivery.note}</p> : null}
-              {line.delivery?.keys.length ? <KeyVault keys={line.delivery.keys} platformLabel={platformDef(line.key?.platform)?.label ?? null} /> : null}
-              {line.delivery?.keys.length && line.key ? <ActivationSteps platform={line.key.platform} /> : null}
+              <OrderKeys order={order} line={line} />
             </li>
           ))}
         </ul>
@@ -106,12 +127,12 @@ export function OrderDetail({ id }: { id: string }) {
       </section>
 
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-1">
+        <div className="grid grid-cols-1 content-start gap-8 sm:grid-cols-2 md:grid-cols-1">
           <section aria-labelledby="order-delivery">
             <h2 id="order-delivery" className="eyebrow m-0 mb-2">
               {t("deliveryTitle")}
             </h2>
-            <p className="m-0 text-ui-sm leading-[1.6] text-ink">{t("deliveryMethod")}</p>
+            <p className="m-0 text-ui-sm leading-[1.6] text-ink">{STORE_POLICY.delivery.headline}</p>
             {order.waiverAcceptedAt ? <p className="m-0 mt-3 text-ui-sm text-ink-muted">{t("waiver", { date: formatOrderDate(order.waiverAcceptedAt, true) })}</p> : null}
           </section>
           <section aria-labelledby="order-billing">
@@ -128,21 +149,13 @@ export function OrderDetail({ id }: { id: string }) {
             <p className="m-0 mt-3 text-ui-sm text-ink-muted">{t("paymentMethod")}</p>
           </section>
         </div>
-        <section aria-labelledby="order-totals" className="rounded-control bg-raised p-6 shadow-[var(--shadow-card),0_0_0_1px_var(--color-border)]">
-          <h2 id="order-totals" className="m-0 mb-5 text-step-2 font-semibold leading-none text-ink">
+        <section aria-labelledby="order-totals" className="plate self-start p-6">
+          <h2 id="order-totals" className="m-0 mb-5 text-step-2 leading-none text-ink">
             {t("totalsTitle")}
           </h2>
           <TotalsList totals={order.totals} currency={order.currency} showCurrencyCode totalSize="md" />
           {order.invoiceAvailable ? (
-            <Button
-              as="a"
-              href={`/api/account/orders/${encodeURIComponent(order.id)}/invoice`}
-              download
-              variant="outline"
-              size="sm"
-              startContent={<FileDown size={16} aria-hidden="true" />}
-              className="mt-6"
-            >
+            <Button as="a" href={`/api/account/orders/${encodeURIComponent(order.id)}/invoice`} download variant="ghost" size="sm" startContent={<FileDown size={16} aria-hidden="true" />} className="mt-5">
               {t("invoiceDownload")}
             </Button>
           ) : null}
@@ -150,7 +163,7 @@ export function OrderDetail({ id }: { id: string }) {
       </div>
 
       <div className="mt-12 flex flex-col gap-3 border-t border-line pt-8">
-        <h2 className="m-0 text-step-2 font-semibold leading-none text-ink">{t("helpTitle")}</h2>
+        <h2 className="m-0 text-step-2 leading-none text-ink">Need help with this order?</h2>
         <p className="m-0 text-ink-muted">{t("helpBody")}</p>
         <Button as={Link} href={`/contact?order=${encodeURIComponent(order.number)}`} variant="outline" className="mt-2 self-start">
           {t("helpAction")}

@@ -94,7 +94,7 @@ function DialogShell({ open, onClose, label, labelledBy, className, closeMs, ini
         if (e.target === e.currentTarget) onClose();
       }}
       className={cn(
-        "border-0 p-0 text-ink backdrop:bg-scrim backdrop:transition-opacity backdrop:duration-[280ms] data-[phase=closing]:backdrop:opacity-0",
+        "border-0 p-0 text-ink backdrop:bg-scrim backdrop:transition-opacity backdrop:duration-[260ms] data-[phase=closing]:backdrop:opacity-0",
         className,
       )}
       {...dataAttrs}
@@ -123,19 +123,19 @@ export function Modal({ open, onClose, title, children, footer, size = "md", des
       open={open}
       onClose={onClose}
       labelledBy={titleId}
-      closeMs={220}
+      closeMs={200}
       initialFocus={initialFocus}
       className={cn(
-        "m-auto max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] rounded-control bg-raised shadow-xl",
+        "m-auto max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] bg-raised shadow-xl",
         size === "lg" ? "max-w-[720px]" : "max-w-[560px]",
-        "data-[phase=open]:animate-rise-in data-[phase=closing]:translate-y-2 data-[phase=closing]:opacity-0 transition-[opacity,transform] duration-[220ms] ease-[var(--ease-instrument)]",
+        "data-[phase=open]:animate-rise-in data-[phase=closing]:translate-y-2 data-[phase=closing]:opacity-0 transition-[opacity,transform] duration-[200ms] ease-[var(--ease-latch)]",
         className,
       )}
     >
       <div className="flex max-h-[calc(100dvh-32px)] flex-col">
         <div className="flex items-start justify-between gap-4 px-6 pt-6 sm:px-8 sm:pt-8">
           <div className="min-w-0">
-            <h2 id={titleId} className="text-step-2 font-semibold leading-[1.12] text-ink">
+            <h2 id={titleId} className="text-step-2 font-semibold leading-[1.15] text-ink">
               {title}
             </h2>
             {description ? <p className="mt-2 text-ink-muted">{description}</p> : null}
@@ -144,7 +144,7 @@ export function Modal({ open, onClose, title, children, footer, size = "md", des
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="-mr-2 -mt-1 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-control text-ink hover-device:hover:bg-surface-1"
+            className="-mr-2 -mt-1 flex size-10 shrink-0 cursor-pointer items-center justify-center text-ink hover-device:hover:bg-surface-1"
           >
             <X size={20} aria-hidden="true" />
           </button>
@@ -183,11 +183,11 @@ export function Sheet({ open, onClose, side, label, labelledBy, children, classN
       onClose={onClose}
       label={label}
       labelledBy={labelledBy}
-      closeMs={220}
+      closeMs={200}
       initialFocus={initialFocus}
       dataAttrs={motion ? { "data-motion": motion } : undefined}
       className={cn(
-        "inset-y-0 bg-raised transition-[opacity,transform] duration-[220ms] ease-[var(--ease-instrument)]",
+        "inset-y-0 bg-raised transition-[opacity,transform] duration-[200ms] ease-[var(--ease-latch)]",
         sideClass,
         className,
       )}

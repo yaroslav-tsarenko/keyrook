@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { ImageResponse } from "next/og";
+import { WORDMARK } from "@/lib/brand-mark";
 import { OG_PALETTE as P, OG_SIZE, ogFonts } from "./assets";
 
 export async function ogResponse(element: ReactElement, cacheSeconds = 86400) {
@@ -12,53 +13,57 @@ export async function ogResponse(element: ReactElement, cacheSeconds = 86400) {
 }
 
 export function Wordmark({ size, color = P.ink }: { size: number; color?: string }) {
+  const width = (WORDMARK.width / WORDMARK.height) * size;
+  const i = WORDMARK.index;
   return (
-    <div style={{ display: "flex", fontFamily: "Sofia Sans Condensed", fontWeight: 700, fontSize: size, lineHeight: 1, letterSpacing: -size * 0.01, color }}>
-      <span>Keyrook</span>
-    </div>
+    <svg width={width} height={size} viewBox={`0 0 ${WORDMARK.width} ${WORDMARK.height}`}>
+      <path d={WORDMARK.letters} fill={color} />
+      <path d={WORDMARK.dial} fill={color} />
+      <path d={WORDMARK.ticks} fill={P.room} />
+      <rect x={i.x} y={i.y} width={i.width} height={i.height} fill={P.accent} />
+    </svg>
   );
 }
 
-export function Stage({ src, width, height }: { src: string | null; width: number; height: number }) {
-  const inset = Math.round(width * 0.12);
+export function Dial({ size }: { size: number }) {
+  const c = size / 2;
+  const r = size * 0.44;
+  const ticks = Array.from({ length: 100 }, (_, k) => k).filter((k) => k > 0);
   return (
-    <div
-      style={{
-        display: "flex",
-        position: "relative",
-        width,
-        height,
-        background: P.stage,
-        backgroundImage: `radial-gradient(ellipse 70% 62% at 50% 0%, ${P.lampPool}, transparent 72%)`,
-        borderRadius: 4,
-        overflow: "hidden",
-      }}
-    >
-      <div style={{ position: "absolute", top: 0, left: inset, right: inset, height: 1, background: P.lampLine }} />
-      <div style={{ position: "absolute", left: "18%", right: "18%", bottom: "8%", height: 12, borderRadius: "50%", background: P.contact, filter: "blur(6px)" }} />
-      {src ? (
-        <img src={src} alt="" style={{ position: "absolute", left: "9%", top: "12%", width: "82%", height: "72%", objectFit: "contain" }} />
-      ) : null}
-    </div>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={c} cy={c} r={r + size * 0.035} fill="none" stroke={P.line} strokeWidth={size * 0.06} />
+      <circle cx={c} cy={c} r={r} fill={P.plate} />
+      {ticks.map((k) => {
+        const major = k % 10 === 0;
+        const mid = k % 5 === 0;
+        const len = major ? size * 0.07 : mid ? size * 0.045 : size * 0.025;
+        const w = major ? 4 : mid ? 3 : 2;
+        return <rect key={k} x={c - w / 2} y={c - r + size * 0.02} width={w} height={len} fill={major ? P.steelHi : mid ? P.inkFaint : P.control} transform={`rotate(${k * 3.6} ${c} ${c})`} />;
+      })}
+      <circle cx={c} cy={c} r={r * 0.48} fill={P.room} stroke={P.rule} strokeWidth={2} />
+      <rect x={c - 4} y={c - r - size * 0.03} width={8} height={size * 0.13} fill={P.accent} />
+    </svg>
   );
 }
 
-export function Ruler({ width, lit = "FT" }: { width: number; lit?: "FN" | "MW" | "FT" | "WW" | "BS" }) {
-  const zones: Record<string, [number, number]> = { FN: [0, 0.07], MW: [0.07, 0.15], FT: [0.15, 0.38], WW: [0.38, 0.45], BS: [0.45, 1] };
-  const majors = [0, 0.07, 0.15, 0.38, 0.45, 1];
-  const [a, b] = zones[lit];
+export function DialRuler({ width, detents = 3, active = 0 }: { width: number; detents?: number; active?: number }) {
+  const minor = Array.from({ length: Math.floor(width / 8) + 1 }, (_, i) => i * 8);
+  const stops = Array.from({ length: detents }, (_, i) => (detents === 1 ? 0 : (i * (width - 2)) / (detents - 1)));
   return (
-    <div style={{ display: "flex", position: "relative", width, height: 20 }}>
-      <div style={{ position: "absolute", left: a * width, width: (b - a) * width, bottom: 1, height: 6, background: P.ink }} />
-      {Array.from({ length: 21 }, (_, i) => i * 0.05).map((v) => (
-        <div key={v} style={{ position: "absolute", left: v * width, bottom: 1, width: 1, height: 7, background: P.rule }} />
+    <div style={{ display: "flex", position: "relative", width, height: 22 }}>
+      {minor.map((x, i) => (
+        <div key={x} style={{ position: "absolute", left: x, bottom: 1, width: 1, height: i % 5 === 0 ? 8 : 4, background: i % 5 === 0 ? P.inkFaint : P.rule }} />
       ))}
-      {majors.map((v) => (
-        <div key={v} style={{ position: "absolute", left: Math.min(width - 1, v * width), bottom: 1, width: 1, height: 14, background: P.ink }} />
+      {stops.map((x, i) => (
+        <div key={`d${i}`} style={{ position: "absolute", left: x, bottom: 1, width: i === active ? 2 : 1, height: i === active ? 14 : 12, background: i === active ? P.accent : P.ink }} />
       ))}
       <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 1, background: P.rule }} />
     </div>
   );
+}
+
+export function Engraved({ children, size = 18, color = P.inkMuted }: { children: string; size?: number; color?: string }) {
+  return <div style={{ display: "flex", fontFamily: "Hubot Sans Wide", fontWeight: 600, fontSize: size, letterSpacing: size * 0.12, textTransform: "uppercase", color }}>{children}</div>;
 }
 
 export function titleSize(text: string, sizes: [number, number][]): number {

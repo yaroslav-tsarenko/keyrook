@@ -1,14 +1,14 @@
 {
   "metaTitle": "About {brand}",
-  "metaDescription": "What {brand} sells, what it doesn't, and how payment, key delivery, refunds and the key guarantee work.",
+  "metaDescription": "What {brand} offers, what it doesn't, and how payment, key delivery, refunds and the key guarantee work.",
   "breadcrumbHome": "Home",
   "breadcrumb": "About",
   "hero": {
     "title": "A store for game keys, codes and gift cards",
-    "lead": "{brand} sells activation keys for games and DLC, subscription codes, gift cards, top-ups and software to customers in the {countries}. You buy each key from us, at the price shown, and we issue it to your account after your payment is confirmed."
+    "lead": "{brand} offers activation keys for games and DLC, subscription codes, gift cards, top-ups and software to customers in the {countries}. You buy each key from us, at the price shown, and we issue it to your account after your payment is confirmed."
   },
   "range": {
-    "title": "What we sell",
+    "title": "What we offer",
     "body": "Six kinds of product, each with its own page and filters for platform, region, genre and language:"
   },
   "listing": {
@@ -21,10 +21,10 @@
   "notSold": {
     "title": "What we don't do",
     "items": {
-      "marketplace": "Buy keys from users or let users sell to each other. {brand} is a store, not a marketplace.",
-      "cases": "Sell random or mystery keys, loot boxes or anything with a random outcome.",
-      "accounts": "Sell game or platform accounts, or ask for your platform password.",
-      "other": "Sell keys that need a VPN, or keys for regions where we don't trade."
+      "marketplace": "Buy keys from users or let users exchange keys with each other. {brand} is a store: every key comes from us.",
+      "cases": "Offer random or mystery keys, loot boxes or anything with a random outcome.",
+      "accounts": "Offer game or platform accounts, or ask for your platform password.",
+      "other": "Offer keys that need a VPN, or keys for regions we don't serve."
     }
   },
   "ordering": {

@@ -98,9 +98,13 @@ export const KEY_SELECT = {
   genres: true,
   releaseYear: true,
   validity: true,
+  faceValue: true,
+  faceCurrency: true,
 } as const;
 
-export function keySummary(item: KeySummary | null | undefined): KeySummary | null {
+type KeySource = Omit<KeySummary, "faceValue"> & { faceValue?: number | { toString(): string } | null };
+
+export function keySummary(item: KeySource | null | undefined): KeySummary | null {
   if (!item) return null;
   return {
     title: item.title,
@@ -112,6 +116,8 @@ export function keySummary(item: KeySummary | null | undefined): KeySummary | nu
     genres: item.genres,
     releaseYear: item.releaseYear,
     validity: item.validity,
+    faceValue: item.faceValue != null ? Number(item.faceValue) : null,
+    faceCurrency: item.faceCurrency ?? null,
   };
 }
 
@@ -119,6 +125,8 @@ export type CatalogScope =
   | { kind: "all" }
   | { kind: "category"; category: CategoryRecord }
   | { kind: "platform"; platform: PlatformDef }
+  | { kind: "genre"; genre: { key: string; label: string } }
+  | { kind: "released" }
   | { kind: "search"; query: string };
 
 export interface CatalogResult {
@@ -157,6 +165,8 @@ async function loadRows(scope: CatalogScope, tree: CategoryTree): Promise<Row[]>
   const where: Prisma.ProductWhereInput = { status: "ACTIVE" };
   if (scope.kind === "category") where.categories = { some: { categoryId: { in: tree.subtreeIds(scope.category.id) } } };
   if (scope.kind === "platform") where.item = { platform: scope.platform.key };
+  if (scope.kind === "genre") where.item = { genres: { has: scope.genre.key } };
+  if (scope.kind === "released") where.item = { releaseDate: { lte: new Date(), not: null } };
   if (scope.kind === "search") {
     if (scope.query.length < 2 || mentionsSupplier(scope.query)) return [];
     Object.assign(where, searchWhere(scope.query));
@@ -213,6 +223,7 @@ const LIST_VALUES: Record<ListFilter, (row: Row) => string[]> = {
 };
 
 const available = (r: Row) => !r.tracked || r.quantity > 0;
+const discountOf = (r: Row) => (r.compare !== null && r.compare > r.price ? (r.compare - r.price) / r.compare : 0);
 const reduced = (r: Row) => r.compare !== null && r.compare > r.price;
 
 function matcher(params: CatalogParams, categoryIds: Set<string> | null) {
@@ -245,6 +256,8 @@ function sorter(sort: SortKey) {
       return (a: Row, b: Row) => a.name.localeCompare(b.name, "en-GB");
     case "popular":
       return (a: Row, b: Row) => b.orders - a.orders || b.release - a.release || byNewest(a, b);
+    case "discount":
+      return (a: Row, b: Row) => discountOf(b) - discountOf(a) || a.price - b.price;
     case "release-desc":
       return (a: Row, b: Row) => b.release - a.release || a.name.localeCompare(b.name, "en-GB");
     case "relevance":
@@ -274,7 +287,7 @@ export async function loadKeyProducts(ids: string[]): Promise<CatalogProduct[]> 
         quantity: true,
         trackInventory: true,
         createdAt: true,
-        images: { orderBy: { sortOrder: "asc" }, take: 1, select: { url: true, alt: true } },
+        images: { orderBy: { sortOrder: "asc" }, take: 2, select: { url: true, alt: true } },
         categories: { select: { category: { select: { name: true, slug: true, parentId: true } } } },
         item: { select: KEY_SELECT },
       },
@@ -295,7 +308,8 @@ export async function loadKeyProducts(ids: string[]): Promise<CatalogProduct[]> 
         price: Number(r.price),
         comparePrice: r.comparePrice != null ? Number(r.comparePrice) : null,
         quantity: r.trackInventory ? r.quantity : undefined,
-        images: r.images.map((img) => ({ url: img.url, alt: img.alt })),
+        images: r.images.slice(0, 1).map((img) => ({ url: img.url, alt: img.alt })),
+        screenshotUrl: r.images[1]?.url ?? null,
         category: leaf?.name ?? null,
         createdAt: r.createdAt.toISOString(),
         isNew: isNewArrival(r.createdAt, newSince),

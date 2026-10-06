@@ -6,8 +6,8 @@ import { BRAND } from "@/lib/brand";
 export function AuthAside({ mode }: { mode: "login" | "register" }) {
   const t = useTranslations("auth.aside");
   return (
-    <aside className="flex flex-col gap-5 border-t border-line pt-10 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
-      <h2 className="m-0 text-step-3 font-semibold leading-[1.08] text-ink">{mode === "login" ? t("newTitle", { brand: BRAND.name }) : t("registeredTitle")}</h2>
+    <aside className="flex flex-col gap-5 border-t border-line pt-10 lg:border-t-0 lg:pt-2">
+      <h2 className="m-0 text-step-3 leading-[1.1] text-ink">{mode === "login" ? t("newTitle", { brand: BRAND.name }) : t("registeredTitle")}</h2>
       {mode === "login" ? (
         <>
           <ul className="m-0 flex list-none flex-col border-t border-line p-0">

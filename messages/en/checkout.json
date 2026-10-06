@@ -17,8 +17,7 @@
   },
   "contact": {
     "title": "Contact",
-    "emailHint": "We send the order confirmation, invoice and delivery updates here.",
-    "phoneOptional": "Phone number is optional. We only use it if there is a problem with your order."
+    "emailHint": "We send the order confirmation, invoice and delivery updates here."
   },
   "delivery": {
     "title": "Receipt and billing",
@@ -53,8 +52,8 @@
     "vatIncluded": "Includes VAT at {rate}%"
   },
   "merchant": {
-    "line": "Sold by {company}, trading as {brand}.",
-    "soldBy": "Sold by {company}, {address}",
+    "line": "Supplied by {company}, trading as {brand}.",
+    "soldBy": "Supplied by {company}, {address}",
     "merchantOfRecord": "Merchant of Record: {company}",
     "tradingName": "{brand} is a trading name of {company}. Company number {number}."
   },
@@ -62,7 +61,7 @@
     "title": "Your order",
     "toggle": "Show order summary · {total}",
     "editBag": "Edit cart",
-    "soldBy": "Sold by",
+    "soldBy": "Supplied by",
     "merchant": "Merchant of record",
     "sellerLine": "{company}, {address}"
   },

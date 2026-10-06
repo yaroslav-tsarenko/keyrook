@@ -26,7 +26,7 @@ export function navCategory(slug: string): NavCategory | undefined {
 }
 
 export const ORDER_LINKS: { href: string; label: string }[] = [
-  { href: "/how-it-works", label: "How delivery works" },
+  { href: "/how-activation-works", label: "How activation works" },
   { href: "/account/orders", label: "My orders and keys" },
   { href: "/cart", label: "Cart" },
 ];

@@ -61,7 +61,7 @@ export function Tabs({ items, defaultId, value, onChange, label, accordionBelow 
 
   return (
     <div className={className}>
-      <div role="tablist" aria-label={label} className="no-scrollbar flex gap-8 overflow-x-auto border-b border-line">
+      <div role="tablist" aria-label={label} className="no-scrollbar relative flex gap-8 overflow-x-auto border-b border-line">
         {items.map((item, index) => {
           const selected = item.id === active;
           return (
@@ -79,7 +79,7 @@ export function Tabs({ items, defaultId, value, onChange, label, accordionBelow 
               onClick={() => select(item.id)}
               onKeyDown={(e) => onKeyDown(e, index)}
               className={cn(
-                "label-caps relative h-12 shrink-0 cursor-pointer whitespace-nowrap text-[0.9375rem] transition-colors duration-[140ms]",
+                "label-caps relative h-12 shrink-0 cursor-pointer whitespace-nowrap text-[0.8125rem] transition-colors duration-[120ms]",
                 selected ? "text-ink" : "text-ink-muted hover-device:hover:text-ink",
               )}
             >
@@ -87,7 +87,7 @@ export function Tabs({ items, defaultId, value, onChange, label, accordionBelow 
               {selected ? (
                 <>
                   <span aria-hidden="true" className="absolute inset-x-0 -bottom-px h-px bg-rule" />
-                  <span aria-hidden="true" className="absolute -bottom-px left-0 h-0.5 w-6 bg-brand" />
+                  <span aria-hidden="true" className="absolute inset-x-0 -bottom-px h-0.5 bg-brand" />
                 </>
               ) : null}
             </button>

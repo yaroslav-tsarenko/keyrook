@@ -1,156 +1,156 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ArrowRight, CalendarSync, PackagePlus, WalletCards, X } from "lucide-react";
 import { Sheet } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
-import { Wordmark } from "@/components/layout/BrandMark";
-import { NAV_CATEGORIES } from "@/config/navigation";
-import { findCategory, subtreeCount, type CategoryNode } from "@/lib/hooks/useCategoryTree";
+import { Lamp } from "@/components/ui/Lamp";
 import { useAuth } from "@/providers/AuthProvider";
+import { useCurrency } from "@/providers/CurrencyProvider";
+import { formatPrice } from "@/lib/utils/format-price";
+import { STORE_POLICY } from "@/config/store-policy";
+import { cn } from "@/lib/utils/cn";
+import type { StoreIndex } from "@/lib/catalog/store-index";
 import { CurrencySelect } from "./CurrencySelect";
 import { ThemeToggle } from "./ThemeToggle";
 
-const typeRow =
-  "relative flex min-h-16 w-full cursor-pointer items-center justify-between gap-4 border-b border-line text-left font-display text-step-3 font-[650] leading-none text-ink before:absolute before:inset-y-4 before:-left-4 before:w-0.5 before:bg-brand before:opacity-0 aria-[current]:before:opacity-100";
-const row = "flex min-h-12 w-full cursor-pointer items-center justify-between gap-4 border-b border-line text-left text-step-0 text-ink";
-const count = "font-mono text-data-sm font-normal text-ink-muted";
+const TYPE_ICON: Record<string, typeof PackagePlus> = { dlc: PackagePlus, "gift-card": WalletCards, subscription: CalendarSync };
+
+const row = "flex min-h-12 w-full items-center justify-between gap-4 border-b border-line text-left text-step-0 text-ink";
 
 interface MobileMenuProps {
   open: boolean;
   onClose: () => void;
-  categories: CategoryNode[];
-  activeSlug?: string | null;
-  activeRoot?: string | null;
+  index: StoreIndex | null;
+  pathname: string;
 }
 
-export function MobileMenu({ open, onClose, categories, activeSlug = null, activeRoot = null }: MobileMenuProps) {
+export function MobileMenu({ open, onClose, index, pathname }: MobileMenuProps) {
   const { user, role } = useAuth();
-  const [panel, setPanel] = useState<string | null>(null);
-  const active = panel ? findCategory(categories, panel) : undefined;
-  const activeName = NAV_CATEGORIES.find((c) => c.slug === panel)?.name ?? active?.name ?? "";
-
-  const close = () => {
-    setPanel(null);
-    onClose();
-  };
+  const { currency, convert } = useCurrency();
+  const platforms = index?.platforms ?? [];
 
   return (
-    <Sheet open={open} onClose={close} side="right" label="Menu" className="!bg-rig">
-      <div className="flex h-full flex-col">
-        <div className="flex h-14 shrink-0 items-center justify-between border-b border-line pl-4 pr-2">
-          <Wordmark className="h-[22px] w-auto text-ink" />
-          <button type="button" onClick={close} aria-label="Close menu" className="flex size-11 cursor-pointer items-center justify-center rounded-control text-ink">
-            <X size={20} aria-hidden="true" />
-          </button>
+    <Sheet open={open} onClose={onClose} side="bottom" label="Catalogue" className="!h-[92dvh] !bg-rig">
+      <div className="flex h-full flex-col" data-mobile-map="">
+        <div className="relative shrink-0 border-b border-line px-4 pb-3 pt-2">
+          <span aria-hidden="true" className="mx-auto block h-1 w-8 bg-line-hover" />
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="m-0 flex items-center gap-2 text-ui-sm text-ink-muted">
+              <Lamp on />
+              {STORE_POLICY.delivery.headline.replace(/\.$/, "")}
+            </p>
+            <button type="button" onClick={onClose} aria-label="Close catalogue" className="flex size-11 shrink-0 cursor-pointer items-center justify-center text-ink">
+              <X size={20} aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          {panel ? (
-            <nav aria-label={activeName} className="animate-fade-in px-4">
-              <button type="button" onClick={() => setPanel(null)} className={`${row} justify-start gap-2 text-ink-muted`}>
-                <ChevronLeft size={18} aria-hidden="true" />
-                Back
-              </button>
-              <Link href={`/catalog/${panel}`} onClick={close} aria-current={activeSlug === panel ? "page" : undefined} className={`${row} font-semibold`}>
-                <span>All {activeName}</span>
-                {active ? <span className={count}>{subtreeCount(active)}</span> : null}
-              </Link>
-              {(active?.children ?? [])
-                .filter((c) => subtreeCount(c) > 0)
-                .map((child) => (
-                  <Link key={child.id} href={`/catalog/${child.slug}`} onClick={close} aria-current={activeSlug === child.slug ? "page" : undefined} className={`${row} aria-[current]:font-semibold`}>
-                    <span>{child.name}</span>
-                    <span className={count}>{subtreeCount(child)}</span>
-                  </Link>
-                ))}
-            </nav>
-          ) : (
-            <div className="animate-fade-in px-4">
-              <nav aria-label="Product types">
-                {NAV_CATEGORIES.map((cat) => {
-                  const node = findCategory(categories, cat.slug);
-                  const total = node ? subtreeCount(node) : null;
-                  if (node && total === 0) return null;
-                  const current = activeSlug === cat.slug ? "page" : activeRoot === cat.slug ? "true" : undefined;
-                  const label = (
-                    <>
-                      <span className="flex items-baseline gap-3">
-                        {cat.name}
-                        {total !== null ? <span className={count}>{total}</span> : null}
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-10">
+          <nav aria-label="Platforms" className="pt-5">
+            <p className="eyebrow m-0 mb-3">Platforms</p>
+            <ul className="m-0 grid list-none grid-cols-2 gap-2 p-0">
+              {platforms.map((p, i) => (
+                <li key={p.key} data-platform={p.tone} className={cn(i === 0 && "col-span-2")}>
+                  <Link href={`/platform/${p.slug}`} onClick={onClose} aria-current={pathname === `/platform/${p.slug}` ? "page" : undefined} className="plate flex h-[76px] flex-col justify-between p-3">
+                    <span className="flex items-center gap-2">
+                      <span aria-hidden="true" className="size-1.5 bg-platform" />
+                      <span className="eyebrow truncate text-ink">{p.short}</span>
+                    </span>
+                    <span className="flex items-baseline justify-between gap-2 font-mono text-[0.75rem] text-ink-muted">
+                      <span>
+                        <span className="text-ink">{p.count.toLocaleString("en-GB")}</span> keys
                       </span>
-                      <ChevronRight size={20} aria-hidden="true" className="text-ink-muted" />
-                    </>
-                  );
-                  return node?.children?.length ? (
-                    <button key={cat.slug} type="button" onClick={() => setPanel(cat.slug)} aria-current={current} className={typeRow} aria-label={`${cat.name}, show platforms`}>
-                      {label}
-                    </button>
-                  ) : (
-                    <Link key={cat.slug} href={`/catalog/${cat.slug}`} onClick={close} aria-current={current} className={typeRow}>
-                      {label}
-                    </Link>
-                  );
-                })}
-                <Link href="/catalog" onClick={close} className={`${row} font-semibold`}>
-                  All products
-                  <ChevronRight size={18} aria-hidden="true" className="text-ink-muted" />
-                </Link>
-              </nav>
+                      {p.minPrice != null && i === 0 ? <span>from {formatPrice(convert(p.minPrice), currency)}</span> : null}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-              <nav aria-label="Account" className="mt-8">
-                <p className="eyebrow pb-2">Account</p>
-                {user ? (
-                  <>
-                    <Link href="/account/orders" onClick={close} className={row}>
-                      Orders and keys
-                    </Link>
-                    <Link href="/account/wishlist" onClick={close} className={row}>
-                      Saved
-                    </Link>
-                    <Link href="/account/profile" onClick={close} className={row}>
-                      Profile
-                    </Link>
-                    {role === "ADMIN" || role === "SUPER_ADMIN" ? (
-                      <a href="/admin" onClick={close} className={row}>
-                        Admin
-                      </a>
-                    ) : null}
-                  </>
-                ) : (
-                  <div className="flex flex-col gap-3 py-3">
-                    <Button as="a" href="/auth/login?next=%2Faccount" fullWidth>
-                      Sign in
-                    </Button>
-                    <Link href="/auth/register" onClick={close} className="min-h-11 py-2 text-ui-md font-semibold text-ink">
-                      Create an account
-                    </Link>
-                  </div>
-                )}
-              </nav>
+          <nav aria-label="Types" className="mt-8">
+            <p className="eyebrow m-0 mb-1">Types</p>
+            {(index?.types ?? []).map((t) => {
+              const Icon = TYPE_ICON[t.key];
+              return (
+                <Link key={t.key} href={`/catalog/${t.slug}`} onClick={onClose} className={cn(row, "min-h-14")}>
+                  <span className="flex items-center gap-3">
+                    {Icon ? <Icon size={18} aria-hidden="true" className="text-ink-muted" /> : <span aria-hidden="true" className="w-[18px]" />}
+                    <span className="font-display text-step-1 font-[680] [font-stretch:112.5%]">{t.label}</span>
+                    <span className="font-mono text-[0.75rem] text-ink-muted">{t.count.toLocaleString("en-GB")}</span>
+                  </span>
+                  <ArrowRight size={18} aria-hidden="true" className="text-ink-muted" />
+                </Link>
+              );
+            })}
+            <Link href="/deals" onClick={onClose} className={cn(row, "min-h-14")}>
+              <span className="flex items-center gap-3">
+                <span aria-hidden="true" className="w-[18px]" />
+                <span className="font-display text-step-1 font-[680] [font-stretch:112.5%]">Deals</span>
+                {index?.onSale ? <span className="font-mono text-[0.75rem] text-ink-muted">{index.onSale.toLocaleString("en-GB")}</span> : null}
+              </span>
+              <ArrowRight size={18} aria-hidden="true" className="text-ink-muted" />
+            </Link>
+            <Link href="/new-releases" onClick={onClose} className={cn(row, "min-h-14")}>
+              <span className="flex items-center gap-3">
+                <span aria-hidden="true" className="w-[18px]" />
+                <span className="font-display text-step-1 font-[680] [font-stretch:112.5%]">New releases</span>
+              </span>
+              <ArrowRight size={18} aria-hidden="true" className="text-ink-muted" />
+            </Link>
+          </nav>
 
-              <nav aria-label="Help" className="mt-8">
-                <p className="eyebrow pb-2">Help</p>
-                <Link href="/how-it-works" onClick={close} className={row}>
-                  How delivery works
+          <nav aria-label="Account" className="mt-8">
+            <p className="eyebrow m-0 mb-1">Account</p>
+            {user ? (
+              <>
+                <Link href="/account/orders" onClick={onClose} className={row}>
+                  Keys and orders
                 </Link>
-                <Link href="/faq" onClick={close} className={row}>
-                  FAQ
+                <Link href="/account/wishlist" onClick={onClose} className={row}>
+                  Pinned
                 </Link>
-                <Link href="/contact" onClick={close} className={row}>
-                  Contact us
+                <Link href="/account/profile" onClick={onClose} className={row}>
+                  Profile
                 </Link>
-              </nav>
-
-              <div className="pb-10 pt-6">
-                <div className="flex min-h-14 items-center justify-between border-b border-line">
-                  <CurrencySelect size="md" showLabel className="w-full justify-between" />
-                </div>
-                <ThemeToggle variant="row" />
+                {role === "ADMIN" || role === "SUPER_ADMIN" ? (
+                  <a href="/admin" onClick={onClose} className={row}>
+                    Admin
+                  </a>
+                ) : null}
+              </>
+            ) : (
+              <div className="flex flex-col gap-2 py-3">
+                <Button as="a" href="/auth/login?next=%2Faccount" fullWidth>
+                  Sign in
+                </Button>
+                <Button as={Link} href="/auth/register" variant="ghost" onClick={onClose}>
+                  Create an account
+                </Button>
               </div>
+            )}
+          </nav>
+
+          <nav aria-label="Help" className="mt-8">
+            <p className="eyebrow m-0 mb-1">Help</p>
+            <Link href="/how-activation-works" onClick={onClose} className={row}>
+              How activation works
+            </Link>
+            <Link href="/faq" onClick={onClose} className={row}>
+              FAQ
+            </Link>
+            <Link href="/contact" onClick={onClose} className={row}>
+              Contact us
+            </Link>
+          </nav>
+
+          <div className="pt-6">
+            <div className="flex min-h-14 items-center justify-between border-b border-line">
+              <CurrencySelect size="md" showLabel className="w-full justify-between" />
             </div>
-          )}
+            <ThemeToggle variant="row" />
+          </div>
         </div>
       </div>
     </Sheet>

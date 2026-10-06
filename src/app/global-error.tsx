@@ -1,7 +1,7 @@
 "use client";
 
-import "@fontsource-variable/source-sans-3/wght.css";
-import "@fontsource-variable/martian-mono/wdth.css";
+import "@fontsource-variable/mona-sans/wght.css";
+import "@fontsource-variable/red-hat-mono/wght.css";
 import "./fonts.css";
 import "@/styles/globals.css";
 import { useEffect } from "react";
@@ -35,7 +35,7 @@ export default function GlobalError({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
         <title>{`${messages.serverErrorTitle} | ${BRAND.name}`}</title>
         <header className="border-b border-line bg-rig text-ink">
-          <div className="mx-auto flex h-14 max-w-container items-center px-gutter">
+          <div className="mx-auto flex h-16 max-w-container items-center px-gutter">
             <a href="/" aria-label={BRAND.name} className="text-ink">
               <Wordmark className="h-[22px] w-auto" />
             </a>
@@ -43,7 +43,7 @@ export default function GlobalError({
         </header>
         <main className="mx-auto w-full max-w-container flex-1 px-gutter pb-24 pt-16">
           <div className="measure">
-            <h1 className="m-0 font-display text-step-5 font-[650] leading-none tracking-[-0.01em]">{messages.serverErrorTitle}</h1>
+            <h1 className="m-0 font-display text-step-5 leading-[1.04]">{messages.serverErrorTitle}</h1>
             <p className="mt-4 text-step-1 leading-[1.5] text-ink-muted">{messages.serverError}</p>
             <p className="mt-3 text-step-0 leading-[1.6] text-ink-muted">{messages.serverErrorBody.replace("{email}", COMPANY.email)}</p>
             {error.digest ? <p className="mt-3 font-mono text-data text-ink-muted">{messages.errorReference.replace("{digest}", error.digest)}</p> : null}

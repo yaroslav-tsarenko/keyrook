@@ -1,21 +1,35 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { prisma } from "@/lib/prisma";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs/Breadcrumbs";
 import { CatalogBrowser } from "@/components/catalog/CatalogBrowser";
-import { categoryCounts, getCategoryTree, queryCatalog } from "@/components/catalog/catalog-query";
+import { queryCatalog } from "@/components/catalog/catalog-query";
 import { hasActiveFilters, parseCatalogParams, type RawSearchParams, type SortKey } from "@/components/catalog/catalog-url";
 import { SearchForm, SearchNoResults } from "@/components/search/SearchResults/SearchResults";
+import { Tumbler } from "@/components/ui/Tumbler";
+import { platformInfo } from "@/lib/catalog/platforms";
 import { noindexMetadata } from "@/lib/seo/metadata";
 
 interface SearchPageProps {
   searchParams: Promise<RawSearchParams>;
 }
 
-const SEARCH_SORTS: SortKey[] = ["relevance", "price-asc", "price-desc", "release-desc", "newest", "name-asc"];
+const SEARCH_SORTS: SortKey[] = ["relevance", "price-asc", "price-desc", "discount", "release-desc", "newest", "name-asc"];
 
 function readQuery(raw: RawSearchParams): string {
   const q = Array.isArray(raw.q) ? raw.q[0] : raw.q;
   return (q ?? "").trim().slice(0, 100);
+}
+
+async function platformLockers() {
+  const rows = await prisma.keyItem.groupBy({ by: ["platform"], where: { platform: { not: "other" }, product: { status: "ACTIVE", quantity: { gt: 0 } } }, _count: { _all: true } });
+  return rows
+    .sort((a, b) => b._count._all - a._count._all)
+    .map((r) => {
+      const info = platformInfo(r.platform);
+      return { name: info.short, href: `/platform/${info.slug}`, count: r._count._all, tone: info.tone };
+    });
 }
 
 export async function generateMetadata({ searchParams }: SearchPageProps): Promise<Metadata> {
@@ -29,15 +43,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const query = readQuery(raw);
   const params = parseCatalogParams(raw, "relevance");
   const t = await getTranslations("catalog");
-  const tree = await getCategoryTree();
-  const counts = await categoryCounts(tree);
-  const categoryLinks = tree.roots
-    .filter((c) => (counts.get(c.id) ?? 0) > 0)
-    .map((c) => ({ name: c.name, href: `/catalog/${c.slug}`, count: counts.get(c.id) ?? 0 }));
+  const lockers = await platformLockers();
 
   const searchable = query.length >= 2;
   const result = searchable ? await queryCatalog({ kind: "search", query }, params, { basePath: "/search", fixed: { q: query }, defaultSort: "relevance" }) : null;
   const showBrowser = result && (result.scopeTotal > 0 || hasActiveFilters(params));
+  const genreMatches = result ? result.facets.genres.filter((g) => g.count > 0).slice(0, 6) : [];
 
   return (
     <div className="mx-auto max-w-container px-gutter pb-24">
@@ -47,24 +58,43 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       </div>
 
       <header className="pb-8">
-        <h1 className="m-0 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-step-5 font-[650] leading-none tracking-[-0.01em] text-ink [overflow-wrap:anywhere]">
-          {searchable ? t("queryHeading", { query }) : t("searchTitle")}
-          {result ? <span className="font-mono text-data font-normal tracking-normal text-ink-muted">{result.scopeTotal.toLocaleString("en-GB")}</span> : null}
-        </h1>
-        {result && result.facets.platforms.length > 1 ? (
-          <ul className="m-0 mt-4 flex list-none flex-wrap gap-x-6 gap-y-1 p-0">
-            {result.facets.platforms
-              .filter((w) => w.count > 0)
-              .slice(0, 8)
-              .map((w) => (
-                <li key={w.key}>
-                  <a href={`/search?q=${encodeURIComponent(query)}&platform=${w.key}`} className="inline-flex min-h-9 items-baseline gap-1.5 font-display text-[0.9375rem] font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline">
-                    {w.label}
-                    <span className="font-mono text-[0.75rem] font-normal text-ink-subtle">· {w.count}</span>
-                  </a>
-                </li>
-              ))}
-          </ul>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <h1 className="m-0 text-step-5 leading-[1.04] text-ink [overflow-wrap:anywhere]">{searchable ? t("queryHeading", { query }) : t("searchTitle")}</h1>
+          {result ? <Tumbler value={result.scopeTotal} size="sm" label={`${result.scopeTotal.toLocaleString("en-GB")} results`} /> : null}
+        </div>
+        {result && (result.facets.platforms.length > 1 || genreMatches.length) ? (
+          <div className="mt-5 flex flex-col gap-2">
+            {result.facets.platforms.length > 1 ? (
+              <ul className="m-0 flex list-none flex-wrap items-baseline gap-x-5 gap-y-1 p-0">
+                <li className="eyebrow mr-1">Platforms</li>
+                {result.facets.platforms
+                  .filter((w) => w.count > 0)
+                  .slice(0, 8)
+                  .map((w) => (
+                    <li key={w.key} data-platform={platformInfo(w.key).tone}>
+                      <Link href={`/search?q=${encodeURIComponent(query)}&platform=${w.key}`} className="inline-flex min-h-9 items-center gap-2 text-ui-md text-ink underline-offset-4 hover-device:hover:underline">
+                        <span aria-hidden="true" className="size-1.5 bg-platform" />
+                        {platformInfo(w.key).short}
+                        <span className="font-mono text-[0.75rem] text-ink-muted">· {w.count.toLocaleString("en-GB")}</span>
+                      </Link>
+                    </li>
+                  ))}
+              </ul>
+            ) : null}
+            {genreMatches.length ? (
+              <ul className="m-0 flex list-none flex-wrap items-baseline gap-x-5 gap-y-1 p-0">
+                <li className="eyebrow mr-1">Genres</li>
+                {genreMatches.map((g) => (
+                  <li key={g.key}>
+                    <Link href={`/search?q=${encodeURIComponent(query)}&genre=${g.key}`} className="inline-flex min-h-9 items-center gap-2 text-ui-md text-ink underline-offset-4 hover-device:hover:underline">
+                      {g.label}
+                      <span className="font-mono text-[0.75rem] text-ink-muted">· {g.count.toLocaleString("en-GB")}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         ) : null}
       </header>
 
@@ -81,12 +111,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           totalPages={result.totalPages}
           facets={result.facets}
           activeCategoryName={result.activeCategoryName}
-          related={categoryLinks.slice(0, 3)}
+          related={lockers.slice(0, 3).map((l) => ({ name: l.name, href: l.href }))}
           headingId="search-results"
           heading={t("resultsHeading")}
         />
       ) : (
-        <SearchNoResults query={searchable ? query : ""} categories={categoryLinks} />
+        <SearchNoResults query={searchable ? query : ""} platforms={lockers.slice(0, 9)} />
       )}
     </div>
   );

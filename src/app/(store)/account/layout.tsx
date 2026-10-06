@@ -9,6 +9,7 @@ import { ReadoutLoader } from "@/components/ui/ReadoutLoader";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs/Breadcrumbs";
 
 const CRUMB: Record<string, string> = {
+  "/account/keys": "keys",
   "/account/orders": "orders",
   "/account/wishlist": "saved",
   "/account/addresses": "addresses",

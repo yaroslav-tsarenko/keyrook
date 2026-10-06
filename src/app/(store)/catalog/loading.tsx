@@ -3,7 +3,7 @@ import { CardGridSkeleton } from "@/components/product/ProductCard";
 export default function CatalogLoading() {
   return (
     <div className="mx-auto max-w-container px-gutter pb-24 pt-14">
-      <div aria-hidden="true" className="h-12 w-72 max-w-full rounded-[1px] bg-surface-1" />
+      <div aria-hidden="true" className="h-12 w-72 max-w-full bg-surface-1" />
       <div className="mt-12 lg:grid lg:grid-cols-[288px_minmax(0,1fr)] lg:gap-10">
         <div aria-hidden="true" className="hidden flex-col gap-3 lg:flex">
           {Array.from({ length: 6 }).map((_, i) => (

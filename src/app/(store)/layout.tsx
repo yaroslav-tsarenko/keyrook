@@ -23,7 +23,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
                 <div className="flex min-h-screen flex-col">
                   <a
                     href="#main"
-                    className="sr-only z-90 rounded-control bg-brand px-4 py-3 text-ui-md font-semibold text-on-brand focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+                    className="sr-only z-90 bg-brand px-4 py-3 text-ui-md font-semibold text-on-brand focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
                   >
                     Skip to content
                   </a>

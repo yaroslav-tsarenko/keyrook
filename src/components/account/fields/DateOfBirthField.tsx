@@ -51,7 +51,7 @@ export function DateOfBirthField({ idPrefix, value, onChange, onBlur, error }: D
         {t("dateOfBirth")}
         <span className="text-ink-muted" aria-hidden="true"> *</span>
       </legend>
-      <div className="grid grid-cols-[minmax(0,4.75rem)_minmax(0,1fr)_minmax(0,6rem)] gap-2">
+      <div className="grid grid-cols-[minmax(0,5.75rem)_minmax(0,1fr)_minmax(0,6.25rem)] gap-2">
         <Select
           id={`${idPrefix}-dob-day`}
           label={t("day")}

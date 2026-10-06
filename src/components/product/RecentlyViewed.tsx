@@ -60,7 +60,7 @@ export function RecentlyViewed({ excludeId, title = "Recently viewed", className
         </h2>
         <p className="m-0 text-ui-sm text-ink-muted">Kept on this device only</p>
       </div>
-      <div className="no-scrollbar -mx-gutter mt-6 flex snap-x gap-3 overflow-x-auto px-gutter pb-2 lg:gap-4">
+      <div className="no-scrollbar -mx-gutter mt-6 flex snap-x scroll-px-gutter gap-3 overflow-x-auto px-gutter pb-2 lg:gap-4">
         {products.map((product) => (
           <div key={product.id} className="w-[min(72vw,280px)] shrink-0 snap-start lg:w-[calc((100%-3*16px)/4)]">
             <ProductCard product={product} />

@@ -4,6 +4,7 @@ import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage, type RGB }
 import fontkit from "@pdf-lib/fontkit";
 import { COMPANY } from "@/lib/company";
 import { BRAND } from "@/lib/brand";
+import { WORDMARK } from "@/lib/brand-mark";
 import { PAYMENT_METHOD_LABEL } from "@/lib/payments/types";
 import { addressLines, displayOrderNumber, orderCurrency, orderTotals, type Numeric, type OrderAmountsSource, type StoredAddress } from "@/lib/orders";
 
@@ -32,18 +33,19 @@ function hex(value: string): RGB {
   return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
 }
 
-const INK = hex("#141517");
-const MUTED = hex("#45474b");
-const SUBTLE = hex("#54565b");
-const PAINT = hex("#141517");
-const LAMP = hex("#c77a12");
-const LINE = hex("#a9abaf");
+const INK = hex("#0F1513");
+const MUTED = hex("#3E4945");
+const SUBTLE = hex("#505B57");
+const PAINT = hex("#0F1513");
+const INDEX = hex("#0F7A50");
+const LINE = hex("#A3ADA9");
+const PAPER = hex("#FFFFFF");
 
 const FONT_FILES = {
-  display: "sofia-sans-condensed-latin-700-normal.woff",
-  body: "source-sans-3-latin-400-normal.woff",
-  strong: "source-sans-3-latin-600-normal.woff",
-  mono: "martian-mono-latin-500-normal.woff",
+  display: "hubot-sans-latin-125-600-normal.woff",
+  body: "mona-sans-latin-400-normal.woff",
+  strong: "mona-sans-latin-600-normal.woff",
+  mono: "red-hat-mono-latin-500-normal.woff",
 } as const;
 
 const FALLBACK_LETTERS: Record<string, string> = {
@@ -217,23 +219,13 @@ function tableHeader(w: Writer) {
 }
 
 function wordmark(w: Writer, x: number, y: number, size: number) {
-  const font = w.fonts.display;
-  const name = BRAND.name;
-  const cut = name.indexOf("i");
-  const dotless = font.getCharacterSet().includes(0x131);
-  if (cut < 0 || !dotless) {
-    w.text(name, x, y, { font, size, color: PAINT });
-    return;
-  }
-  const head = name.slice(0, cut);
-  const tail = name.slice(cut + 1);
-  const headWidth = font.widthOfTextAtSize(head, size);
-  const stemWidth = font.widthOfTextAtSize("\u0131", size);
-  w.page.drawText(head, { x, y, size, font, color: PAINT });
-  w.page.drawText("\u0131", { x: x + headWidth, y, size, font, color: PAINT });
-  const side = size * 0.105;
-  w.page.drawRectangle({ x: x + headWidth + (stemWidth - side) / 2, y: y + size * 0.6, width: side, height: side, color: LAMP });
-  w.page.drawText(tail, { x: x + headWidth + stemWidth, y, size, font, color: PAINT });
+  const scale = size / 1000;
+  const top = y + 729 * scale;
+  w.page.drawSvgPath(WORDMARK.letters, { x, y: top, scale, color: PAINT });
+  w.page.drawSvgPath(WORDMARK.dial, { x, y: top, scale, color: PAINT });
+  w.page.drawSvgPath(WORDMARK.ticks, { x, y: top, scale, color: PAPER });
+  const i = WORDMARK.index;
+  w.page.drawSvgPath(`M${i.x} ${i.y}h${i.width}v${i.height}h${-i.width}Z`, { x, y: top, scale, color: INDEX });
 }
 
 function masthead(w: Writer, number: string, compact: boolean) {

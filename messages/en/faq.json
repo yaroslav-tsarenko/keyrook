@@ -47,7 +47,7 @@
         },
         "region": {
           "q": "What does the activation region mean?",
-          "a": "A Global key works on an account set to any country we sell to. A Europe, United Kingdom, United States or North America key only activates on an account set to that region. The region is shown on every product page and in your cart."
+          "a": "A Global key works on an account set to any country we serve. A Europe, United Kingdom, United States or North America key only activates on an account set to that region. The region is shown on every product page and in your cart."
         },
         "language": {
           "q": "Which languages will the game have?",
@@ -55,7 +55,7 @@
         },
         "redeem": {
           "q": "Where do I enter the key?",
-          "a": "On the platform named on the product page: for example Games, Activate a Product on Steam; Redeem code in the EA app; redeem.microsoft.com for Xbox. Step-by-step instructions for every platform are on <howto>How delivery works</howto> and on your order page."
+          "a": "On the platform named on the product page: for example Games, Activate a Product on Steam; Redeem code in the EA app; redeem.microsoft.com for Xbox. Step-by-step instructions for every platform are on <howto>How activation works</howto> and on your order page."
         },
         "safety": {
           "q": "Is my key safe in my account?",
@@ -117,7 +117,7 @@
       "title": "Products",
       "items": {
         "what": {
-          "q": "What do you sell?",
+          "q": "What do you offer?",
           "a": "Activation keys for games and DLC, subscription codes, gift cards and in-game top-ups, and software licence keys. Everything is digital; nothing is posted."
         },
         "subscriptions": {
@@ -130,7 +130,7 @@
         },
         "affiliation": {
           "q": "Are you connected to the platforms or publishers?",
-          "a": "No. {brand} is an independent store, not affiliated with or endorsed by the platforms and publishers whose products it sells. Their names and logos belong to them."
+          "a": "No. {brand} is an independent store, not affiliated with or endorsed by the platforms and publishers whose products it offers. Their names and logos belong to them."
         }
       }
     },
@@ -139,7 +139,7 @@
       "items": {
         "who": {
           "q": "Who can open an account?",
-          "a": "Anyone aged {minAge} or over who lives in a country we sell to. We don't sell to or open accounts in {restricted}."
+          "a": "Anyone aged {minAge} or over who lives in a country we serve. We don't take orders from or open accounts in {restricted}."
         },
         "password": {
           "q": "I forgot my password.",

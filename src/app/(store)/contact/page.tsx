@@ -33,7 +33,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
 
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-x-6 lg:gap-y-0">
         <div className="lg:col-span-5">
-          <h1 className="m-0 text-step-5 font-[650] leading-none tracking-[-0.01em] text-ink">{t("title")}</h1>
+          <h1 className="m-0 text-step-5 leading-[1.04] text-ink">{t("title")}</h1>
           <p className="measure mt-5 text-step-1 leading-[1.5] text-ink-muted">{t("promise", VALUES)}</p>
 
           <div className="mt-10">

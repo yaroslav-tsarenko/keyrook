@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
-import { Check, Copy } from "lucide-react";
+import { CopyCheck, Copy, FileDown } from "lucide-react";
+import { Tumbler } from "@/components/ui/Tumbler";
 import { StatusPlate } from "@/components/ui/Plate";
 import { Alert } from "@/components/ui/Alert";
 import { ReadoutLoader } from "@/components/ui/ReadoutLoader";
 import { ProductRow } from "@/components/product/ProductCard";
-import { PurchaseTimeline } from "@/components/account/PurchaseTimeline";
+import { OrderTimeline } from "@/components/account/OrderTimeline";
+import { OrderKeys } from "@/components/account/OrderDetail/OrderDetail";
 import { orderTimelineStatus } from "@/components/account/OrderHistory/OrderHistory";
 import { TotalsList } from "@/components/checkout/TotalsList";
 import { useCart } from "@/providers/CartProvider";
@@ -29,18 +31,18 @@ const INTERVAL_MS = 3000;
 function OrderId({ number }: { number: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <p className="m-0 flex items-center gap-2">
-      <span className="eyebrow">Order ID</span>
-      <span className="font-mono text-data text-ink">{number}</span>
+    <p className="m-0 flex flex-wrap items-center gap-3">
+      <span className="eyebrow">Order number</span>
+      <Tumbler value={number} size="md" label={`Order number ${number}`} motion />
       <button
         type="button"
-        aria-label={copied ? "Order ID copied" : "Copy order ID"}
+        aria-label={copied ? "Order number copied" : "Copy order number"}
         onClick={() => {
           navigator.clipboard?.writeText(number).then(() => setCopied(true), () => {});
         }}
-        className="flex size-9 cursor-pointer items-center justify-center rounded-control text-ink-muted hover-device:hover:bg-raised hover-device:hover:text-ink"
+        className="flex size-10 cursor-pointer items-center justify-center text-ink-muted hover-device:hover:bg-raised hover-device:hover:text-ink"
       >
-        {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
+        {copied ? <CopyCheck size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
       </button>
     </p>
   );
@@ -59,12 +61,10 @@ function OrderSummary({ order, live = false }: { order: OrderView; live?: boolea
             <li key={line.id} className="flex flex-col gap-5 border-b border-line py-5">
               <ProductRow name={line.name} href={line.slug ? `/product/${line.slug}` : null} imageUrl={line.imageUrl} keyInfo={line.key} aside={<span className="font-mono text-data text-ink">{formatPrice(line.total, order.currency)}</span>} />
               {live ? (
-                <PurchaseTimeline
-                  status={orderTimelineStatus(order, line)}
-                  paidAt={order.paidAt}
-                  finishedAt={line.delivery?.finishedAt}
-                  refundedAt={line.delivery?.refundedAt}
-                />
+                <>
+                  <OrderTimeline status={orderTimelineStatus(order, line)} createdAt={order.createdAt} paidAt={order.paidAt} finishedAt={line.delivery?.finishedAt} refundedAt={line.delivery?.refundedAt} />
+                  <OrderKeys order={order} line={line} />
+                </>
               ) : null}
             </li>
           ))}
@@ -77,9 +77,9 @@ function OrderSummary({ order, live = false }: { order: OrderView; live?: boolea
             {t("deliveryTitle")}
           </h2>
           <p className="m-0 text-ui-md leading-[1.6] text-ink">
-            Activation keys on your order page
-            <Link href={`/account/orders/${order.id}`} className="mt-1 block font-semibold underline decoration-1 underline-offset-4">
-              Open the order to reveal your keys
+            {STORE_POLICY.delivery.headline}
+            <Link href="/account/keys" className="mt-1 block font-[560] underline decoration-1 underline-offset-4">
+              Your keys in Account → Keys
             </Link>
           </p>
         </section>
@@ -175,14 +175,14 @@ export function ConfirmedView() {
     return frame(
       <div className="flex min-h-[40vh] flex-col items-center justify-center gap-5 text-center" aria-live="polite">
         <ReadoutLoader label={t("checking.title")} />
-        <h1 className="m-0 text-step-4 font-[650] leading-[1.04] text-ink">{t("checking.title")}</h1>
+        <h1 className="m-0 text-step-4 leading-[1.04] text-ink">{t("checking.title")}</h1>
         <p className="measure m-0 text-ink-muted">{t("checking.body")}</p>
       </div>,
     );
   }
 
   const heading = (text: string) => (
-    <h1 ref={headingRef} tabIndex={-1} className="m-0 text-step-5 font-[650] leading-none tracking-[-0.01em] text-ink outline-none">
+    <h1 ref={headingRef} tabIndex={-1} className="m-0 text-step-5 leading-[1.04] text-ink outline-none">
       {text}
     </h1>
   );
@@ -193,18 +193,25 @@ export function ConfirmedView() {
         <div className="flex flex-col gap-4">
           {heading(order.paymentStatus === "PAID" ? "Payment confirmed" : "Payment received")}
           <OrderId number={order.number} />
-          <p className="measure m-0 text-step-1 text-ink-muted">We&apos;ve sent a receipt to {order.email}. {t("confirmedState.paid", { total: formatPrice(order.totals.total, order.currency) })}</p>
+          <p className="measure m-0 text-step-1 text-ink-muted">
+            We&apos;ve sent a receipt to {order.email}. Your keys appear in Account → Keys as soon as they&apos;re issued.
+          </p>
         </div>
         <OrderSummary order={order} live />
         <div className="flex flex-wrap items-center gap-4 border-t border-line pt-8">
           {user ? (
-            <Button as={Link} href="/account/orders">
-              View my purchases
+            <Button as={Link} href="/account/keys">
+              Go to my keys
             </Button>
           ) : null}
           <Button as={Link} href="/catalog" variant="outline">
             Continue shopping
           </Button>
+          {order.invoiceAvailable ? (
+            <Button as="a" href={`/api/account/orders/${encodeURIComponent(order.id)}/invoice`} download variant="ghost" startContent={<FileDown size={16} aria-hidden="true" />}>
+              Download invoice (PDF)
+            </Button>
+          ) : null}
         </div>
       </>,
     );
@@ -223,7 +230,7 @@ export function ConfirmedView() {
             {t("failed.retry")}
           </Button>
           <Button as={Link} href="/cart" variant="outline">
-            {t("failed.bag")}
+            {t("failed.cart")}
           </Button>
         </div>
         <p className="m-0 text-ui-sm text-ink-muted">{t("failed.help", { email: COMPANY.email })}</p>
@@ -238,7 +245,7 @@ export function ConfirmedView() {
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <StatusPlate status={plateStatusFor("awaitingPayment")} label={t("plates.awaiting")} />
-            <span className="font-mono text-data text-ink">{order.number}</span>
+            <Tumbler value={order.number} size="sm" label={`Order number ${order.number}`} />
           </div>
           {heading(t(`${key}.title`))}
           <p className="measure m-0 text-step-1 text-ink-muted">
@@ -272,7 +279,7 @@ export function ConfirmedView() {
             {user ? t("missing.orders") : t("continueShopping")}
           </Button>
           <Button as={Link} href="/cart" variant="outline">
-            {t("failed.bag")}
+            {t("failed.cart")}
           </Button>
         </div>
       </>,

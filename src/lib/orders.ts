@@ -123,7 +123,7 @@ export const ORDER_VIEW_INCLUDE = {
           refundedAt: true,
           updatedAt: true,
           quantity: true,
-          keys: { select: { id: true, revealedAt: true, keyType: true }, orderBy: { createdAt: "asc" as const } },
+          keys: { select: { id: true, revealedAt: true, keyType: true, createdAt: true }, orderBy: { createdAt: "asc" as const } },
         },
       },
     },
@@ -137,7 +137,7 @@ export interface ItemDelivery {
   finishedAt: string | null;
   refundedAt: string | null;
   note: string | null;
-  keys: { id: string; revealed: boolean; type: string }[];
+  keys: { id: string; revealed: boolean; type: string; issuedAt: string | null; revealedAt: string | null }[];
 }
 
 export function itemDelivery(
@@ -147,7 +147,7 @@ export function itemDelivery(
         supplierError?: string | null;
         deliveredAt?: Date | null;
         refundedAt?: Date | null;
-        keys?: { id: string; revealedAt: Date | null; keyType: string }[];
+        keys?: { id: string; revealedAt: Date | null; keyType: string; createdAt?: Date | null }[];
       }
     | null
     | undefined,
@@ -163,7 +163,9 @@ export function itemDelivery(
     finishedAt: source.deliveredAt ? source.deliveredAt.toISOString() : null,
     refundedAt: source.refundedAt ? source.refundedAt.toISOString() : null,
     note,
-    keys: source.status === "delivered" ? (source.keys ?? []).map((k) => ({ id: k.id, revealed: Boolean(k.revealedAt), type: k.keyType })) : [],
+    keys: source.status === "delivered"
+      ? (source.keys ?? []).map((k) => ({ id: k.id, revealed: Boolean(k.revealedAt), type: k.keyType, issuedAt: k.createdAt ? k.createdAt.toISOString() : null, revealedAt: k.revealedAt ? k.revealedAt.toISOString() : null }))
+      : [],
   };
 }
 

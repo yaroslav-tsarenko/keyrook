@@ -55,7 +55,7 @@ export function Select({
         className={cn(
           controlClass,
           "cursor-pointer appearance-none pr-10",
-          size === "sm" ? "h-9 pl-3 text-ui-sm shadow-none" : "h-12 pl-3.5",
+          size === "sm" ? "h-9 pl-3 text-ui-sm" : "h-12 pl-3.5",
           error ? controlErrorClass : null,
           className,
         )}
@@ -81,7 +81,7 @@ export function Select({
   if (inlineLabel) {
     return (
       <div className={cn("flex items-center gap-2.5", wrapperClassName)}>
-        <label htmlFor={fieldId} className="eyebrow">
+        <label htmlFor={fieldId} className="eyebrow whitespace-nowrap">
           {inlineLabel}
         </label>
         {select}

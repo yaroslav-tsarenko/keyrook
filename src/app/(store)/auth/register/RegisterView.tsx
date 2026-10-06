@@ -17,15 +17,17 @@ import { useFieldError } from "@/lib/hooks/useFieldError";
 import { registerSchema, type RegisterFormData } from "@/lib/validators/auth";
 import { DEFAULT_COUNTRY_CODE } from "@/lib/countries";
 import { RESTRICTED_TERRITORIES_STATEMENT, restrictedCountriesSentence } from "@/config/restricted-countries";
-import { AuthAside } from "../AuthAside";
 
 type Field = FieldPath<RegisterFormData>;
 
 const STEPS: Field[][] = [
-  ["email", "password", "confirmPassword"],
-  ["firstName", "lastName", "phoneCountry", "phone", "dateOfBirth"],
-  ["street", "city", "country", "postcode", "acceptedTerms"],
+  ["firstName", "lastName", "dateOfBirth"],
+  ["email", "phoneCountry", "phone"],
+  ["country", "street", "city", "postcode"],
+  ["password", "confirmPassword", "acceptedTerms"],
 ];
+
+const LAST = STEPS.length - 1;
 
 const IDS: Record<string, string> = {
   email: "rg-email",
@@ -51,6 +53,7 @@ export function RegisterView() {
   const [step, setStep] = useState(0);
   const [summary, setSummary] = useState<StepperErrorSummary | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  const [marketing, setMarketing] = useState(false);
 
   const { register, control, trigger, watch, handleSubmit, setError, getFieldState, getValues, formState } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -104,7 +107,7 @@ export function RegisterView() {
 
   const next = async () => {
     let ok = await trigger(STEPS[step]);
-    if (step === 0 && ok && getValues("password") !== getValues("confirmPassword")) {
+    if (step === LAST && ok && getValues("password") !== getValues("confirmPassword")) {
       setError("confirmPassword", { type: "manual", message: "passwordsMismatch" });
       ok = false;
     }
@@ -127,12 +130,13 @@ export function RegisterView() {
         });
         const body = await res.json().catch(() => ({}));
         if (res.ok) {
+          if (marketing) await fetch("/api/newsletter", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.email }) }).catch(() => null);
           window.location.assign("/account?welcome=1");
           return;
         }
         if (body.code === "EMAIL_TAKEN") {
           setError("email", { type: "server", message: "emailTaken" });
-          setStep(0);
+          setStep(1);
           setSummary({ message: t("checkFields", { count: 1 }), fields: [{ id: IDS.email, label: labelFor("email") }] });
           return;
         }
@@ -164,21 +168,12 @@ export function RegisterView() {
   const values = watch();
   const accepted = Boolean(values.acceptedTerms);
 
-  const credentials = (
-    <div className="flex flex-col gap-5">
-      <Input id="rg-email" type="email" label={tf("email")} required autoComplete="email" error={fe(formState.errors.email?.message)} {...register("email")} />
-      <PasswordInput id="rg-password" label={tf("password")} required autoComplete="new-password" hint={tf("passwordHint")} error={fe(formState.errors.password?.message)} {...register("password")} />
-      <PasswordInput id="rg-confirm" label={tf("confirmPassword")} required autoComplete="new-password" error={fe(formState.errors.confirmPassword?.message)} {...register("confirmPassword")} />
-    </div>
-  );
-
   const about = (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Input id="rg-first" label={tf("firstName")} required autoComplete="given-name" error={fe(formState.errors.firstName?.message)} {...register("firstName")} />
         <Input id="rg-last" label={tf("lastName")} required autoComplete="family-name" error={fe(formState.errors.lastName?.message)} {...register("lastName")} />
       </div>
-      <PhoneField idPrefix="rg-phone" dialRegister={register("phoneCountry")} numberRegister={register("phone")} error={fe(formState.errors.phone?.message)} dialError={fe(formState.errors.phoneCountry?.message)} />
       <Controller
         control={control}
         name="dateOfBirth"
@@ -187,23 +182,37 @@ export function RegisterView() {
     </div>
   );
 
+  const contact = (
+    <div className="flex flex-col gap-5">
+      <Input id="rg-email" type="email" label={tf("email")} required autoComplete="email" error={fe(formState.errors.email?.message)} {...register("email")} />
+      <PhoneField idPrefix="rg-phone" dialRegister={register("phoneCountry")} numberRegister={register("phone")} error={fe(formState.errors.phone?.message)} dialError={fe(formState.errors.phoneCountry?.message)} />
+    </div>
+  );
+
   const address = (
     <div className="flex flex-col gap-5">
+      <CountrySelect id="rg-country" required error={fe(formState.errors.country?.message)} {...register("country")} />
       <Input id="rg-street" label={tf("street")} required autoComplete="address-line1" error={fe(formState.errors.street?.message)} {...register("street")} />
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Input id="rg-city" label={tf("city")} required autoComplete="address-level2" error={fe(formState.errors.city?.message)} {...register("city")} />
         <Input id="rg-postcode" label={tf("postcode")} required autoComplete="postal-code" className="uppercase" error={fe(formState.errors.postcode?.message)} {...register("postcode")} />
       </div>
-      <CountrySelect id="rg-country" required error={fe(formState.errors.country?.message)} {...register("country")} />
       <p className="meta m-0 text-ink-muted">
         {t("restricted", { countries: restrictedCountriesSentence() })} {RESTRICTED_TERRITORIES_STATEMENT}
       </p>
-      <div className="mt-2 border-t border-line pt-5">
+    </div>
+  );
+
+  const password = (
+    <div className="flex flex-col gap-5">
+      <PasswordInput id="rg-password" label={tf("password")} required autoComplete="new-password" hint={tf("passwordHint")} error={fe(formState.errors.password?.message)} {...register("password")} />
+      <PasswordInput id="rg-confirm" label={tf("confirmPassword")} required autoComplete="new-password" error={fe(formState.errors.confirmPassword?.message)} {...register("confirmPassword")} />
+      <div className="mt-2 flex flex-col gap-2 border-t border-line pt-5">
         <Checkbox
           id="rg-terms"
           label={t.rich("terms", {
             link: (chunks) => (
-              <Link href="/policies/terms" target="_blank" className="font-semibold underline underline-offset-4">
+              <Link href="/policies/terms" target="_blank" className="font-[560] underline underline-offset-4">
                 {chunks}
               </Link>
             ),
@@ -218,10 +227,11 @@ export function RegisterView() {
           error={fe(formState.errors.acceptedTerms?.message)}
           {...register("acceptedTerms")}
         />
+        <Checkbox id="rg-marketing" label={t("marketing")} checked={marketing} onChange={(e) => setMarketing(e.target.checked)} />
       </div>
       {problem ? <Alert tone="danger" title={problem} /> : null}
-      <div className="mt-2 flex flex-wrap-reverse items-center justify-between gap-4">
-        <Button variant="ghost" onPress={() => setStep(1)}>
+      <div className="mt-4 flex flex-wrap-reverse items-center justify-between gap-4 border-t border-line pt-6">
+        <Button variant="ghost" onPress={() => setStep(LAST - 1)}>
           {t("back")}
         </Button>
         <Button type="submit" size="lg" isDisabled={!accepted} isLoading={formState.isSubmitting} className="max-sm:w-full">
@@ -232,39 +242,41 @@ export function RegisterView() {
   );
 
   return (
-    <div className="mx-auto grid max-w-[1040px] grid-cols-1 gap-12 px-gutter pb-24 pt-10 lg:grid-cols-12 lg:gap-0 lg:pt-16">
-      <div className="flex min-w-0 flex-col gap-6 lg:col-span-7 lg:max-w-[560px] lg:pr-6">
-        <div className="flex flex-col gap-3">
-          <h1 className="m-0 text-step-5 font-[650] leading-none tracking-[-0.01em] text-ink">{t("title")}</h1>
-          <p className="m-0 text-ink-muted">{t("lead")}</p>
-        </div>
-        <form noValidate onSubmit={onSubmit}>
-          <Stepper
-            label={t("stepsLabel")}
-            current={step}
-            onEdit={(index) => {
-              setSummary(null);
-              setStep(index);
-            }}
-            onContinue={next}
-            onBack={() => {
-              setSummary(null);
-              setStep((s) => Math.max(0, s - 1));
-            }}
-            continueLabel={t("continue")}
-            hideActions={step === 2}
-            errorSummary={summary}
-            steps={[
-              { id: "credentials", title: t("steps.credentials"), summary: values.email || undefined, content: credentials },
-              { id: "about", title: t("steps.about"), summary: [values.firstName, values.lastName].filter(Boolean).join(" ") || undefined, content: about },
-              { id: "address", title: t("steps.address"), content: address },
-            ]}
-          />
-        </form>
+    <div className="mx-auto max-w-[560px] px-gutter pb-24 pt-10 lg:pt-16">
+      <div className="mb-8 flex flex-col gap-3">
+        <h1 className="m-0 text-step-5 leading-[1.04] text-ink">{t("title")}</h1>
+        <p className="m-0 text-ink-muted">{t("lead")}</p>
       </div>
-      <div className="lg:col-span-4 lg:col-start-9">
-        <AuthAside mode="register" />
-      </div>
+      <form noValidate onSubmit={onSubmit}>
+        <Stepper
+          label={t("stepsLabel")}
+          current={step}
+          onEdit={(index) => {
+            setSummary(null);
+            setStep(index);
+          }}
+          onContinue={next}
+          onBack={() => {
+            setSummary(null);
+            setStep((s) => Math.max(0, s - 1));
+          }}
+          continueLabel={t("continue")}
+          hideActions={step === LAST}
+          errorSummary={summary}
+          steps={[
+            { id: "about", title: t("steps.about"), short: "About you", summary: [values.firstName, values.lastName].filter(Boolean).join(" ") || undefined, content: about },
+            { id: "contact", title: t("steps.contact"), short: "Contact", summary: values.email || undefined, content: contact },
+            { id: "address", title: t("steps.address"), short: "Address", summary: [values.city, values.country].filter(Boolean).join(", ") || undefined, content: address },
+            { id: "password", title: t("steps.password"), short: "Password", content: password },
+          ]}
+        />
+      </form>
+      <p className="m-0 mt-10 border-t border-line pt-6 text-ui-md text-ink-muted">
+        {t("haveAccount")}{" "}
+        <Link href="/auth/login" className="font-[560] text-ink underline underline-offset-4">
+          Sign in
+        </Link>
+      </p>
     </div>
   );
 }

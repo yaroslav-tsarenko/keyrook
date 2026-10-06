@@ -17,7 +17,7 @@ import { useAccountData } from "./useAccountData";
 import { LoadError } from "./LoadError";
 import { formatOrderDate } from "./format";
 
-const linkCls = "inline-flex min-h-10 items-center gap-1.5 text-ui-md font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline";
+const linkCls = "inline-flex min-h-10 items-center gap-1.5 text-ui-md font-[560] text-ink decoration-1 underline-offset-4 hover-device:hover:underline";
 
 export function AccountOverview() {
   const t = useTranslations("account.overview");
@@ -26,11 +26,31 @@ export function AccountOverview() {
   const { data, error, loading, reload } = useAccountData<{ orders: OrderView[] }>("/api/account/orders");
   const latest = data?.orders[0];
   const firstName = user?.firstName || user?.name?.split(" ")[0] || "";
+  const keys = (data?.orders ?? []).flatMap((o) => o.lines.flatMap((l) => l.delivery?.keys ?? []));
+  const hidden = keys.filter((k) => !k.revealed).length;
+  const orderCount = data?.orders.length ?? 0;
 
   return (
     <div>
       <AccountPageHeader title={firstName ? t("title", { name: firstName }) : t("titleNoName")}>
         <p className="m-0 text-ink-muted">{user?.email ? t("signedInAs", { email: user.email }) : null}</p>
+        {data && orderCount > 0 ? (
+          <p className="m-0 flex flex-wrap gap-x-2 text-ui-md text-ink">
+            {hidden > 0 ? (
+              <>
+                <Link href="/account/keys" className="underline decoration-line-hover underline-offset-4 hover-device:hover:decoration-ink">
+                  <span className="font-mono">{hidden}</span> {hidden === 1 ? "key" : "keys"} not revealed yet
+                </Link>
+                <span aria-hidden="true" className="text-ink-subtle">
+                  ·
+                </span>
+              </>
+            ) : null}
+            <Link href="/account/orders" className="underline decoration-line-hover underline-offset-4 hover-device:hover:decoration-ink">
+              <span className="font-mono">{orderCount}</span> {orderCount === 1 ? "order" : "orders"}
+            </Link>
+          </p>
+        ) : null}
       </AccountPageHeader>
 
       {welcome ? (
@@ -51,13 +71,13 @@ export function AccountOverview() {
         ) : error ? (
           <LoadError onRetry={reload} />
         ) : latest ? (
-          <div className="border-y border-line py-4">
+          <div className="border-y border-rule py-4">
             <ProductRow
               name={latest.lines[0]?.name ?? latest.number}
               href={latest.lines[0]?.slug ? `/product/${latest.lines[0].slug}` : null}
               imageUrl={latest.lines[0]?.imageUrl}
               keyInfo={latest.lines[0]?.key}
-              aside={<span className="price text-[1rem] text-ink">{formatPrice(latest.totals.total, latest.currency)}</span>}
+              aside={<span className="price text-ui-md text-ink">{formatPrice(latest.totals.total, latest.currency)}</span>}
             >
               <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2">
                 <OrderStatus state={latest.state} />
@@ -83,8 +103,12 @@ export function AccountOverview() {
       </section>
 
       <nav aria-label="Account shortcuts" className="flex flex-wrap gap-x-8 gap-y-1">
+        <Link href="/account/keys" className={linkCls}>
+          Keys
+          <ArrowRight size={16} aria-hidden="true" />
+        </Link>
         <Link href="/account/orders" className={linkCls}>
-          Orders and keys
+          Orders
           <ArrowRight size={16} aria-hidden="true" />
         </Link>
         <Link href="/account/profile" className={linkCls}>
@@ -92,7 +116,7 @@ export function AccountOverview() {
           <ArrowRight size={16} aria-hidden="true" />
         </Link>
         <Link href="/account/wishlist" className={linkCls}>
-          Saved
+          Pinned
           <ArrowRight size={16} aria-hidden="true" />
         </Link>
       </nav>

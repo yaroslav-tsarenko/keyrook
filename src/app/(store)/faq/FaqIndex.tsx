@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { buttonClasses } from "@/components/ui/button-classes";
 import { cn } from "@/lib/utils/cn";
+import { Lamp } from "@/components/ui/Lamp";
 
 export function FaqIndex({ label, groups }: { label: string; groups: { id: string; title: string }[] }) {
   const [active, setActive] = useState(groups[0]?.id);
@@ -46,12 +47,12 @@ export function FaqIndex({ label, groups }: { label: string; groups: { id: strin
                 aria-current={isActive ? "true" : undefined}
                 onClick={() => setActive(group.id)}
                 className={cn(
-                  "relative flex min-h-11 items-center whitespace-nowrap text-ui-md transition-colors duration-[140ms] lg:py-2 lg:pl-4",
-                  isActive ? "font-semibold text-ink" : "text-ink-muted hover-device:hover:text-ink",
+                  "relative flex min-h-11 items-center gap-3 whitespace-nowrap text-ui-md transition-colors duration-[120ms] lg:py-2",
+                  isActive ? "font-[560] text-ink" : "text-ink-muted hover-device:hover:text-ink",
                 )}
               >
+                <Lamp on={isActive} />
                 {group.title}
-                {isActive ? <span aria-hidden="true" className="absolute bottom-0 left-0 h-0.5 w-6 bg-brand lg:inset-y-2.5 lg:h-auto lg:w-0.5" /> : null}
               </a>
             </li>
           );

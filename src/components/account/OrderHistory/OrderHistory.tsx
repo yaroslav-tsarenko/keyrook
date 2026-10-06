@@ -3,11 +3,11 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FileDown } from "lucide-react";
 import { SkeletonBar } from "@/components/ui/ReadoutLoader";
 import { EmptyState } from "@/components/shared/EmptyState/EmptyState";
 import { ProductRow } from "@/components/product/ProductCard";
-import { PurchaseTimeline } from "@/components/account/PurchaseTimeline";
+import { OrderTimeline } from "@/components/account/OrderTimeline";
 import { formatPrice } from "@/lib/utils/format-price";
 import type { OrderView } from "@/lib/orders";
 import { AccountPageHeader } from "../AccountSidebar/AccountSidebar";
@@ -55,40 +55,40 @@ export function OrderHistory() {
         <ol className="m-0 list-none border-t border-rule p-0">
           {orders.map((order) => (
             <li key={order.id} data-purchase="" className="border-b border-line py-6">
-              <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-                <span className="font-mono text-data text-ink">{order.number}</span>
+              <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+                <span className="font-mono text-data font-medium text-ink">{order.number}</span>
                 <span className="font-mono text-[0.75rem] text-ink-muted">{formatOrderDate(order.createdAt)}</span>
+                <span className="price text-data text-ink">{formatPrice(order.totals.total, order.currency)}</span>
                 <OrderStatus state={order.state} />
-                <Link
-                  href={`/account/orders/${order.id}`}
-                  className="ml-auto inline-flex min-h-10 items-center gap-1.5 text-ui-md font-semibold text-ink decoration-1 underline-offset-4 hover-device:hover:underline"
-                >
+              </div>
+              <ul className="m-0 flex list-none flex-col gap-5 p-0">
+                {order.lines.map((line) => (
+                  <li key={line.id} className="flex flex-col gap-4">
+                    <ProductRow name={line.name} href={line.slug ? `/product/${line.slug}` : null} imageUrl={line.imageUrl} keyInfo={line.key} aside={<span className="price text-ui-md text-ink">{formatPrice(line.total, order.currency)}</span>} />
+                    <OrderTimeline
+                      status={order.state === "paymentFailed" ? "payment_failed" : orderTimelineStatus(order, line)}
+                      createdAt={order.createdAt}
+                      paidAt={order.paidAt}
+                      finishedAt={line.delivery?.finishedAt}
+                      refundedAt={line.delivery?.refundedAt}
+                      className="sm:pl-[76px]"
+                    />
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-1 sm:pl-[76px]">
+                {order.invoiceAvailable ? (
+                  <a href={`/api/account/orders/${encodeURIComponent(order.id)}/invoice`} download className="inline-flex min-h-10 items-center gap-1.5 text-ui-sm font-[560] text-ink underline-offset-4 hover-device:hover:underline">
+                    <FileDown size={16} aria-hidden="true" />
+                    Invoice (PDF)
+                  </a>
+                ) : null}
+                <Link href={`/account/orders/${order.id}`} className="inline-flex min-h-10 items-center gap-1.5 text-ui-sm font-[560] text-ink underline-offset-4 hover-device:hover:underline">
                   {t("view")}
                   <span className="sr-only"> {order.number}</span>
                   <ArrowRight size={16} aria-hidden="true" />
                 </Link>
               </div>
-              <ul className="m-0 flex list-none flex-col gap-6 p-0">
-                {order.lines.map((line) => (
-                  <li key={line.id} className="flex flex-col gap-4">
-                    <ProductRow
-                      name={line.name}
-                      href={line.slug ? `/product/${line.slug}` : null}
-                      imageUrl={line.imageUrl}
-                      keyInfo={line.key}
-                      size="md"
-                      aside={<span className="price text-[1rem] text-ink">{formatPrice(line.total, order.currency)}</span>}
-                    />
-                    <PurchaseTimeline
-                      status={orderTimelineStatus(order, line)}
-                      paidAt={order.paidAt}
-                      finishedAt={line.delivery?.finishedAt}
-                      refundedAt={line.delivery?.refundedAt}
-                      className="sm:pl-[120px]"
-                    />
-                  </li>
-                ))}
-              </ul>
             </li>
           ))}
         </ol>

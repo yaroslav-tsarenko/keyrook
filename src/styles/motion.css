@@ -9,19 +9,6 @@
   }
 }
 
-@keyframes rule-draw {
-  from {
-    transform: scaleX(0);
-  }
-}
-
-@keyframes reveal-rise {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-}
-
 [data-scene="reveal"][data-reveal="armed"] [data-reveal-item] {
   opacity: 0;
 }
@@ -29,15 +16,15 @@
 @media (prefers-reduced-motion: no-preference) {
   [data-anim="words"] [data-word] {
     display: inline-block;
-    animation: word-settle var(--dur-panel) var(--ease-instrument) calc(var(--i, 0) * 40ms) backwards;
+    animation: word-settle var(--dur-panel) var(--ease-latch) calc(var(--i, 0) * 40ms) backwards;
   }
 
   [data-scene="reveal"][data-reveal="in"] [data-reveal-item] {
-    animation: reveal-rise var(--dur-panel) var(--ease-instrument) calc(var(--i, 0) * 60ms) backwards;
+    animation: plate-in var(--dur-reveal) var(--ease-latch) calc(var(--i, 0) * 70ms) backwards;
   }
 
-  [data-cart-target][data-arriving] .animate-count-roll {
-    animation-delay: 420ms;
+  [data-cart-target][data-arriving] [data-tumbler] {
+    animation-delay: 400ms;
   }
 
   dialog[data-phase="open"]::backdrop {
@@ -47,5 +34,9 @@
   dialog[data-phase="closing"]::backdrop {
     opacity: 0;
     transition: opacity var(--dur-panel-close) var(--ease-std);
+  }
+
+  [data-lamp="on"] [data-lamp-fill] {
+    animation: lamp-lit var(--dur-micro) var(--ease-std) both;
   }
 }

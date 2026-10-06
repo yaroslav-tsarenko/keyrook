@@ -18,6 +18,8 @@ export const STORE_POLICY = {
   delivery: {
     method: "Activation key in your account",
     usualTime: "usually within minutes after your payment is confirmed",
+    headline: "Delivered to your account, usually within minutes after payment is confirmed.",
+    short: "To your account, usually within minutes after payment is confirmed",
     deadlineHours: 24,
     where: "on the order page in your account, behind a Reveal key button",
     emailNote: "We email you when your keys are ready. For security the email links to your account and does not contain the key itself.",
@@ -31,6 +33,8 @@ export const STORE_POLICY = {
     claimDays: 30,
     reviewDays: 3,
     summary: "If a key does not activate, contact us within 30 days of delivery. We check it and replace the key, or refund the price you paid for it if no replacement is available.",
+    headline: "Replacement or refund if a key doesn't work",
+    faultyKey: true,
     steps: [
       "Check that the product's platform, activation region and account requirements match your account.",
       "Contact us within 30 days of delivery with your order number and a screenshot of the activation error.",
@@ -64,19 +68,35 @@ export const STORE_POLICY = {
   policiesLastUpdated: POLICY_DATE,
   waiver: {
     version: POLICY_DATE,
-    text: "I request immediate delivery of the digital content and acknowledge that I lose my right of withdrawal once delivery begins.",
+    text: "I ask for my keys to be delivered straight after payment and I understand I lose my right to cancel once a key is delivered.",
   },
   support: {
     replyTime: "within 1 business day",
     channels: ["email", "contact form"],
   },
   payment: {
+    hostedPage: true,
+    threeDSecure: true,
     methods: ["Visa", "Mastercard"],
     providerName: null as string | null,
     chargeCurrencies: ["EUR", "USD", "GBP"],
   },
   orders: {
     cancelBefore: "your key is issued",
+  },
+  security: {
+    keysEncryptedAtRest: true,
+    keyInEmail: false,
+  },
+  invoices: {
+    pdf: true,
+  },
+  checkout: {
+    requireRegionCheck: true,
+  },
+  deals: {
+    compareWindowDays: 30,
+    minPercent: 5,
   },
   preorders: false,
   complaints: {

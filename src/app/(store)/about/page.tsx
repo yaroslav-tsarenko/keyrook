@@ -29,7 +29,7 @@ export default async function AboutPage() {
 
   const rows = [
     { key: "order", label: t("ordering.order.label"), text: t("ordering.order.body", { cardMethods: f.cardMethods, currencies: f.currencies }), href: "/policies/payment", link: t("ordering.order.link") },
-    { key: "delivery", label: t("ordering.delivery.label"), text: t("ordering.delivery.body", { usual: f.deliveryUsual }), href: "/how-it-works", link: "How delivery works" },
+    { key: "delivery", label: t("ordering.delivery.label"), text: t("ordering.delivery.body", { usual: f.deliveryUsual }), href: "/how-activation-works", link: "How activation works" },
     { key: "guarantee", label: t("ordering.guarantee.label"), text: t("ordering.guarantee.body", { claimDays: f.guaranteeClaimDays, refundDays: f.refundDays }), href: "/policies/warranty", link: t("ordering.guarantee.link") },
     { key: "withdrawal", label: t("ordering.withdrawal.label"), text: t("ordering.withdrawal.body", { days: f.withdrawalDays }), href: "/policies/returns", link: t("ordering.withdrawal.link") },
   ];
@@ -40,7 +40,7 @@ export default async function AboutPage() {
 
       <section aria-labelledby="about-title" data-section="about-hero" className="grid items-end gap-10 pb-20 pt-6 lg:grid-cols-12">
         <div className="lg:col-span-8">
-          <h1 id="about-title" data-anim="words" className="m-0 text-step-6 font-[680] leading-[0.96] tracking-[-0.01em] text-ink">
+          <h1 id="about-title" data-anim="words" className="m-0 text-step-6 leading-[0.98] tracking-[-0.015em] text-ink [font-weight:740]">
             <SplitWords text={t("hero.title")} />
           </h1>
           <p className="m-0 mt-6 max-w-[60ch] text-step-1 leading-[1.5] text-ink-muted">{t("hero.lead", { brand: BRAND.name, countries: f.marketCountries })}</p>
@@ -49,7 +49,7 @@ export default async function AboutPage() {
 
       <section aria-labelledby="range-title" data-section="about-range" className="grid gap-10 border-t border-line py-16 lg:grid-cols-2">
         <div className="flex flex-col gap-4">
-          <h2 id="range-title" className="m-0 text-step-3 font-semibold leading-[1.1] text-ink">
+          <h2 id="range-title" className="m-0 text-step-3 leading-[1.15] text-ink">
             {t("range.title")}
           </h2>
           <p className="m-0 text-ui-md text-ink-muted">{t("range.body")}</p>
@@ -64,7 +64,7 @@ export default async function AboutPage() {
           </ul>
         </div>
         <div className="flex flex-col gap-4">
-          <h2 className="m-0 text-step-2 font-semibold leading-[1.12] text-ink">{t("listing.title")}</h2>
+          <h2 className="m-0 text-step-2 leading-[1.15] text-ink">{t("listing.title")}</h2>
           <ul className="m-0 flex list-none flex-col border-t border-line p-0 text-step-0 text-ink-muted [&>li]:border-b [&>li]:border-line [&>li]:py-2.5">
             {LISTING_KEYS.map((key) => (
               <li key={key}>{t(`listing.${key}`, { currencies: f.currencies })}</li>
@@ -74,7 +74,7 @@ export default async function AboutPage() {
       </section>
 
       <section aria-labelledby="not-sold-title" data-section="about-not-sold" className="border-t border-line py-16">
-        <h2 id="not-sold-title" className="m-0 text-step-3 font-semibold leading-[1.1] text-ink">
+        <h2 id="not-sold-title" className="m-0 text-step-3 leading-[1.15] text-ink">
           {t("notSold.title")}
         </h2>
         <ul className="measure m-0 mt-6 flex list-none flex-col border-t border-line p-0 text-step-0 text-ink-muted [&>li]:border-b [&>li]:border-line [&>li]:py-2.5">
@@ -85,7 +85,7 @@ export default async function AboutPage() {
       </section>
 
       <section aria-labelledby="ordering-title" data-section="about-ordering" className="border-t border-line py-16">
-        <h2 id="ordering-title" className="m-0 text-step-3 font-semibold leading-[1.1] text-ink">
+        <h2 id="ordering-title" className="m-0 text-step-3 leading-[1.15] text-ink">
           {t("ordering.title")}
         </h2>
         <dl className="m-0 mt-8 border-t border-line">
@@ -94,7 +94,7 @@ export default async function AboutPage() {
               <dt className="eyebrow">{row.label}</dt>
               <dd className="measure m-0 text-step-0 text-ink">
                 {row.text}{" "}
-                <Link href={row.href} className="font-semibold underline decoration-1 underline-offset-4">
+                <Link href={row.href} className="font-[560] underline decoration-1 underline-offset-4">
                   {row.link}
                 </Link>
               </dd>
@@ -104,7 +104,7 @@ export default async function AboutPage() {
       </section>
 
       <section aria-labelledby="company-title" data-section="about-company" className="border-t border-line py-16">
-        <h2 id="company-title" className="m-0 mb-6 text-step-3 font-semibold leading-[1.1] text-ink">
+        <h2 id="company-title" className="m-0 mb-6 text-step-3 leading-[1.15] text-ink">
           {t("company.title")}
         </h2>
         <CredentialsSheet />

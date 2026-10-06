@@ -24,6 +24,7 @@
   --color-surface-2: var(--color-bg-tertiary);
   --color-surface-warm: var(--color-bg-warm);
   --color-raised: var(--color-raised);
+  --color-plate: var(--color-plate);
   --color-stage: var(--color-stage);
   --color-on-stage: var(--color-on-stage);
   --color-rig: var(--color-rig);
@@ -41,7 +42,14 @@
   --color-accent-ink: var(--color-accent-ink);
   --color-accent-edge: var(--color-accent-edge);
   --color-sale: var(--color-accent-3);
-  --color-lamp: var(--color-lamp);
+  --color-steel-hi: var(--color-steel-hi);
+  --color-lamp-on: var(--color-lamp-on);
+  --color-lamp-off: var(--color-lamp-off);
+  --color-deal: var(--color-deal);
+  --color-on-deal: var(--color-on-deal);
+  --color-logo-strip: var(--color-logo-strip);
+  --color-platform: var(--platform);
+  --color-type: var(--type);
 
   --color-rule: var(--color-rule);
   --color-line: var(--color-border);
@@ -60,38 +68,39 @@
   --color-info-tint: var(--color-info-tint);
   --color-on-danger: var(--color-on-danger);
 
-
-  --font-sans: var(--font-source-sans), "Source Sans 3 Variable", "Source Sans Fallback", "Segoe UI", sans-serif;
-  --font-display: var(--font-sofia-condensed), "Sofia Sans Condensed Variable", "Sofia Condensed Fallback", "Arial Narrow", sans-serif;
-  --font-mono: var(--font-martian), "Martian Mono Variable", "Martian Fallback", ui-monospace, Menlo, Consolas, monospace;
+  --font-sans: var(--font-mona), "Mona Sans Variable", "Mona Fallback", "Segoe UI", sans-serif;
+  --font-display: var(--font-hubot), "Hubot Sans Variable", "Hubot Fallback", Verdana, sans-serif;
+  --font-mono: var(--font-redhat-mono), "Red Hat Mono Variable", "Red Hat Mono Fallback", ui-monospace, Menlo, Consolas, monospace;
 
   --text-step--2: 0.75rem;
-  --text-step--1: 0.875rem;
-  --text-step-0: 1.0625rem;
-  --text-step-1: clamp(1.1875rem, 1.12rem + 0.3vw, 1.328rem);
-  --text-step-2: clamp(1.375rem, 1.24rem + 0.65vw, 1.66rem);
-  --text-step-3: clamp(1.625rem, 1.38rem + 1.2vw, 2.075rem);
-  --text-step-4: clamp(1.875rem, 1.5rem + 1.9vw, 2.594rem);
-  --text-step-5: clamp(2.25rem, 1.7rem + 2.8vw, 3.242rem);
-  --text-step-6: clamp(2.75rem, 1.9rem + 4.2vw, 4.053rem);
-  --text-display-xl: clamp(3.5rem, 1.2rem + 7vw, 7.5rem);
+  --text-step--1: 0.8125rem;
+  --text-step-0: 1rem;
+  --text-step-1: clamp(1.125rem, 1.08rem + 0.2vw, 1.2rem);
+  --text-step-2: clamp(1.25rem, 1.15rem + 0.45vw, 1.44rem);
+  --text-step-3: clamp(1.4375rem, 1.25rem + 0.85vw, 1.728rem);
+  --text-step-4: clamp(1.625rem, 1.35rem + 1.35vw, 2.074rem);
+  --text-step-5: clamp(1.875rem, 1.45rem + 2.05vw, 2.488rem);
+  --text-step-6: clamp(2.125rem, 1.5rem + 3.05vw, 2.986rem);
+  --text-display-xl: clamp(2.5rem, 0.9rem + 6.4vw, 5.5rem);
   --text-ui-md: 0.9375rem;
   --text-ui-sm: 0.875rem;
   --text-ui-xs: 0.8125rem;
   --text-data: 0.875rem;
   --text-data-sm: 0.75rem;
+  --text-key: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
 
-  --radius-xs: 2px;
+  --radius-xs: 0px;
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
   --radius-2xl: var(--radius-2xl);
-  --radius-3xl: 4px;
-  --radius-4xl: 4px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
   --radius-pill: var(--radius-pill);
   --radius-control: var(--radius-control);
   --radius-tray: var(--radius-tray);
+  --radius-round: 50%;
 
   --shadow-card: var(--shadow-card);
   --shadow-card-hover: var(--shadow-card-hover);
@@ -100,7 +109,9 @@
   --shadow-xl: var(--shadow-xl);
   --shadow-panel: var(--shadow-panel);
   --shadow-panel-left: var(--shadow-panel-left);
-  --shadow-lamp-catch: var(--lamp-catch);
+  --shadow-machined: var(--edge-machined);
+  --shadow-machined-pressed: var(--edge-machined-pressed);
+  --text-shadow-engrave: var(--engrave);
 
   --spacing-gutter: var(--gutter);
 
@@ -110,7 +121,7 @@
   --container-shop: 1360px;
   --container-wide: 1560px;
 
-  --ease-instrument: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-latch: cubic-bezier(0.3, 0, 0.1, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
@@ -131,8 +142,9 @@
 
   body {
     font-family: var(--font-sans);
-    font-size: 1.0625rem;
+    font-size: 1rem;
     line-height: 1.6;
+    font-stretch: 100%;
     background-color: var(--color-bg);
     color: var(--color-text);
     -webkit-font-smoothing: antialiased;
@@ -146,10 +158,15 @@
   h5,
   h6 {
     font-family: var(--font-display);
-    font-weight: 650;
+    font-stretch: 112.5%;
+    font-weight: 680;
     font-synthesis: none;
-    letter-spacing: -0.005em;
+    letter-spacing: -0.01em;
     text-wrap: balance;
+  }
+
+  h1 {
+    font-weight: 700;
   }
 
   h3,
@@ -195,7 +212,7 @@
 
   ::-webkit-scrollbar-thumb {
     background: var(--color-border-hover);
-    border-radius: 2px;
+    border-radius: 0;
   }
 
   ::-webkit-scrollbar-thumb:hover {
@@ -225,88 +242,191 @@
     overflow: hidden;
     background-color: var(--color-stage);
     color: var(--color-on-stage);
+    box-shadow: inset 0 1px 0 rgb(0 0 0 / 0.35);
   }
 
-  .product-card {
-    --card-edge: var(--color-border);
+  [data-theme="light"] .cover {
+    box-shadow: inset 0 1px 0 rgb(15 21 19 / 0.14);
+  }
+
+  .cover[data-fit="contain"] {
+    background-image: var(--steel-grain);
+  }
+
+  .deposit-box {
     position: relative;
     display: flex;
     flex-direction: column;
     min-width: 0;
-    border-radius: var(--radius-tray);
-    background-color: var(--color-raised);
-    box-shadow: var(--shadow-card), 0 0 0 1px var(--card-edge);
+    background-color: var(--color-plate);
+    box-shadow: var(--edge-machined), 0 0 0 1px var(--color-border);
+    transition: box-shadow var(--dur-ui) var(--ease-latch);
+  }
+
+  .deposit-box [data-drawer-face] {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-bg-tertiary);
+  }
+
+  .deposit-box [data-drawer-face] > .cover {
     transition:
-      transform var(--dur-micro) var(--ease-instrument),
-      box-shadow var(--dur-micro) var(--ease-instrument);
-  }
-
-  [data-theme="light"] .product-card {
-    --card-edge: transparent;
-  }
-
-  .product-card > .cover {
-    border-radius: var(--radius-tray) var(--radius-tray) 0 0;
+      transform var(--dur-ui) var(--ease-latch),
+      opacity var(--dur-micro) var(--ease-std);
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .product-card[data-lift]:is(:hover, :focus-within) {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-card-hover), 0 0 0 1px var(--card-edge);
+    .deposit-box[data-drawer]:is(:hover, :focus-within) {
+      box-shadow: var(--shadow-card-hover), 0 0 0 1px var(--color-border-hover);
+    }
+
+    .deposit-box[data-drawer]:is(:hover, :focus-within) [data-drawer-face] > .cover {
+      transform: translateY(-6px);
+    }
+
+    .deposit-box[data-drawer]:is(:hover, :focus-within) [data-card-link] {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
     }
   }
 
-  .product-card:has([data-card-link]:focus-visible) {
+  .deposit-box:has([data-card-link]:focus-visible) {
     outline: 2px solid var(--color-focus);
     outline-offset: 3px;
   }
 
-  .lamp-rule {
+  .plate {
+    background-color: var(--color-plate);
+    box-shadow: var(--edge-machined), 0 0 0 1px var(--color-border);
+  }
+
+  .bolted {
     position: relative;
   }
 
-  .lamp-rule::before {
-    content: "";
+  .bolted > [data-bolt] {
     position: absolute;
-    top: 0;
-    left: var(--lamp-inset);
-    right: var(--lamp-inset);
-    height: 1px;
-    background: var(--lamp-line);
+    width: var(--bolt);
+    height: var(--bolt);
+    border-radius: 50%;
+    background-color: var(--color-border-control);
+    box-shadow: inset 1px 1px 0 color-mix(in srgb, var(--color-steel-hi) 25%, transparent);
     pointer-events: none;
   }
 
-  .indicator-bar {
+  .bolted > [data-bolt="tl"] {
+    top: 10px;
+    left: 10px;
+  }
+
+  .bolted > [data-bolt="tr"] {
+    top: 10px;
+    right: 10px;
+  }
+
+  .bolted > [data-bolt="bl"] {
+    bottom: 10px;
+    left: 10px;
+  }
+
+  .bolted > [data-bolt="br"] {
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .btn-text > [data-label] {
     position: relative;
   }
 
-  .indicator-bar::after {
+  .btn-text > [data-label]::after {
     content: "";
     position: absolute;
     left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-micro) var(--ease-latch);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-text:not([aria-disabled="true"]):not(:disabled):hover > [data-label]::after {
+      transform: scaleX(1);
+    }
+  }
+
+  .btn-text:active > [data-label]::after {
+    transform: scaleX(1);
+    background: var(--color-accent-ink);
+  }
+
+  .active-bar {
+    position: relative;
+  }
+
+  .active-bar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
     bottom: -1px;
-    width: 16px;
     height: 2px;
     background: var(--color-accent);
     transform: scaleX(0);
     transform-origin: left;
-    transition: transform var(--dur-micro) var(--ease-instrument);
+    transition: transform var(--dur-micro) var(--ease-latch);
   }
 
-  .indicator-bar:is([aria-current], [data-active="true"])::after {
+  .active-bar:is([aria-current], [data-active="true"], [aria-selected="true"])::after {
     transform: scaleX(1);
+  }
+
+  .tumbler-slot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(1ch + 0.32em);
+    height: 1.45em;
+    overflow: hidden;
+    background-color: var(--color-bg-tertiary);
+    box-shadow: var(--edge-machined-pressed);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-feature-settings: "calt" 0;
+    line-height: 1;
+    color: var(--color-text);
+  }
+
+  .tumbler-slot + .tumbler-slot {
+    border-left: 1px solid var(--color-border);
   }
 }
 
+@utility steel-grain {
+  background-image: var(--steel-grain);
+}
+
 @utility eyebrow {
-  font-family: var(--font-mono);
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-weight: 600;
   font-size: 0.75rem;
   line-height: 1.2;
-  letter-spacing: 0.08em;
-  font-stretch: 87.5%;
+  letter-spacing: 0.12em;
+  font-stretch: 125%;
   text-transform: uppercase;
   color: var(--color-text-secondary);
+  text-shadow: var(--engrave);
+}
+
+@utility label-caps {
+  font-family: var(--font-display);
+  font-weight: 680;
+  letter-spacing: 0.06em;
+  font-stretch: 125%;
+  text-transform: uppercase;
 }
 
 @utility data {
@@ -314,25 +434,35 @@
   font-weight: 400;
   font-size: 0.875rem;
   line-height: 1.4;
-  font-stretch: 100%;
-}
-
-@utility data-compact {
-  font-stretch: 87.5%;
 }
 
 @utility price {
   font-family: var(--font-mono);
   font-weight: 600;
-  font-stretch: 100%;
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
 }
 
-@utility label-caps {
+@utility key-code {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--text-key);
+  letter-spacing: 0.08em;
+  font-feature-settings: "calt" 0;
+  font-variant-ligatures: none;
+  user-select: all;
+  word-break: break-all;
+}
+
+@utility tumbler {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-feature-settings: "calt" 0;
+  line-height: 1;
+}
+
+@utility display-wide {
   font-family: var(--font-display);
-  font-weight: 650;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-stretch: 112.5%;
 }
 
 @utility tabular {
@@ -357,7 +487,9 @@
 }
 
 svg.lucide {
-  stroke-width: 1.5;
+  stroke-width: 1.75;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
   flex-shrink: 0;
 }
 

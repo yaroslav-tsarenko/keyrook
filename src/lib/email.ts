@@ -439,7 +439,7 @@ export async function sendKeysReadyEmail(data: OrderEmailData, items: { name: st
 ${paragraph(`Hi ${escape(data.customerName.split(" ")[0] || data.customerName)}, the keys for your order have been issued. For your security this email does not contain them: sign in and open the order to reveal and copy each key.`)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid ${C.line};margin:0 0 8px;">${rows}</table>
 ${button(`${SITE_URL}/account/orders/${data.orderId}`, "Reveal your keys")}
-${paragraph(`Activation steps for each platform are on the order page and in <a href="${SITE_URL}/how-it-works" style="color:${C.ink};">How delivery works</a>. If a key does not activate, contact us within ${STORE_POLICY.guarantee.claimDays} days with the order number and a screenshot of the error.`, "font-size:13px;margin:16px 0 0;")}`,
+${paragraph(`Activation steps for each platform are on the order page and in <a href="${SITE_URL}/how-activation-works" style="color:${C.ink};">How activation works</a>. If a key does not activate, contact us within ${STORE_POLICY.guarantee.claimDays} days with the order number and a screenshot of the error.`, "font-size:13px;margin:16px 0 0;")}`,
       { preheader: `Your keys for order ${ref} are in your account.` },
     ),
   });

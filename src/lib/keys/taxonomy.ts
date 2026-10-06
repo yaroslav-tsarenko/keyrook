@@ -230,7 +230,7 @@ export interface RegionDef {
 }
 
 export const REGIONS: RegionDef[] = [
-  { key: "global", label: "Global", short: "Global", note: "Can be activated from any country we sell to." },
+  { key: "global", label: "Global", short: "Global", note: "Can be activated from any country we serve." },
   { key: "europe", label: "Europe", short: "EU", note: "Can only be activated on an account set to a European country." },
   { key: "uk", label: "United Kingdom", short: "UK", note: "Can only be activated on an account set to the United Kingdom." },
   { key: "us", label: "United States", short: "US", note: "Can only be activated on an account set to the United States." },
@@ -323,6 +323,8 @@ export interface KeySummary {
   genres: string[];
   releaseYear: number | null;
   validity: string | null;
+  faceValue?: number | null;
+  faceCurrency?: string | null;
 }
 
 export function keySpecText(item: KeySummary | null | undefined): string | null {

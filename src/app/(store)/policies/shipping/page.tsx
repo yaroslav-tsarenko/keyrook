@@ -15,7 +15,7 @@ const sections: PolicySection[] = [
     body: (
       <>
         <p>
-          Everything we sell is digital: activation keys for games and DLC, subscription codes, gift card and top-up codes, and software
+          Everything we offer is digital: activation keys for games and DLC, subscription codes, gift card and top-up codes, and software
           licence keys. Nothing is posted and there is no delivery charge.
         </p>
         <p>
@@ -42,7 +42,7 @@ const sections: PolicySection[] = [
           If we cannot deliver a key within {F.deliveryDeadlineHours} hours of payment confirmation, we refund the price you paid for it
           within {F.refundDays} days to {F.refundMethod} and email you when we do.
         </p>
-        <p>We do not sell pre-orders. Every product in the catalogue can be delivered straight after payment.</p>
+        <p>We do not offer pre-orders. Every product in the catalogue can be delivered straight after payment.</p>
       </>
     ),
   },
@@ -81,7 +81,7 @@ const sections: PolicySection[] = [
         </ul>
         <p>
           Keep the key private until you redeem it: anyone who sees it can use it. We never ask for your platform password or two-factor
-          codes. Full steps are on <Link href="/how-it-works">How delivery works</Link>.
+          codes. Full steps are on <Link href="/how-activation-works">How activation works</Link>.
         </p>
       </>
     ),
@@ -98,10 +98,10 @@ const sections: PolicySection[] = [
   },
   {
     id: "where",
-    title: "Where we sell",
+    title: "Where we deliver",
     body: (
       <p>
-        We sell to customers in the {F.marketCountries}. We do not sell to {F.restrictedCountries}, or to {F.restrictedTerritories}, and we
+        We serve customers in the {F.marketCountries}. We do not take orders from {F.restrictedCountries}, or to {F.restrictedTerritories}, and we
         do not list keys whose activation region is limited to any of them. Do not use a VPN or proxy to redeem a key outside its region:
         the platform can block the key or your account.
       </p>

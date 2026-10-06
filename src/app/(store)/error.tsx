@@ -28,7 +28,7 @@ export default function StoreError({
   return (
     <div className="mx-auto max-w-container px-gutter pb-24 pt-12 lg:pt-20">
       <div className="measure">
-        <h1 className="m-0 text-step-5 font-[650] leading-none tracking-[-0.01em] text-ink">{t("serverErrorTitle")}</h1>
+        <h1 className="m-0 text-step-5 leading-[1.04] text-ink">{t("serverErrorTitle")}</h1>
         <div className="mt-6">
           <Alert tone="danger" title={t("serverError")}>
             <p className="m-0">{t("serverErrorBody", { email: COMPANY.email })}</p>
