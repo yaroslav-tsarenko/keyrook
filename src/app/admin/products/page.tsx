@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { AdminButton as Button } from "@/components/admin/AdminButton/AdminButton";
@@ -30,6 +30,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -48,6 +49,16 @@ export default function AdminProductsPage() {
   };
 
   useEffect(fetchData, [page, search]);
+
+  const searchTimer = useRef<number | undefined>(undefined);
+  const onSearchInput = (value: string) => {
+    setQuery(value);
+    window.clearTimeout(searchTimer.current);
+    searchTimer.current = window.setTimeout(() => {
+      setPage(1);
+      setSearch(value.trim());
+    }, 300);
+  };
 
   const handleBulkDelete = async () => {
     if (selected.size === 0) return;
@@ -87,8 +98,8 @@ export default function AdminProductsPage() {
           <input
             className="admin-input"
             placeholder="Search by name, SKU, or description..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={query}
+            onChange={(e) => onSearchInput(e.target.value)}
             style={{ paddingLeft: "2.5rem" }}
           />
         </div>

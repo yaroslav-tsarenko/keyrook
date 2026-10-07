@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { memoize } from "@/lib/utils/memo";
 import { GENRES, PLATFORMS, PRODUCT_TYPES } from "@/lib/keys/taxonomy";
 import { platformInfo } from "@/lib/catalog/platforms";
 import { giftCardGroups, subscriptionTimetable, type GiftCardGroup, type Timetable, type TimetableRow } from "@/lib/catalog/prepaid";
@@ -12,24 +13,16 @@ import type { CatalogProduct } from "@/components/product/product-face";
 import type { CoverRef, HomeBand, HomeData, HomeGenre, HomePlatform } from "./types";
 
 const ORDERS = Prisma.sql`LEFT JOIN (SELECT "productId", SUM("quantity")::int AS n FROM "OrderItem" GROUP BY "productId") o ON o."productId" = p."id"`;
-const COVER = Prisma.sql`JOIN (SELECT DISTINCT ON (i."productId") i."productId", i."url", COUNT(*) OVER (PARTITION BY i."productId") AS images FROM "ProductImage" i ORDER BY i."productId", i."sortOrder" ASC) c ON c."productId" = p."id"`;
+const COVER = Prisma.sql`JOIN "ProductImage" c ON c."productId" = p."id" AND c."sortOrder" = 0`;
+const HAS_SCREENSHOT = Prisma.sql`EXISTS (SELECT 1 FROM "ProductImage" s WHERE s."productId" = p."id" AND s."sortOrder" = 1)`;
 const LIVE = Prisma.sql`p."status" = 'ACTIVE'::"ProductStatus" AND p."quantity" > 0 AND (k."releaseDate" IS NULL OR k."releaseDate" <= now())`;
 const FROM = Prisma.sql`FROM "Product" p JOIN "KeyItem" k ON k."productId" = p."id" ${ORDERS} ${COVER} WHERE ${LIVE}`;
 
-interface CoverRow {
-  id: string;
-  slug: string;
-  title: string;
-  url: string;
-}
 
 function notIn(ids: Set<string>) {
   return ids.size ? Prisma.sql`AND p."id" NOT IN (${Prisma.join([...ids])})` : Prisma.empty;
 }
 
-function toCover(r: CoverRow): CoverRef {
-  return { id: r.id, slug: r.slug, title: r.title, image: r.url };
-}
 
 function bandEdges(rate: number): { min: number | null; max: number | null; baseMin: number | null; baseMax: number | null }[] {
   const edges = [null, ...PRICE_BAND_EDGES, null] as (number | null)[];
@@ -43,13 +36,37 @@ function bandKey(min: number | null, max: number | null) {
   return min === null ? `under-${max}` : max === null ? `${min}-up` : `${min}-${max}`;
 }
 
-async function distinctCovers(where: Prisma.Sql, claimed: Set<string>, limit: number): Promise<CoverRow[]> {
-  return prisma.$queryRaw<CoverRow[]>`
-    SELECT id, slug, title, url FROM (
-      SELECT DISTINCT ON (lower(k."title")) p."id", p."slug", k."title", c."url", COALESCE(o.n, 0) AS n, k."releaseDate" AS rd
-      ${FROM} ${where} ${notIn(claimed)}
-      ORDER BY lower(k."title"), COALESCE(o.n, 0) DESC, k."releaseDate" DESC NULLS LAST
-    ) x ORDER BY x.n DESC, x.rd DESC NULLS LAST, x.id ASC LIMIT ${limit}`;
+interface PoolRow {
+  id: string;
+  slug: string;
+  title: string;
+  type: string;
+  platform: string;
+  genres: string[];
+  price: number;
+}
+
+function pickDistinct(pool: PoolRow[], accept: (r: PoolRow) => boolean, claimed: Set<string>, limit: number): PoolRow[] {
+  const titles = new Set<string>();
+  const out: PoolRow[] = [];
+  for (const r of pool) {
+    if (out.length >= limit) break;
+    if (claimed.has(r.id) || !accept(r)) continue;
+    const title = r.title.toLowerCase();
+    if (titles.has(title)) continue;
+    titles.add(title);
+    out.push(r);
+  }
+  return out;
+}
+
+function pickFirst(pool: PoolRow[], accept: (r: PoolRow) => boolean, claimed: Set<string>, limit: number): PoolRow[] {
+  const out: PoolRow[] = [];
+  for (const r of pool) {
+    if (out.length >= limit) break;
+    if (!claimed.has(r.id) && accept(r)) out.push(r);
+  }
+  return out;
 }
 
 const REGION_RANK = ["global", "europe", "uk", "us", "north-america"];
@@ -85,11 +102,20 @@ function homeTimetable(table: Timetable, limit: number): Timetable {
   return { columns, rows };
 }
 
-export const getHomeData = cache(async (): Promise<HomeData> => {
+async function computeHomeData(): Promise<HomeData> {
   const claimed = new Set<string>();
   const claim = (ids: string[]) => ids.forEach((id) => claimed.add(id));
 
-  const [totals, typeRows, platformRows, syncRows, rates, groups, timetable] = await Promise.all([
+  const [pool, totals, typeRows, platformRows, syncRows, rates, groups, timetable] = await Promise.all([
+    prisma.$queryRaw<PoolRow[]>`
+      SELECT x."id", x."slug", x."title", x."type", x."platform", x."genres", x."price" FROM (
+        SELECT p."id", p."slug", k."title", k."productType" AS "type", k."platform", k."genres", p."price"::float AS "price", COALESCE(o.n, 0) AS "n", k."releaseDate" AS "rd",
+          ROW_NUMBER() OVER (PARTITION BY k."platform" ORDER BY COALESCE(o.n, 0) DESC, k."releaseDate" DESC NULLS LAST, p."id" ASC) AS "rank"
+        FROM "Product" p JOIN "KeyItem" k ON k."productId" = p."id" ${ORDERS}
+        WHERE ${LIVE} AND k."productType" IN ('game', 'dlc') AND EXISTS (SELECT 1 FROM "ProductImage" c WHERE c."productId" = p."id" AND c."sortOrder" = 0)
+      ) x
+      WHERE x."rank" <= ${MERCH.homePoolPerPlatform}
+      ORDER BY x."n" DESC, x."rd" DESC NULLS LAST, x."id" ASC`,
     prisma.$queryRaw<{ live: number; sale: number }[]>`
       SELECT COUNT(*)::int AS live,
         COUNT(*) FILTER (WHERE p."comparePrice" IS NOT NULL AND p."comparePrice" > p."price")::int AS sale
@@ -109,37 +135,16 @@ export const getHomeData = cache(async (): Promise<HomeData> => {
   const typeCount = new Map(typeRows.map((r) => [r.productType, r.count]));
   const types = PRODUCT_TYPES.map((t) => ({ key: t.key, name: t.label, href: `/catalog/${t.slug}`, count: typeCount.get(t.key) ?? 0 })).filter((t) => t.count > 0);
 
-  const door = await distinctCovers(Prisma.sql`AND k."productType" = 'game'`, claimed, MERCH.doorCovers);
+  const door = pickDistinct(pool, (r) => r.type === "game", claimed, MERCH.doorCovers);
   claim(door.map((r) => r.id));
 
   const stats = new Map(platformRows.map((r) => [r.platform, r]));
   const stocked = PLATFORMS.filter((p) => p.key !== "other" && (stats.get(p.key)?.count ?? 0) > 0).sort((a, b) => (stats.get(b.key)?.count ?? 0) - (stats.get(a.key)?.count ?? 0));
-  const lockerRows = await prisma.$queryRaw<(CoverRow & { platform: string })[]>`
-    SELECT id, slug, title, url, platform FROM (
-      SELECT p."id", p."slug", k."title", c."url", k."platform",
-        ROW_NUMBER() OVER (PARTITION BY k."platform" ORDER BY COALESCE(o.n, 0) DESC, k."releaseDate" DESC NULLS LAST, p."id") AS rn
-      ${FROM} AND k."productType" IN ('game', 'dlc') ${notIn(claimed)}
-    ) x WHERE x.rn <= ${MERCH.lockerCovers}`;
+  const lockerRows = stocked.flatMap((p) => pickFirst(pool, (r) => r.platform === p.key, claimed, MERCH.lockerCovers));
   claim(lockerRows.map((r) => r.id));
-  const platforms: HomePlatform[] = stocked.map((p, i) => {
-    const info = platformInfo(p.key);
-    return {
-      key: p.key,
-      slug: p.slug,
-      name: p.label,
-      short: info.short,
-      tone: info.tone,
-      href: `/platform/${p.slug}`,
-      count: stats.get(p.key)?.count ?? 0,
-      minPrice: stats.get(p.key)?.min ?? null,
-      rank: i + 1,
-      covers: lockerRows.filter((r) => r.platform === p.key).map(toCover),
-    };
-  });
-
   const DEAL = Prisma.sql`p."comparePrice" IS NOT NULL AND p."comparePrice" > p."price"`;
   const featureRow = await prisma.$queryRaw<{ id: string }[]>`
-    SELECT p."id" ${FROM} AND ${DEAL} AND c.images > 1 ${notIn(claimed)}
+    SELECT p."id" ${FROM} AND ${DEAL} AND ${HAS_SCREENSHOT} ${notIn(claimed)}
     ORDER BY (p."comparePrice" - p."price") / p."comparePrice" DESC, p."id" LIMIT 1`;
   claim(featureRow.map((r) => r.id));
   const railRows = await prisma.$queryRaw<{ id: string }[]>`
@@ -176,63 +181,84 @@ export const getHomeData = cache(async (): Promise<HomeData> => {
     WHERE p."status" = 'ACTIVE'::"ProductStatus" AND p."quantity" > 0 GROUP BY g ORDER BY 2 DESC`;
   const known = new Map(GENRES.map((g) => [g.key, g.label]));
   const topGenres = genreRows.filter((r) => known.has(r.genre)).slice(0, MERCH.genres);
-  const peekRows = topGenres.length
-    ? await prisma.$queryRaw<(CoverRow & { genre: string })[]>`
-        SELECT id, slug, title, url, genre FROM (
-          SELECT p."id", p."slug", k."title", c."url", g AS genre,
-            ROW_NUMBER() OVER (PARTITION BY g ORDER BY COALESCE(o.n, 0) DESC, k."releaseDate" DESC NULLS LAST, p."id") AS rn
-          FROM "Product" p JOIN "KeyItem" k ON k."productId" = p."id" ${ORDERS} ${COVER}, unnest(k."genres") g
-          WHERE ${LIVE} AND k."productType" = 'game' AND g IN (${Prisma.join(topGenres.map((g) => g.genre))}) ${notIn(claimed)}
-        ) x WHERE x.rn <= 12`
-    : [];
-  const genres: HomeGenre[] = topGenres.map((g) => {
-    const covers: CoverRef[] = [];
-    for (const r of peekRows) {
-      if (covers.length >= MERCH.genrePeek) break;
-      if (r.genre !== g.genre || claimed.has(r.id)) continue;
-      covers.push(toCover(r));
-      claimed.add(r.id);
-    }
-    return { key: g.genre, label: known.get(g.genre)!, href: `/genre/${g.genre}`, count: g.count, covers };
+  const genrePicks = topGenres.map((g) => {
+    const rows = pickFirst(pool, (r) => r.type === "game" && r.genres.includes(g.genre), claimed, MERCH.genrePeek);
+    claim(rows.map((r) => r.id));
+    return rows;
   });
 
   const bands: Record<string, HomeBand[]> = {};
   const bandIds = new Set<string>();
   const currencies = STORE_POLICY.supportedCurrencies;
-  for (const currency of currencies) {
-    const rate = currency === STORE_POLICY.currency ? 1 : rates[currency];
-    const edges = bandEdges(rate);
-    const caseSql = Prisma.join(
-      edges.map((e, i) => {
-        const lo = e.baseMin === null ? Prisma.sql`TRUE` : Prisma.sql`p."price" >= ${e.baseMin}`;
-        const hi = e.baseMax === null ? Prisma.sql`TRUE` : Prisma.sql`p."price" < ${e.baseMax}`;
-        return Prisma.sql`WHEN ${lo} AND ${hi} THEN ${i}`;
-      }),
-      " ",
-    );
-    const bandExpr = Prisma.sql`CASE ${caseSql} END`;
-    const [countRows, pickRows] = await Promise.all([
-      prisma.$queryRaw<{ band: number; count: number }[]>`
-        SELECT ${bandExpr} AS band, COUNT(*)::int AS count FROM "Product" p JOIN "KeyItem" k ON k."productId" = p."id" WHERE ${LIVE} GROUP BY 1`,
-      prisma.$queryRaw<{ id: string; band: number }[]>`
-        SELECT id, band FROM (
-          SELECT id, band, ROW_NUMBER() OVER (PARTITION BY band ORDER BY prn, n DESC, rd DESC NULLS LAST, id) AS rn FROM (
-            SELECT p."id", ${bandExpr} AS band, COALESCE(o.n, 0) AS n, k."releaseDate" AS rd,
-              ROW_NUMBER() OVER (PARTITION BY ${bandExpr}, k."platform" ORDER BY COALESCE(o.n, 0) DESC, k."releaseDate" DESC NULLS LAST, p."id") AS prn
-            ${FROM} AND k."productType" IN ('game', 'dlc') ${notIn(claimed)}
-          ) y
-        ) x WHERE x.rn <= ${MERCH.bandItems}`,
-    ]);
-    const counts = new Map(countRows.map((r) => [Number(r.band), r.count]));
-    bands[currency] = edges.map((e, i) => {
-      const ids = pickRows.filter((r) => Number(r.band) === i).map((r) => r.id);
-      ids.forEach((id) => bandIds.add(id));
-      return { key: bandKey(e.min, e.max), ...e, total: counts.get(i) ?? 0, ids };
-    });
+  const perCurrency = await Promise.all(
+    currencies.map(async (currency) => {
+      const rate = currency === STORE_POLICY.currency ? 1 : rates[currency];
+      const edges = bandEdges(rate);
+      const caseSql = Prisma.join(
+        edges.map((e, i) => {
+          const lo = e.baseMin === null ? Prisma.sql`TRUE` : Prisma.sql`p."price" >= ${e.baseMin}`;
+          const hi = e.baseMax === null ? Prisma.sql`TRUE` : Prisma.sql`p."price" < ${e.baseMax}`;
+          return Prisma.sql`WHEN ${lo} AND ${hi} THEN ${i}`;
+        }),
+        " ",
+      );
+      const countRows = await prisma.$queryRaw<{ band: number; count: number }[]>`
+        SELECT CASE ${caseSql} END AS band, COUNT(*)::int AS count FROM "Product" p JOIN "KeyItem" k ON k."productId" = p."id" WHERE ${LIVE} GROUP BY 1`;
+      const bandOf = (price: number) => edges.findIndex((e) => (e.baseMin === null || price >= e.baseMin) && (e.baseMax === null || price < e.baseMax));
+      const ranked = edges.map(() => [] as { id: string; prn: number; at: number }[]);
+      const perPlatform = new Map<string, number>();
+      pool.forEach((r, at) => {
+        if (claimed.has(r.id)) return;
+        const band = bandOf(r.price);
+        if (band < 0) return;
+        const key = `${band}|${r.platform}`;
+        const prn = (perPlatform.get(key) ?? 0) + 1;
+        perPlatform.set(key, prn);
+        if (prn <= MERCH.bandItems) ranked[band].push({ id: r.id, prn, at });
+      });
+      const counts = new Map(countRows.map((r) => [Number(r.band), r.count]));
+      const list = edges.map((e, i) => ({
+        key: bandKey(e.min, e.max),
+        ...e,
+        total: counts.get(i) ?? 0,
+        ids: ranked[i]
+          .sort((x, y) => x.prn - y.prn || x.at - y.at)
+          .slice(0, MERCH.bandItems)
+          .map((x) => x.id),
+      }));
+      return [currency, list] as const;
+    }),
+  );
+  for (const [currency, list] of perCurrency) {
+    bands[currency] = list;
+    for (const band of list) band.ids.forEach((id) => bandIds.add(id));
   }
   bands[STORE_POLICY.currency]?.forEach((b) => claim(b.ids));
 
-  const cta = await distinctCovers(Prisma.sql`AND k."productType" = 'game'`, new Set([...claimed, ...bandIds]), MERCH.ctaCovers);
+  const cta = pickDistinct(pool, (r) => r.type === "game", new Set([...claimed, ...bandIds]), MERCH.ctaCovers);
+  const coverIds = [...door, ...lockerRows, ...genrePicks.flat(), ...cta].map((r) => r.id);
+  const coverRows = coverIds.length
+    ? await prisma.$queryRaw<{ productId: string; url: string }[]>`SELECT "productId", "url" FROM "ProductImage" WHERE "productId" = ANY(${coverIds}) AND "sortOrder" = 0`
+    : [];
+  const coverUrl = new Map(coverRows.map((r) => [r.productId, r.url]));
+  const toCover = (r: PoolRow): CoverRef => ({ id: r.id, slug: r.slug, title: r.title, image: coverUrl.get(r.id) ?? "" });
+  const platforms: HomePlatform[] = stocked.map((p, i) => {
+    const info = platformInfo(p.key);
+    return {
+      key: p.key,
+      slug: p.slug,
+      name: p.label,
+      short: info.short,
+      tone: info.tone,
+      href: `/platform/${p.slug}`,
+      count: stats.get(p.key)?.count ?? 0,
+      minPrice: stats.get(p.key)?.min ?? null,
+      rank: i + 1,
+      covers: lockerRows.filter((r) => r.platform === p.key).map(toCover),
+    };
+  });
+
+  const genres: HomeGenre[] = topGenres.map((g, i) => ({ key: g.genre, label: known.get(g.genre)!, href: `/genre/${g.genre}`, count: g.count, covers: genrePicks[i].map(toCover) }));
 
   const [feature, rail, releaseProducts, bandList] = await Promise.all([
     loadKeyProducts(featureRow.map((r) => r.id)),
@@ -274,4 +300,8 @@ export const getHomeData = cache(async (): Promise<HomeData> => {
     bands,
     bandProducts: Object.fromEntries(bandList.map((p) => [p.id, p])),
   };
-});
+}
+
+const homeData = memoize(5 * 60_000, computeHomeData, { staleMs: 60 * 60_000 });
+
+export const getHomeData = cache((): Promise<HomeData> => homeData());

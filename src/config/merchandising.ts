@@ -33,4 +33,5 @@ export const MERCH = {
   genrePeek: 3,
   giftCardPlatforms: 4,
   timetableRows: 8,
+  homePoolPerPlatform: 600,
 } as const;

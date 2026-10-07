@@ -468,7 +468,7 @@ export function classifyProduct(product: EsaProduct, config: CatalogConfig = cat
   const dedupeKey = dedupeParts.join("|");
 
   const displayName =
-    productType === "game" || productType === "dlc" || productType === "software"
+    productType === "game" || productType === "dlc" || productType === "software" || productType === "top-up"
       ? `${title} (${platformLabel}${region === "global" ? "" : `, ${regionLabel}`})`
       : region === "global"
         ? title

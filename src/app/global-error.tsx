@@ -37,7 +37,7 @@ export default function GlobalError({
         <header className="border-b border-line bg-rig text-ink">
           <div className="mx-auto flex h-16 max-w-container items-center px-gutter">
             <a href="/" aria-label={BRAND.name} className="text-ink">
-              <Wordmark className="h-[22px] w-auto" />
+              <Wordmark className="h-[32px] w-auto" />
             </a>
           </div>
         </header>

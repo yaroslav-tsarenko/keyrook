@@ -64,8 +64,9 @@ The name carries it: a **rook** is the castle piece, a stronghold that holds its
    - the checkout and registration progress (the dial ruler with detents);
    - the order timeline track and the price and year sliders;
    - the loader;
-   - the 404;
-   - the logo and favicon.
+   - the 404.
+
+   The logo is not a dial: it is the key rook (§9).
 2. **Tumbler windows.** Mono characters sitting in recessed slots, like the number wheels of a combination lock. Numbers that matter roll into place in them: live catalogue counts, the cart count, order numbers and, most importantly, the key itself, which decrypts in tumbler windows left to right.
 3. **Bolted plates.** Engraved steel plates with a round bolt head in each corner. They appear only where the store holds or proves something:
    - the hero door;
@@ -1511,35 +1512,29 @@ A bolted plate (four bolts), `--color-plate` with `--steel-grain`, 24px padding,
 
 ## 9. Logo and favicon
 
-### 9.1 Wordmark
-- "Keyrook" in Hubot Sans 760 at `wdth` 125, sentence case, tracking −0.01em, converted to outlines (no font dependency).
-- **The ownable detail:** the first **o** of "rook" is drawn as a **dial**. Its counter becomes a ring of 12 short ticks cut into the letter's inner edge, and a green **index line** (the same 2px × proportional bar as the dial ruler) sits in the ticks' 12 o'clock gap. Everything else is plain ink.
-  - At ≥120px wide the 12 ticks are visible.
-  - Below 120px the ticks drop and only the index line remains, as a notch in the top of the o.
-- **Files:**
-  - `public/logo.svg`: ink `#0F1513`, index `#0F7A50`;
-  - `public/logo-dark.svg`: `#E4EBE7`, index `#46D39A`.
-- Clear space: the cap height of the "K" on all sides. Minimum width 88px; below that, use the monogram.
-- No effects, no glow, never placed on a cover.
+### 9.1 The mark: the key rook (revised at the owner's request; replaces the dial-o wordmark and the dial monogram)
+- **Idea:** a key stood upright is a rook. The key's bit becomes the tower's battlement, cut to an uneven bitting code (four teeth of different heights, never an even crenellation); the shank is the tower; the bow is a round ring at the base. Inside the bow sits a lit lamp: the only signal-green element. Square steel for the bit and shank, round hardware for the bow, as in §5.3.
+- **Not** a chess piece, not a padlock, not a shield, no gradient or glow.
+- **Geometry** lives in `src/lib/brand-mark.ts` (`MARK`, 512 grid) in three hand-fitted drawings:
+  - `full` (≥48px and all lockups): four teeth, lamp at 52% of the bow hole;
+  - `small` (32px): three teeth, heavier shank and ring, lamp 66% of the hole;
+  - `tiny` (16px): two teeth on the pixel grid, lamp 56% of the hole, no tile edge.
+- Stroke weights match Hubot 760 at `wdth` 125: shank and ring ≈ the K stem at lockup size.
+- One-colour use: the lamp may be dropped (the bow stays an open ring).
 
-### 9.2 Monogram
-A square tile (0px, `#0F1513`) holding a **dial ring** (100 ticks drawn as 50 at small sizes, ring diameter 78% of the tile) with a Hubot 760 capital **K** at `wdth` 112.5 in `#E4EBE7`, optically centred inside the ring. The green index line sits at 12 o'clock on the ring.
-
-| Size | Drawing |
-|---|---|
-| ≥180px (apple-touch, android, OG) | full ring with numerals 0 / 25 / 50 / 75 in Red Hat Mono at 7% of the tile |
-| 32px | ring reduced to 24 ticks, K strokes thickened to ≥2px, index 2×5px |
-| 16px | no ticks; a 1.5px solid ring, a heavier K (stem ≥2px) and a 2×4px green index |
-
-- The tile stays dark on both light and dark browser chrome. `public/favicon.svg` declares a 1px `#26302D` edge so it does not vanish on dark tabs.
-- The chess-piece reading of the name (rook = castle) is deliberately **not** drawn. A crenellation would be clip-art; the dial is the brand.
+### 9.2 Lockup and wordmark
+- "Keyrook" in Hubot Sans 760 at `wdth` 125, sentence case, tracking −0.01em, outlined (`WORDMARK` in `src/lib/brand-mark.ts`). No detail inside the letters: the mark carries the idea.
+- Lockup: mark height = 1.78 × cap height, centred on the cap height; gap = 0.36 × cap height (`LOCKUP`). In the header the lockup is 39px high (22px cap height), 32px below 1024px.
+- **Files:** `public/logo.svg` (ink `#0F1513`, lamp `#0F7A50`), `public/logo-dark.svg` (`#E4EBE7`, lamp `#46D39A`), `public/email-logo.png` (light lockup for the dark email band, 2×).
+- **App icon / favicon:** the mark in `#E4EBE7` on a square `#0F1513` tile (0px) with a 1px `#26302D` edge at 32px and up; the tile stays dark on light and dark browser chrome.
+- Clear space: the cap height of the "K" on all sides. Minimum lockup width 88px; below that use the mark alone. Never on a cover, no effects.
 
 ### 9.3 Files and code
-- Regenerate `favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`, `android-chrome-192x192.png` and `android-chrome-512x512.png` with `scripts/gen-favicons.mjs`. Replace its inline SVGs with the monogram (full and small) and keep its target list.
+- Regenerate `favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`, `android-chrome-192x192.png`, `android-chrome-512x512.png` and `email-logo.png` with `scripts/gen-favicons.mjs` (its inline SVGs are the `full`, `small` and `tiny` drawings).
 - `src/app/icon.svg`.
 - `public/manifest.json`: `theme_color: #0C110F`, `background_color: #0F1513`, name "Keyrook".
 - `viewport.themeColor` in `layout.tsx`: dark `#0C110F`, light `#F5F7F5`.
-- `src/components/layout/BrandMark.tsx`: monogram + wordmark via `currentColor` for letters and `var(--color-accent)` for the index; no hex.
+- `src/components/layout/BrandMark.tsx`: `Wordmark` (lockup; `mark={false}` for letters only) and `Mark`, `currentColor` for ink and `var(--color-accent)` for the lamp; no hex.
 - **Root metadata:**
   - title template: "%s · Keyrook";
   - description: "Game keys, DLC, gift cards and subscriptions for Steam, Epic, Xbox, PlayStation, Nintendo and more. Pay on a hosted card page; your key is delivered to your account, usually within minutes after payment is confirmed.";
@@ -1550,7 +1545,7 @@ A square tile (0px, `#0F1513`) holding a **dial ring** (100 ticks drawn as 50 at
 ## 10. Motif usage rules
 
 ### 10.1 The dial
-- **Is:** the graduated ring (door, price explorer, monogram, wordmark o, 404) and its straightened form, the dial ruler (checkout progress, price slider, order timeline track, filters). The **index line** is its cursor.
+- **Is:** the graduated ring (door, price explorer, 404) and its straightened form, the dial ruler (checkout progress, price slider, order timeline track, filters). The **index line** is its cursor.
 - **Used on:**
   - the hero door;
   - the price-band explorer;
@@ -1558,8 +1553,7 @@ A square tile (0px, `#0F1513`) holding a **dial ring** (100 ticks drawn as 50 at
   - the order timeline;
   - price and year sliders;
   - the dial loader;
-  - the 404;
-  - the logo.
+  - the 404.
 - **Never:** as decoration with no value behind it; as a progress bar for anything other than checkout steps, order status or a price/year range; spinning continuously.
 
 ### 10.2 Tumbler windows
@@ -1596,7 +1590,7 @@ A square tile (0px, `#0F1513`) holding a **dial ring** (100 ticks drawn as 50 at
 
 ### 11.1 Header — two steel tiers (≥1024px)
 **Tier 1, the counter** (64px, `--color-rig`, 1px bottom hairline, inner `max-w-container`):
-- **Left:** the wordmark (22px cap height) linking to "/".
+- **Left:** the lockup (key rook + wordmark, 22px cap height) linking to "/".
 - **Centre:** **search is the primary action of a key store**, so the field is wide and early.
   - Width: flex up to 640px, 44px high, `--color-raised`, `--edge-machined-pressed`, 1px control border.
   - `Search` 18px and the placeholder "Search 4,812 keys" (real count, rounded down to the nearest 10 when over 1,000 to avoid flicker between syncs).
@@ -1618,7 +1612,7 @@ A square tile (0px, `#0F1513`) holding a **dial ring** (100 ticks drawn as 50 at
 
   Active: a 2px green bar under the full label. Hover: ink (from muted) over 120ms.
 - **Right:**
-  - the status line (Mona 13px muted): a lit lamp and "Keys delivered to your account, usually within minutes after payment is confirmed"; the copy comes from `POLICY_FACTS` and the line is hidden if not configured;
+  - the status line (Mona 13px muted), a link to the delivery policy: a lit lamp and `STORE_POLICY.delivery.rail` ("Delivery: usually within minutes"). The full sentence does not fit beside the seven nav labels in the 1360px container, so the rail uses the short form; the right cluster is a size container and falls back to lamp + "Delivery" below 340px, and never wraps or overlaps the nav;
   - a hairline;
   - the currency select (mono "EUR", 32px);
   - the theme toggle (`SunMoon`, "Switch to Counter Hall" / "Switch to Strongroom").
@@ -1626,7 +1620,7 @@ A square tile (0px, `#0F1513`) holding a **dial ring** (100 ticks drawn as 50 at
 **Behaviour:**
 - Sticky. After 120px of scroll down, tier 2 slides up behind tier 1 (translateY −40px, 200ms) and tier 1 compacts to 56px. Scrolling up 40px brings tier 2 back.
 - Header height is reserved: no layout shift.
-- 1024–1279px: tier 2 nav keeps CATALOGUE, GAMES, GIFT CARDS and DEALS; the status line collapses to the lamp + "Delivery" with a tooltip-free link to the delivery policy.
+- 1024–1279px: tier 2 nav keeps CATALOGUE, GAMES, GIFT CARDS and DEALS; the status line keeps the same short form.
 
 ### 11.2 Vault map (the mega-menu)
 - A full-width panel under tier 2: `--color-rig`, `--shadow-lg`, 32px padding, max-height 76vh, 1px top hairline. Laid out as a floor plan.

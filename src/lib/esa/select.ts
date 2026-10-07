@@ -1,13 +1,39 @@
 import { catalogConfig, type CatalogConfig } from "@/config/catalog";
 import type { ProductTypeKey } from "@/lib/keys/taxonomy";
-import { classifyProduct, normalizeKey, stableHash, type Classified, type RejectReason } from "./classify";
+import { normalizeKey, stableHash, type Classified, type RejectReason } from "./classify";
 import { computeSellPrice } from "./pricing";
-import type { EsaProduct } from "./types";
 
-export interface Candidate extends Classified {
+export type LiteItem = Pick<Classified, "esaId" | "dedupeKey" | "title" | "displayName" | "productType" | "platform" | "releaseYear" | "genres" | "cost" | "qty" | "faceValue" | "faceCurrency"> & {
+  hasCover: boolean;
+  hasDescription: boolean;
+};
+
+export function liteOf(item: Classified): LiteItem {
+  return {
+    esaId: item.esaId,
+    dedupeKey: item.dedupeKey,
+    title: item.title,
+    displayName: item.displayName,
+    productType: item.productType,
+    platform: item.platform,
+    releaseYear: item.releaseYear,
+    genres: item.genres.slice(0, 1),
+    cost: item.cost,
+    qty: item.qty,
+    faceValue: item.faceValue,
+    faceCurrency: item.faceCurrency,
+    hasCover: Boolean(item.cover),
+    hasDescription: Boolean(item.description),
+  };
+}
+
+export interface Candidate extends LiteItem {
   sell: number;
   alternates: { esaId: number; cost: number }[];
+  descriptionFrom: number | null;
 }
+
+export type ClassifyStats = { products: number; rejected: Partial<Record<RejectReason, number>> };
 
 export interface CandidateStats {
   products: number;
@@ -32,30 +58,23 @@ function percentile(values: number[], p: number): number {
 }
 
 export function buildCandidates(
-  products: EsaProduct[],
+  items: Iterable<LiteItem>,
+  classification: ClassifyStats,
   pricing: { margin: number; minMarginAbs: number },
   config: CatalogConfig = catalogConfig,
 ): { candidates: Candidate[]; stats: CandidateStats } {
-  const rejected: CandidateStats["rejected"] = {};
+  const rejected: CandidateStats["rejected"] = { ...classification.rejected };
   const reject = (reason: keyof CandidateStats["rejected"]) => {
     rejected[reason] = (rejected[reason] ?? 0) + 1;
   };
 
-  const seenIds = new Set<number>();
-  const groups = new Map<string, Classified[]>();
+  const groups = new Map<string, LiteItem[]>();
   let classified = 0;
-  for (const product of products) {
-    if (seenIds.has(product.kinguinId)) continue;
-    seenIds.add(product.kinguinId);
-    const result = classifyProduct(product, config);
-    if (!result.ok) {
-      reject(result.reason);
-      continue;
-    }
+  for (const item of items) {
     classified++;
-    const list = groups.get(result.item.dedupeKey) ?? [];
-    list.push(result.item);
-    groups.set(result.item.dedupeKey, list);
+    const list = groups.get(item.dedupeKey) ?? [];
+    list.push(item);
+    groups.set(item.dedupeKey, list);
   }
 
   const capsRatio = (value: string) => {
@@ -66,10 +85,12 @@ export function buildCandidates(
   for (const list of groups.values()) {
     list.sort((a, b) => a.cost - b.cost || b.qty - a.qty || a.esaId - b.esaId);
     const named = [...list].sort((a, b) => capsRatio(a.title) - capsRatio(b.title))[0];
-    const best = { ...list[0], title: named.title, displayName: named.displayName, description: list[0].description || named.description };
     picked.push({
-      ...best,
-      sell: computeSellPrice(best.cost, pricing),
+      ...list[0],
+      title: named.title,
+      displayName: named.displayName,
+      descriptionFrom: list[0].hasDescription || !named.hasDescription ? null : named.esaId,
+      sell: computeSellPrice(list[0].cost, pricing),
       alternates: list.slice(1).map((c) => ({ esaId: c.esaId, cost: c.cost })),
     });
   }
@@ -119,7 +140,7 @@ export function buildCandidates(
   return {
     candidates,
     stats: {
-      products: products.length,
+      products: classification.products,
       classified,
       groups: groups.size,
       duplicates: classified - groups.size,
@@ -166,9 +187,10 @@ function bucketed(pool: Candidate[], keyOf: (c: Candidate) => string, priority: 
 
 export function selectCatalog(candidates: Candidate[], existing: Set<string> = new Set(), config: CatalogConfig = catalogConfig): Candidate[] {
   const priority = (c: Candidate) =>
-    `${config.selection.keepExisting && existing.has(c.dedupeKey) ? "0" : "1"}${c.cover ? "0" : "1"}${String(9 - Math.min(9, Math.floor(Math.log10(c.qty + 1) * 3))).padStart(1, "0")}${stableHash(c.dedupeKey)}`;
+    `${config.selection.keepExisting && existing.has(c.dedupeKey) ? "0" : "1"}${c.hasCover ? "0" : "1"}${String(9 - Math.min(9, Math.floor(Math.log10(c.qty + 1) * 3))).padStart(1, "0")}${stableHash(c.dedupeKey)}`;
   const titleKey = (c: Candidate) => `${c.productType}|${normalizeKey(c.title)}`;
   const selected: Candidate[] = [];
+  const chosen = new Set<string>();
   const perTitle = new Map<string, number>();
   const take = (c: Candidate) => {
     const key = titleKey(c);
@@ -191,7 +213,6 @@ export function selectCatalog(candidates: Candidate[], existing: Set<string> = n
     const queues = [...byPlatform.keys()].sort().map((platform) => bucketed(byPlatform.get(platform)!, genreKey, priority));
     const platformCap = quota.platformShare ? Math.ceil(quota.cap * quota.platformShare) : quota.cap;
     const perPlatform = new Map<string, number>();
-    const chosen = new Set<string>();
     let count = 0;
 
     for (const c of interleave(queues)) {
@@ -211,6 +232,15 @@ export function selectCatalog(candidates: Candidate[], existing: Set<string> = n
         chosen.add(c.dedupeKey);
         count++;
       }
+    }
+  }
+
+  const limit = Math.min(config.target.max, config.quotas.reduce((sum, q) => sum + q.cap, 0));
+  if (selected.length < limit && config.selection.spillover.length) {
+    const spill = config.selection.spillover.map((type) => bucketed(candidates.filter((c) => c.productType === type && !chosen.has(c.dedupeKey)), (c) => c.platform, priority));
+    for (const c of interleave(spill)) {
+      if (selected.length >= limit) break;
+      if (take(c)) chosen.add(c.dedupeKey);
     }
   }
 

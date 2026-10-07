@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { ImageResponse } from "next/og";
-import { WORDMARK } from "@/lib/brand-mark";
+import { LOCKUP, MARK, WORDMARK } from "@/lib/brand-mark";
 import { OG_PALETTE as P, OG_SIZE, ogFonts } from "./assets";
 
 export async function ogResponse(element: ReactElement, cacheSeconds = 86400) {
@@ -13,14 +13,19 @@ export async function ogResponse(element: ReactElement, cacheSeconds = 86400) {
 }
 
 export function Wordmark({ size, color = P.ink }: { size: number; color?: string }) {
-  const width = (WORDMARK.width / WORDMARK.height) * size;
-  const i = WORDMARK.index;
+  const cap = (size * WORDMARK.cap) / (WORDMARK.cap + WORDMARK.descender);
+  const unit = cap / WORDMARK.cap;
+  const mark = LOCKUP.markToCap * WORDMARK.cap;
+  const top = (WORDMARK.cap - mark) / 2;
+  const gap = LOCKUP.gapToCap * WORDMARK.cap;
+  const width = mark + gap + WORDMARK.width;
   return (
-    <svg width={width} height={size} viewBox={`0 0 ${WORDMARK.width} ${WORDMARK.height}`}>
-      <path d={WORDMARK.letters} fill={color} />
-      <path d={WORDMARK.dial} fill={color} />
-      <path d={WORDMARK.ticks} fill={P.room} />
-      <rect x={i.x} y={i.y} width={i.width} height={i.height} fill={P.accent} />
+    <svg width={width * unit} height={mark * unit} viewBox={`0 ${top} ${width} ${mark}`}>
+      <g transform={`translate(0 ${top}) scale(${mark / MARK.size})`}>
+        <path d={MARK.full.path} fill={color} fillRule="evenodd" />
+        <circle cx={MARK.full.lamp.cx} cy={MARK.full.lamp.cy} r={MARK.full.lamp.r} fill={P.accent} />
+      </g>
+      <path d={WORDMARK.letters} fill={color} transform={`translate(${mark + gap} 0)`} />
     </svg>
   );
 }

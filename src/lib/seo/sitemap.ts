@@ -3,6 +3,7 @@ import { STORE_POLICY } from "@/config/store-policy";
 import { POLICY_SLUGS, policyHref } from "@/components/layout/PolicyLayout/policies";
 import { categoryCounts, getCategoryTree } from "@/components/catalog/catalog-query";
 import { GENRES, PLATFORMS } from "@/lib/keys/taxonomy";
+import { genrePlatformCounts, stockedPlatformCounts } from "@/lib/catalog/live-stock";
 import { absoluteUrl, publicImageUrls } from "./url";
 
 export const SITEMAP_PRODUCTS_PER_FILE = 5000;
@@ -88,28 +89,25 @@ export async function staticPageEntries(): Promise<SitemapEntry[]> {
 
 export async function categoryEntries(): Promise<SitemapEntry[]> {
   const tree = await getCategoryTree();
-  const [counts, meta, links] = await Promise.all([
+  const [counts, meta, links, platformRows, latest] = await Promise.all([
     categoryCounts(tree),
     prisma.category.findMany({ where: { isActive: true }, select: { id: true, updatedAt: true } }),
-    prisma.productCategory.findMany({ where: { product: ACTIVE_PRODUCT }, select: { categoryId: true, product: { select: { updatedAt: true } } } }),
-  ]);
-  const stocked = { status: "ACTIVE" as const, quantity: { gt: 0 } };
-  const [platformRows, genreRows, latest] = await Promise.all([
-    prisma.keyItem.groupBy({ by: ["platform"], where: { product: stocked }, _count: { _all: true } }),
-    Promise.all(GENRES.map(async (g) => ({ key: g.key, count: await prisma.keyItem.count({ where: { genres: { has: g.key }, product: stocked } }) }))),
+    prisma.$queryRaw<{ categoryId: string; updatedAt: Date }[]>`
+      SELECT pc."categoryId", MAX(p."updatedAt") AS "updatedAt"
+      FROM "ProductCategory" pc JOIN "Product" p ON p."id" = pc."productId"
+      WHERE p."status" = 'ACTIVE'::"ProductStatus"
+      GROUP BY pc."categoryId"`,
+    stockedPlatformCounts(),
     latestProductUpdate(),
   ]);
-  const stockedPlatforms = new Set(platformRows.filter((r) => r._count._all > 0).map((r) => r.platform));
+  const genreRows = await Promise.all(GENRES.map(async (g) => ({ key: g.key, count: (await genrePlatformCounts(g.key)).reduce((sum, r) => sum + r.count, 0) })));
+  const stockedPlatforms = new Set(platformRows.filter((r) => r.count > 0).map((r) => r.platform));
   const browse: SitemapEntry[] = [
     ...PLATFORMS.filter((p) => stockedPlatforms.has(p.key)).map((p) => ({ loc: absoluteUrl(`/platform/${p.slug}`), lastmod: latest })),
     ...genreRows.filter((g) => g.count > 0).map((g) => ({ loc: absoluteUrl(`/genre/${g.key}`), lastmod: latest })),
   ];
   const updatedById = new Map(meta.map((c) => [c.id, c.updatedAt]));
-  const latestByCategory = new Map<string, Date>();
-  for (const link of links) {
-    const current = latestByCategory.get(link.categoryId);
-    if (!current || link.product.updatedAt > current) latestByCategory.set(link.categoryId, link.product.updatedAt);
-  }
+  const latestByCategory = new Map(links.map((link) => [link.categoryId, link.updatedAt]));
   const depth = (id: string): number => {
     const c = tree.byId.get(id);
     return c?.parentId ? 1 + depth(c.parentId) : 0;

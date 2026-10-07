@@ -4,7 +4,7 @@ import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage, type RGB }
 import fontkit from "@pdf-lib/fontkit";
 import { COMPANY } from "@/lib/company";
 import { BRAND } from "@/lib/brand";
-import { WORDMARK } from "@/lib/brand-mark";
+import { LOCKUP, MARK, WORDMARK } from "@/lib/brand-mark";
 import { PAYMENT_METHOD_LABEL } from "@/lib/payments/types";
 import { addressLines, displayOrderNumber, orderCurrency, orderTotals, type Numeric, type OrderAmountsSource, type StoredAddress } from "@/lib/orders";
 
@@ -39,7 +39,6 @@ const SUBTLE = hex("#505B57");
 const PAINT = hex("#0F1513");
 const INDEX = hex("#0F7A50");
 const LINE = hex("#A3ADA9");
-const PAPER = hex("#FFFFFF");
 
 const FONT_FILES = {
   display: "hubot-sans-latin-125-600-normal.woff",
@@ -220,12 +219,14 @@ function tableHeader(w: Writer) {
 
 function wordmark(w: Writer, x: number, y: number, size: number) {
   const scale = size / 1000;
-  const top = y + 729 * scale;
-  w.page.drawSvgPath(WORDMARK.letters, { x, y: top, scale, color: PAINT });
-  w.page.drawSvgPath(WORDMARK.dial, { x, y: top, scale, color: PAINT });
-  w.page.drawSvgPath(WORDMARK.ticks, { x, y: top, scale, color: PAPER });
-  const i = WORDMARK.index;
-  w.page.drawSvgPath(`M${i.x} ${i.y}h${i.width}v${i.height}h${-i.width}Z`, { x, y: top, scale, color: INDEX });
+  const top = y + WORDMARK.cap * scale;
+  const mark = LOCKUP.markToCap * WORDMARK.cap;
+  const markScale = (mark / MARK.size) * scale;
+  const markTop = top - ((WORDMARK.cap - mark) / 2) * scale;
+  const { lamp } = MARK.full;
+  w.page.drawSvgPath(MARK.full.path, { x, y: markTop, scale: markScale, color: PAINT });
+  w.page.drawCircle({ x: x + lamp.cx * markScale, y: markTop - lamp.cy * markScale, size: lamp.r * markScale, color: INDEX });
+  w.page.drawSvgPath(WORDMARK.letters, { x: x + (mark + LOCKUP.gapToCap * WORDMARK.cap) * scale, y: top, scale, color: PAINT });
 }
 
 function masthead(w: Writer, number: string, compact: boolean) {

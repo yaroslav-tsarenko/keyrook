@@ -40,25 +40,25 @@ function getReplyTo(): string | undefined {
 }
 
 const C = {
-  canvas: "#f1f3f2",
-  panel: "#fafbfa",
-  stage: "#ffffff",
-  ink: "#2a1a15",
-  muted: "#5b4c47",
-  subtle: "#72625d",
-  paint: "#3b2620",
-  onPaint: "#f1f3f2",
-  onPaintMuted: "#c8bbb3",
-  brass: "#c9a04e",
-  brassTint: "#f2ead8",
-  line: "#d2d3cf",
-  success: "#2f6b45",
-  danger: "#a3262b",
+  canvas: "#e3e7e4",
+  panel: "#d9dedb",
+  stage: "#f4f6f5",
+  ink: "#0f1513",
+  muted: "#3e4945",
+  subtle: "#505b57",
+  paint: "#0F1513",
+  onPaint: "#E4EBE7",
+  onPaintMuted: "#A2AEA9",
+  brass: "#0f7a50",
+  brassTint: "#d2e6dc",
+  line: "#c3cac7",
+  success: "#156a49",
+  danger: "#a62a20",
 } as const;
 
-const SERIF = "Gloock, Georgia, 'Times New Roman', serif";
-const SANS = "Commissioner, 'Segoe UI', Helvetica, Arial, sans-serif";
-const MONO = "ui-monospace, Menlo, Consolas, 'Courier New', monospace";
+const SERIF = "'Hubot Sans', 'Arial Narrow', Helvetica, Arial, sans-serif";
+const SANS = "'Mona Sans', 'Segoe UI', Helvetica, Arial, sans-serif";
+const MONO = "'Red Hat Mono', ui-monospace, Menlo, Consolas, monospace";
 
 interface SendArgs {
   to: string;
@@ -108,7 +108,7 @@ ${preheader}
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
         <tr>
           <td style="background:${C.paint};padding:20px 28px;">
-            <a href="${SITE_URL}" style="font-family:${SERIF};font-size:26px;line-height:1;color:${C.onPaint};text-decoration:none;letter-spacing:-0.01em;">${BRAND.name}</a>
+            <a href="${SITE_URL}" style="display:inline-block;line-height:0;color:${C.onPaint};text-decoration:none;"><img src="${SITE_URL}/email-logo.png" width="143" height="28" alt="${BRAND.name}" style="display:block;border:0;outline:none;height:28px;width:143px;color:${C.onPaint};font-family:${SANS};font-size:22px;font-weight:700;"></a>
           </td>
         </tr>
         <tr>
@@ -163,7 +163,7 @@ function label(text: string): string {
 }
 
 function plate(text: string): string {
-  return `<span style="display:inline-block;background:${C.brass};color:${C.ink};font-size:12px;font-weight:600;letter-spacing:0.08em;padding:6px 10px;font-family:${MONO};">${escape(text)}</span>`;
+  return `<span style="display:inline-block;background:${C.brass};color:${C.stage};font-size:12px;font-weight:600;letter-spacing:0.08em;padding:6px 10px;font-family:${MONO};">${escape(text)}</span>`;
 }
 
 function button(href: string, text: string): string {

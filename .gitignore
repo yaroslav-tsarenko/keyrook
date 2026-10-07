@@ -54,3 +54,6 @@ next-env.d.ts
 /tmp/
 *.cache
 invoice-sample*.pdf
+
+# catalogue sync staging
+/.cache/

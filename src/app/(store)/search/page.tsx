@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { prisma } from "@/lib/prisma";
+import { stockedPlatformCounts } from "@/lib/catalog/live-stock";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs/Breadcrumbs";
 import { CatalogBrowser } from "@/components/catalog/CatalogBrowser";
 import { queryCatalog } from "@/components/catalog/catalog-query";
@@ -23,12 +23,11 @@ function readQuery(raw: RawSearchParams): string {
 }
 
 async function platformLockers() {
-  const rows = await prisma.keyItem.groupBy({ by: ["platform"], where: { platform: { not: "other" }, product: { status: "ACTIVE", quantity: { gt: 0 } } }, _count: { _all: true } });
-  return rows
-    .sort((a, b) => b._count._all - a._count._all)
+  return (await stockedPlatformCounts())
+    .filter((r) => r.platform !== "other")
     .map((r) => {
       const info = platformInfo(r.platform);
-      return { name: info.short, href: `/platform/${info.slug}`, count: r._count._all, tone: info.tone };
+      return { name: info.short, href: `/platform/${info.slug}`, count: r.count, tone: info.tone };
     });
 }
 

@@ -1,14 +1,14 @@
 import { cache } from "react";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { mentionsSupplier, publicBrand } from "@/lib/utils/supplier";
+import { memoize, memoizeByKey } from "@/lib/utils/memo";
+import { mentionsSupplier } from "@/lib/utils/supplier";
 import { isNewArrival, newArrivalCutoff } from "@/lib/new-arrivals";
 import type { CatalogProduct } from "@/components/product/product-face";
 import { slugify } from "@/lib/utils/slugify";
-import { GENRES, PLATFORMS, PRODUCT_TYPES, REGIONS, genreDef, platformDef, productTypeDef, regionDef, type KeySummary, type PlatformDef } from "@/lib/keys/taxonomy";
+import { GENRES, PLATFORMS, PRODUCT_TYPES, REGIONS, categorySlugFor, genreDef, platformDef, productTypeDef, regionDef, type KeySummary, type PlatformDef } from "@/lib/keys/taxonomy";
 import {
   CATALOG_PAGE_SIZE,
-  LIST_FILTERS,
   buildCatalogHref,
   type CatalogFacets,
   type CatalogParams,
@@ -64,28 +64,6 @@ export const getCategoryTree = cache(async (): Promise<CategoryTree> => {
   return { all, roots: all.filter((c) => !c.parentId), bySlug, byId, children, subtreeIds, uniqueArt };
 });
 
-interface Row {
-  id: string;
-  name: string;
-  price: number;
-  compare: number | null;
-  quantity: number;
-  tracked: boolean;
-  brand: string | null;
-  createdAt: number;
-  orders: number;
-  cats: Set<string>;
-  score: number;
-  type: string | null;
-  platform: string | null;
-  region: string | null;
-  genres: string[];
-  languages: string[];
-  languageLabels: Map<string, string>;
-  year: string | null;
-  release: number;
-}
-
 type Facet = "category" | "brand" | "price" | "inStock" | "onSale" | ListFilter;
 
 export const KEY_SELECT = {
@@ -140,131 +118,138 @@ export interface CatalogResult {
   activeCategoryName: string | null;
 }
 
-function searchWhere(query: string): Prisma.ProductWhereInput {
-  return {
-    OR: [
-      { name: { contains: query, mode: "insensitive" } },
-      { sku: { contains: query, mode: "insensitive" } },
-      { item: { title: { contains: query, mode: "insensitive" } } },
-      { item: { developers: { has: query } } },
-      { item: { publishers: { has: query } } },
-    ],
-  };
+const ACTIVE = Prisma.sql`p."status" = 'ACTIVE'::"ProductStatus"`;
+const AVAILABLE = Prisma.sql`(NOT p."trackInventory" OR p."quantity" > 0)`;
+const REDUCED = Prisma.sql`(p."comparePrice" IS NOT NULL AND p."comparePrice" > p."price")`;
+const SORT_NAME = Prisma.sql`lower(p."name")`;
+
+function likePattern(query: string): string {
+  return `%${query.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
 }
 
-function scoreFor(name: string, query: string): number {
-  const n = name.toLowerCase();
+function searchCondition(query: string): Prisma.Sql {
+  const pattern = likePattern(query);
+  return Prisma.sql`p."id" IN (
+    SELECT "id" FROM "Product" WHERE "name" ILIKE ${pattern} OR "sku" ILIKE ${pattern}
+    UNION SELECT "productId" FROM "KeyItem" WHERE "title" ILIKE ${pattern} OR "developers" @> ARRAY[${query}]::text[] OR "publishers" @> ARRAY[${query}]::text[]
+  )`;
+}
+
+function relevance(query: string): Prisma.Sql {
   const q = query.toLowerCase();
-  if (n.startsWith(q)) return 3;
-  if (new RegExp(`\\b${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`).test(n)) return 2;
-  if (n.includes(q)) return 1;
-  return 0;
+  const word = `\\m${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`;
+  return Prisma.sql`CASE WHEN ${SORT_NAME} LIKE ${`${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`} THEN 3 WHEN ${SORT_NAME} ~ ${word} THEN 2 WHEN ${SORT_NAME} LIKE ${likePattern(q)} THEN 1 ELSE 0 END`;
 }
 
-async function loadRows(scope: CatalogScope, tree: CategoryTree): Promise<Row[]> {
-  const where: Prisma.ProductWhereInput = { status: "ACTIVE" };
-  if (scope.kind === "category") where.categories = { some: { categoryId: { in: tree.subtreeIds(scope.category.id) } } };
-  if (scope.kind === "platform") where.item = { platform: scope.platform.key };
-  if (scope.kind === "genre") where.item = { genres: { has: scope.genre.key } };
-  if (scope.kind === "released") where.item = { releaseDate: { lte: new Date(), not: null } };
-  if (scope.kind === "search") {
-    if (scope.query.length < 2 || mentionsSupplier(scope.query)) return [];
-    Object.assign(where, searchWhere(scope.query));
+const languageVocabulary = memoize(10 * 60_000, async () => {
+  const rows = await prisma.$queryRaw<{ language: string }[]>`SELECT DISTINCT l AS language FROM "KeyItem" k, unnest(k."languages") l`;
+  const bySlug = new Map<string, string[]>();
+  for (const { language } of rows) bySlug.set(slugify(language), [...(bySlug.get(slugify(language)) ?? []), language]);
+  return bySlug;
+});
+
+const SYNC_CATEGORIES = new Map<string, { type: string; platform: string | null }>(
+  PRODUCT_TYPES.flatMap((type) => [
+    [`cat_${type.slug}`, { type: type.key, platform: null }] as const,
+    ...PLATFORMS.map((platform) => [`cat_${categorySlugFor(type.key, platform.key)}`, { type: type.key, platform: platform.key }] as const),
+  ]),
+);
+
+function categoryCondition(ids: string[]): Prisma.Sql {
+  const mapped = ids.map((id) => SYNC_CATEGORIES.get(id));
+  if (ids.length === 0 || mapped.some((m) => !m)) {
+    return Prisma.sql`EXISTS (SELECT 1 FROM "ProductCategory" pc WHERE pc."productId" = p."id" AND pc."categoryId" = ANY(${ids}))`;
   }
-  const rows = await prisma.product.findMany({
-    where,
-    select: {
-      id: true,
-      name: true,
-      price: true,
-      comparePrice: true,
-      quantity: true,
-      trackInventory: true,
-      brand: true,
-      createdAt: true,
-      categories: { select: { categoryId: true } },
-      _count: { select: { orderItems: true } },
-      item: { select: { title: true, productType: true, platform: true, region: true, genres: true, languages: true, releaseYear: true, releaseDate: true } },
-    },
-  });
-  return rows.map((r) => {
-    const languageLabels = new Map((r.item?.languages ?? []).map((l) => [slugify(l), l]));
-    return {
-      id: r.id,
-      name: r.item?.title ?? r.name,
-      price: Number(r.price),
-      compare: r.comparePrice != null ? Number(r.comparePrice) : null,
-      quantity: r.quantity,
-      tracked: r.trackInventory,
-      brand: publicBrand(r.brand),
-      createdAt: r.createdAt.getTime(),
-      orders: r._count.orderItems,
-      cats: new Set(r.categories.map((c) => c.categoryId)),
-      score: scope.kind === "search" ? scoreFor(r.item?.title ?? r.name, scope.query) : 0,
-      type: r.item?.productType ?? null,
-      platform: r.item?.platform ?? null,
-      region: r.item?.region ?? null,
-      genres: r.item?.genres ?? [],
-      languages: [...languageLabels.keys()],
-      languageLabels,
-      year: r.item?.releaseYear ? String(r.item.releaseYear) : null,
-      release: r.item?.releaseDate ? r.item.releaseDate.getTime() : 0,
-    };
-  });
+  const types = [...new Set(mapped.filter((m) => !m!.platform).map((m) => m!.type))];
+  const pairs = mapped.filter((m) => m!.platform && !types.includes(m!.type)).map((m) => `${m!.type}/${m!.platform}`);
+  const parts: Prisma.Sql[] = [];
+  if (types.length) parts.push(Prisma.sql`k."productType" = ANY(${types})`);
+  if (pairs.length) parts.push(Prisma.sql`(k."productType" || '/' || k."platform") = ANY(${pairs})`);
+  return parts.length === 1 ? parts[0] : Prisma.sql`(${Prisma.join(parts, " OR ")})`;
 }
 
-const LIST_VALUES: Record<ListFilter, (row: Row) => string[]> = {
-  types: (r) => (r.type ? [r.type] : []),
-  platforms: (r) => (r.platform ? [r.platform] : []),
-  regions: (r) => (r.region ? [r.region] : []),
-  genres: (r) => r.genres,
-  languages: (r) => r.languages,
-  years: (r) => (r.year ? [r.year] : []),
-};
-
-const available = (r: Row) => !r.tracked || r.quantity > 0;
-const discountOf = (r: Row) => (r.compare !== null && r.compare > r.price ? (r.compare - r.price) / r.compare : 0);
-const reduced = (r: Row) => r.compare !== null && r.compare > r.price;
-
-function matcher(params: CatalogParams, categoryIds: Set<string> | null) {
-  return (row: Row, except: Facet | null = null) => {
-    if (except !== "category" && categoryIds && ![...row.cats].some((id) => categoryIds.has(id))) return false;
-    if (except !== "brand" && params.brand && row.brand !== params.brand) return false;
-    if (except !== "price") {
-      if (params.minPrice !== null && row.price < params.minPrice) return false;
-      if (params.maxPrice !== null && row.price > params.maxPrice) return false;
-    }
-    if (except !== "inStock" && params.inStock && !available(row)) return false;
-    if (except !== "onSale" && params.onSale && !reduced(row)) return false;
-    for (const filter of LIST_FILTERS) {
-      if (except === filter || params[filter].length === 0) continue;
-      const values = LIST_VALUES[filter](row);
-      if (!values.some((v) => params[filter].includes(v))) return false;
-    }
-    return true;
-  };
+function scopeCondition(scope: CatalogScope, tree: CategoryTree): Prisma.Sql | null {
+  switch (scope.kind) {
+    case "category":
+      return categoryCondition(tree.subtreeIds(scope.category.id));
+    case "platform":
+      return Prisma.sql`k."platform" = ${scope.platform.key}`;
+    case "genre":
+      return Prisma.sql`k."genres" @> ARRAY[${scope.genre.key}]::text[]`;
+    case "released":
+      return Prisma.sql`k."releaseDate" <= now()`;
+    case "search":
+      return searchCondition(scope.query);
+    default:
+      return null;
+  }
 }
 
-function sorter(sort: SortKey) {
-  const byNewest = (a: Row, b: Row) => b.createdAt - a.createdAt || a.name.localeCompare(b.name);
+async function filterConditions(params: CatalogParams, categoryIds: string[] | null): Promise<Partial<Record<Facet, Prisma.Sql>>> {
+  const out: Partial<Record<Facet, Prisma.Sql>> = {};
+  if (categoryIds) out.category = categoryCondition(categoryIds);
+  if (params.brand) out.brand = Prisma.sql`p."brand" = ${params.brand}`;
+  if (params.minPrice !== null || params.maxPrice !== null) {
+    const parts: Prisma.Sql[] = [];
+    if (params.minPrice !== null) parts.push(Prisma.sql`p."price" >= ${params.minPrice}`);
+    if (params.maxPrice !== null) parts.push(Prisma.sql`p."price" <= ${params.maxPrice}`);
+    out.price = Prisma.join(parts, " AND ");
+  }
+  if (params.inStock) out.inStock = AVAILABLE;
+  if (params.onSale) out.onSale = REDUCED;
+  if (params.types.length) out.types = Prisma.sql`k."productType" = ANY(${params.types})`;
+  if (params.platforms.length) out.platforms = Prisma.sql`k."platform" = ANY(${params.platforms})`;
+  if (params.regions.length) out.regions = Prisma.sql`k."region" = ANY(${params.regions})`;
+  if (params.genres.length) out.genres = Prisma.sql`k."genres" && ${params.genres}::text[]`;
+  if (params.languages.length) {
+    const vocabulary = await languageVocabulary();
+    const raw = params.languages.flatMap((slug) => vocabulary.get(slug) ?? []);
+    out.languages = raw.length ? Prisma.sql`k."languages" && ${raw}::text[]` : Prisma.sql`false`;
+  }
+  if (params.years.length) out.years = Prisma.sql`k."releaseYear" = ANY(${params.years.map(Number)}::int[])`;
+  return out;
+}
+
+function sortSql(sort: SortKey, query: string | null): Prisma.Sql {
   switch (sort) {
     case "price-asc":
-      return (a: Row, b: Row) => a.price - b.price || byNewest(a, b);
+      return Prisma.sql`p."price" ASC, p."createdAt" DESC, ${SORT_NAME} ASC, p."id" ASC`;
     case "price-desc":
-      return (a: Row, b: Row) => b.price - a.price || byNewest(a, b);
+      return Prisma.sql`p."price" DESC, p."createdAt" DESC, ${SORT_NAME} ASC, p."id" ASC`;
     case "name-asc":
-      return (a: Row, b: Row) => a.name.localeCompare(b.name, "en-GB");
+      return Prisma.sql`${SORT_NAME} ASC, p."id" ASC`;
     case "popular":
-      return (a: Row, b: Row) => b.orders - a.orders || b.release - a.release || byNewest(a, b);
+      return Prisma.sql`COALESCE(oc."n", 0) DESC, k."releaseDate" DESC NULLS LAST, p."createdAt" DESC, ${SORT_NAME} ASC, p."id" ASC`;
     case "discount":
-      return (a: Row, b: Row) => discountOf(b) - discountOf(a) || a.price - b.price;
+      return Prisma.sql`CASE WHEN ${REDUCED} THEN (p."comparePrice" - p."price") / p."comparePrice" ELSE 0 END DESC, p."price" ASC, p."id" ASC`;
     case "release-desc":
-      return (a: Row, b: Row) => b.release - a.release || a.name.localeCompare(b.name, "en-GB");
+      return Prisma.sql`k."releaseDate" DESC NULLS LAST, ${SORT_NAME} ASC, p."id" ASC`;
     case "relevance":
-      return (a: Row, b: Row) => b.score - a.score || Number(available(b)) - Number(available(a)) || b.release - a.release || a.name.localeCompare(b.name, "en-GB");
+      return query
+        ? Prisma.sql`${relevance(query)} DESC, ${AVAILABLE} DESC, k."releaseDate" DESC NULLS LAST, ${SORT_NAME} ASC, p."id" ASC`
+        : Prisma.sql`${AVAILABLE} DESC, k."releaseDate" DESC NULLS LAST, ${SORT_NAME} ASC, p."id" ASC`;
     default:
-      return byNewest;
+      return Prisma.sql`p."createdAt" DESC, ${SORT_NAME} ASC, p."id" ASC`;
   }
+}
+
+function all(conditions: (Prisma.Sql | null | undefined)[]): Prisma.Sql {
+  const present = conditions.filter((c): c is Prisma.Sql => Boolean(c));
+  return present.length ? Prisma.join(present, " AND ") : Prisma.sql`true`;
+}
+
+const cachedFacets = memoizeByKey<unknown[]>(2 * 60_000, { staleMs: 10 * 60_000, max: 400 });
+
+function facetQuery<T>(sql: Prisma.Sql): Promise<T[]> {
+  return cachedFacets(`${sql.sql}\u0000${JSON.stringify(sql.values)}`, () => prisma.$queryRaw<T[]>(sql)) as Promise<T[]>;
+}
+
+interface FacetRow {
+  facet: string;
+  key: string | null;
+  n: number;
+  lo: number | null;
+  hi: number | null;
 }
 
 function leafCategory(categories: { category: { name: string; slug: string; parentId: string | null } }[]) {
@@ -324,18 +309,27 @@ export async function queryCatalog(
   options: { basePath: string; fixed?: Record<string, string>; defaultSort?: SortKey },
 ): Promise<CatalogResult> {
   const tree = await getCategoryTree();
-  const rows = await loadRows(scope, tree);
   const hrefOpts = { fixed: options.fixed, defaultSort: options.defaultSort };
-
-  const paramCategory = scope.kind !== "category" && params.category ? tree.bySlug.get(params.category) ?? null : null;
-  const categoryIds = paramCategory ? new Set(tree.subtreeIds(paramCategory.id)) : null;
-  const passes = matcher(params, categoryIds);
-
-  const inSubtree = (row: Row, id: string) => tree.subtreeIds(id).some((cid) => row.cats.has(cid));
-  const countIn = (id: string) => rows.filter((r) => passes(r, "category") && inSubtree(r, id)).length;
+  const query = scope.kind === "search" ? scope.query : null;
+  const empty: CatalogResult = {
+    products: [],
+    total: 0,
+    page: 1,
+    totalPages: 1,
+    pageSize: CATALOG_PAGE_SIZE,
+    scopeTotal: 0,
+    activeCategoryName: null,
+    facets: { categoryTitle: "category", categories: [], brands: [], price: null, inStockCount: 0, onSaleCount: 0, narrowingInStock: false, types: [], platforms: [], regions: [], genres: [], languages: [], years: [] },
+  };
+  if (query !== null && (query.length < 2 || mentionsSupplier(query))) return empty;
 
   let categoryTitle: CatalogFacets["categoryTitle"] = "category";
-  let categories: CategoryOption[] = [];
+  let baseScope: CatalogScope = scope;
+  let categoryIds: string[] | null = null;
+  let categoryOptions: { category: CategoryRecord; name: string; href: string; active: boolean; depth: 0 | 1; anchor: boolean }[] = [];
+  const paramCategory = scope.kind !== "category" && params.category ? tree.bySlug.get(params.category) ?? null : null;
+  if (paramCategory) categoryIds = tree.subtreeIds(paramCategory.id);
+
   if (scope.kind === "category") {
     const current = scope.category;
     const parent = current.parentId ? tree.byId.get(current.parentId) ?? null : null;
@@ -343,60 +337,135 @@ export async function queryCatalog(
     const siblings = tree.children(anchor.id);
     if (siblings.length > 0) {
       categoryTitle = "subcategory";
-      const siblingRows = parent ? await loadRows({ kind: "category", category: anchor }, tree) : rows;
-      const anchorCount = siblingRows.filter((r) => passes(r, "category")).length;
-      const siblingCount = (id: string) => siblingRows.filter((r) => passes(r, "category") && inSubtree(r, id)).length;
-      categories = [
-        { key: anchor.slug, name: `All ${anchor.name.toLowerCase()}`, count: anchorCount, href: buildCatalogHref(`/catalog/${anchor.slug}`, params, {}, hrefOpts), active: !parent, depth: 0 as const },
-        ...siblings.map((c) => ({ key: c.slug, name: c.name, count: siblingCount(c.id), href: buildCatalogHref(`/catalog/${c.slug}`, params, {}, hrefOpts), active: c.id === current.id, depth: 1 as const })),
-      ].filter((o) => o.count > 0 || o.active);
+      if (parent) {
+        baseScope = { kind: "category", category: anchor };
+        categoryIds = tree.subtreeIds(current.id);
+      }
+      categoryOptions = [
+        { category: anchor, name: `All ${anchor.name.toLowerCase()}`, href: buildCatalogHref(`/catalog/${anchor.slug}`, params, {}, hrefOpts), active: !parent, depth: 0 as const, anchor: true },
+        ...siblings.map((c) => ({ category: c, name: c.name, href: buildCatalogHref(`/catalog/${c.slug}`, params, {}, hrefOpts), active: c.id === current.id, depth: 1 as const, anchor: false })),
+      ];
     }
   } else if (scope.kind === "search") {
-    categories = tree.roots
-      .map((c) => ({ key: c.slug, name: c.name, count: countIn(c.id), href: buildCatalogHref(options.basePath, params, { category: c.slug }, hrefOpts), active: paramCategory?.id === c.id, depth: 0 as const }))
-      .filter((o) => o.count > 0 || o.active);
+    categoryOptions = tree.roots.map((c) => ({ category: c, name: c.name, href: buildCatalogHref(options.basePath, params, { category: c.slug }, hrefOpts), active: paramCategory?.id === c.id, depth: 0 as const, anchor: false }));
   }
 
-  const brandCounts = new Map<string, number>();
-  for (const r of rows) if (r.brand && passes(r, "brand")) brandCounts.set(r.brand, (brandCounts.get(r.brand) ?? 0) + 1);
-  const brands = [...brandCounts.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name, "en-GB"));
-  if (params.brand && !brandCounts.has(params.brand)) brands.push({ name: params.brand, count: 0 });
-
-  const priceRows = rows.filter((r) => passes(r, "price"));
-  const price = priceRows.length ? { min: Math.min(...priceRows.map((r) => r.price)), max: Math.max(...priceRows.map((r) => r.price)) } : null;
-
-  const stockBase = rows.filter((r) => passes(r, "inStock"));
-  const inStockCount = stockBase.filter(available).length;
-  const onSaleCount = rows.filter((r) => passes(r, "onSale") && reduced(r)).length;
-
-  const listFacet = (filter: ListFilter, label: (key: string, sample: Row) => string, order: (key: string) => number): FacetOption[] => {
-    const counts = new Map<string, { count: number; sample: Row }>();
-    for (const r of rows) {
-      if (!passes(r, filter)) continue;
-      for (const value of LIST_VALUES[filter](r)) {
-        const entry = counts.get(value);
-        if (entry) entry.count += 1;
-        else counts.set(value, { count: 1, sample: r });
-      }
+  const scopeSql = scopeCondition(baseScope, tree);
+  const filters = await filterConditions(params, categoryIds);
+  const keys = Object.keys(filters) as Facet[];
+  const flagName = (f: Facet) => Prisma.raw(`"f_${f}"`);
+  const flags = keys.length ? Prisma.sql`, ${Prisma.join(keys.map((f) => Prisma.sql`(${filters[f]}) AS ${flagName(f)}`))}` : Prisma.empty;
+  const except = (f: Facet | null) => all(keys.filter((k) => k !== f).map((k) => Prisma.sql`b.${flagName(k)}`));
+  const columns: Prisma.Sql[] = [];
+  const aliases = new Map<string, Prisma.Sql>();
+  const column = (signature: string, expression: () => Prisma.Sql) => {
+    let alias = aliases.get(signature);
+    if (!alias) {
+      alias = Prisma.raw(`"a${aliases.size}"`);
+      aliases.set(signature, alias);
+      columns.push(Prisma.sql`${expression()} AS ${alias}`);
     }
-    const options: FacetOption[] = [...counts.entries()].map(([key, { count, sample }]) => ({ key, label: label(key, sample), count, selected: params[filter].includes(key) }));
+    return alias;
+  };
+  const signature = (f: Facet | null) => keys.filter((k) => k !== f).join(",");
+  const counted = (f: Facet | null, extra?: { tag: string; sql: Prisma.Sql }) =>
+    column(`count:${signature(f)}:${extra?.tag ?? ""}`, () => Prisma.sql`COUNT(*) FILTER (WHERE ${extra ? all([except(f), extra.sql]) : except(f)})::int`);
+  const priceMin = column(`min:${signature("price")}`, () => Prisma.sql`MIN(b."price") FILTER (WHERE ${except("price")})::float`);
+  const priceMax = column(`max:${signature("price")}`, () => Prisma.sql`MAX(b."price") FILTER (WHERE ${except("price")})::float`);
+  const n = {
+    types: counted("types"),
+    platforms: counted("platforms"),
+    regions: counted("regions"),
+    years: counted("years"),
+    genres: counted("genres"),
+    languages: counted("languages"),
+    scope: filters.category && scope.kind === "category" ? column("scope", () => Prisma.sql`COUNT(*) FILTER (WHERE b."f_category")::int`) : column(`count::`, () => Prisma.sql`COUNT(*)::int`),
+    total: counted(null),
+    stockBase: counted("inStock"),
+    inStock: counted("inStock", { tag: "avail", sql: Prisma.sql`b."avail"` }),
+    onSale: counted("onSale", { tag: "sale", sql: Prisma.sql`b."sale"` }),
+    price: counted("price"),
+    brand: params.brand ? counted("brand", { tag: "brand", sql: Prisma.sql`b."brand" = ${params.brand}` }) : null,
+  };
+  const live = all([ACTIVE, scopeSql]);
+
+  const facetSql = Prisma.sql`
+    WITH agg AS (
+      SELECT GROUPING(b."t", b."pf", b."rg", b."yr", b."gs", b."ls")::int AS "gset", b."t", b."pf", b."rg", b."yr", b."gs", b."ls", ${Prisma.join(columns)}
+      FROM (
+        SELECT p."price"::float AS "price", p."brand", ${REDUCED} AS "sale", ${AVAILABLE} AS "avail",
+          k."productType" AS "t", k."platform" AS "pf", k."region" AS "rg", k."releaseYear" AS "yr", k."genres" AS "gs", k."languages" AS "ls"
+          ${flags}
+        FROM "Product" p LEFT JOIN "KeyItem" k ON k."productId" = p."id"
+        WHERE ${live}
+        OFFSET 0
+      ) b
+      GROUP BY GROUPING SETS ((b."t"), (b."pf"), (b."rg"), (b."yr"), (b."gs"), (b."ls"), ())
+    )
+    SELECT 'types' AS "facet", "t" AS "key", ${n.types} AS "n", NULL::float AS "lo", NULL::float AS "hi" FROM agg WHERE "gset" = 31 AND "t" IS NOT NULL AND ${n.types} > 0
+    UNION ALL SELECT 'platforms', "pf", ${n.platforms}, NULL, NULL FROM agg WHERE "gset" = 47 AND "pf" IS NOT NULL AND ${n.platforms} > 0
+    UNION ALL SELECT 'regions', "rg", ${n.regions}, NULL, NULL FROM agg WHERE "gset" = 55 AND "rg" IS NOT NULL AND ${n.regions} > 0
+    UNION ALL SELECT 'years', "yr"::text, ${n.years}, NULL, NULL FROM agg WHERE "gset" = 59 AND "yr" IS NOT NULL AND ${n.years} > 0
+    UNION ALL SELECT 'genres', g, SUM(${n.genres})::int, NULL, NULL FROM agg, unnest("gs") g WHERE "gset" = 61 AND ${n.genres} > 0 GROUP BY g
+    UNION ALL SELECT 'languages', l, SUM(${n.languages})::int, NULL, NULL FROM agg, unnest("ls") l WHERE "gset" = 62 AND ${n.languages} > 0 GROUP BY l
+    UNION ALL SELECT 'scope', NULL, ${n.scope}, NULL, NULL FROM agg WHERE "gset" = 63
+    UNION ALL SELECT 'total', NULL, ${n.total}, NULL, NULL FROM agg WHERE "gset" = 63
+    UNION ALL SELECT 'stockBase', NULL, ${n.stockBase}, NULL, NULL FROM agg WHERE "gset" = 63
+    UNION ALL SELECT 'inStock', NULL, ${n.inStock}, NULL, NULL FROM agg WHERE "gset" = 63
+    UNION ALL SELECT 'onSale', NULL, ${n.onSale}, NULL, NULL FROM agg WHERE "gset" = 63
+    UNION ALL SELECT 'price', NULL, ${n.price}, ${priceMin}, ${priceMax} FROM agg WHERE "gset" = 63
+    UNION ALL SELECT 'brand', NULL, ${n.brand ?? Prisma.sql`0`}, NULL, NULL FROM agg WHERE "gset" = 63`;
+
+  const categorySql = categoryOptions.length
+    ? Prisma.sql`
+      SELECT ${Prisma.join(categoryOptions.map((o, i) => Prisma.sql`COUNT(*) FILTER (WHERE ${categoryCondition(tree.subtreeIds(o.category.id))})::int AS ${Prisma.raw(`"c${i}"`)}`))}
+      FROM "Product" p LEFT JOIN "KeyItem" k ON k."productId" = p."id"
+      WHERE ${all([live, ...keys.filter((f) => f !== "category").map((f) => filters[f])])}`
+    : null;
+
+  const pageWhere = all([live, ...keys.map((f) => filters[f])]);
+  const popularJoin = params.sort === "popular" ? Prisma.sql`LEFT JOIN (SELECT "productId", COUNT(*)::int AS "n" FROM "OrderItem" GROUP BY "productId") oc ON oc."productId" = p."id"` : Prisma.empty;
+  const pageIdsAt = (page: number) =>
+    prisma.$queryRaw<{ id: string }[]>`
+      SELECT p."id" FROM "Product" p LEFT JOIN "KeyItem" k ON k."productId" = p."id" ${popularJoin}
+      WHERE ${pageWhere}
+      ORDER BY ${sortSql(params.sort, query)}
+      LIMIT ${CATALOG_PAGE_SIZE} OFFSET ${(page - 1) * CATALOG_PAGE_SIZE}`;
+
+  const [facetRows, categoryRows, firstIds] = await Promise.all([
+    facetQuery<FacetRow>(facetSql),
+    categorySql ? facetQuery<Record<string, number>>(categorySql) : Promise.resolve([] as Record<string, number>[]),
+    pageIdsAt(params.page),
+  ]);
+
+  const single = (facet: string) => facetRows.find((r) => r.facet === facet);
+  const total = single("total")?.n ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE));
+  const page = Math.min(params.page, totalPages);
+  const pageIds = page === params.page ? firstIds : await pageIdsAt(page);
+  const products = await loadKeyProducts(pageIds.map((r) => r.id));
+
+  const listFacet = (filter: ListFilter, label: (key: string) => string, order: (key: string) => number, keyOf: (raw: string) => string = (raw) => raw): FacetOption[] => {
+    const counts = new Map<string, { count: number; label: string }>();
+    for (const row of facetRows) {
+      if (row.facet !== filter || row.key === null) continue;
+      const key = keyOf(row.key);
+      const entry = counts.get(key);
+      if (entry) entry.count += row.n;
+      else counts.set(key, { count: row.n, label: filter === "languages" ? row.key : label(key) });
+    }
+    const options: FacetOption[] = [...counts.entries()].map(([key, { count, label: l }]) => ({ key, label: l, count, selected: params[filter].includes(key) }));
     for (const key of params[filter]) if (!counts.has(key)) options.push({ key, label: key, count: 0, selected: true });
     return options.sort((a, b) => order(a.key) - order(b.key) || a.label.localeCompare(b.label, "en-GB"));
   };
 
-  const types = listFacet("types", (key) => productTypeDef(key)?.label ?? key, (key) => PRODUCT_TYPES.findIndex((t) => t.key === key));
-  const platforms = listFacet("platforms", (key) => platformDef(key)?.label ?? key, (key) => PLATFORMS.findIndex((p) => p.key === key));
-  const regions = listFacet("regions", (key) => regionDef(key)?.label ?? key, (key) => REGIONS.findIndex((r) => r.key === key));
-  const genres = listFacet("genres", (key) => genreDef(key)?.label ?? key, (key) => GENRES.findIndex((g) => g.key === key));
-  const languages = listFacet("languages", (key, sample) => sample.languageLabels.get(key) ?? key, (key) => (key === "english" ? -1 : 0));
-  const years = listFacet("years", (key) => key, (key) => -Number(key));
-
-  const matched = rows.filter((r) => passes(r)).sort(sorter(params.sort));
-  const total = matched.length;
-  const totalPages = Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE));
-  const page = Math.min(params.page, totalPages);
-  const pageIds = matched.slice((page - 1) * CATALOG_PAGE_SIZE, page * CATALOG_PAGE_SIZE).map((r) => r.id);
-  const products = await loadKeyProducts(pageIds);
+  const categories: CategoryOption[] = categoryOptions
+    .map((o, i) => ({ key: o.category.slug, name: o.name, count: categoryRows[0]?.[`c${i}`] ?? 0, href: o.href, active: o.active, depth: o.depth }))
+    .filter((o) => o.count > 0 || o.active);
+  const brandRow = single("brand");
+  const priceRow = single("price");
+  const stockBase = single("stockBase")?.n ?? 0;
+  const inStockCount = single("inStock")?.n ?? 0;
 
   return {
     products,
@@ -404,9 +473,23 @@ export async function queryCatalog(
     page,
     totalPages,
     pageSize: CATALOG_PAGE_SIZE,
-    scopeTotal: rows.length,
+    scopeTotal: single("scope")?.n ?? 0,
     activeCategoryName: paramCategory?.name ?? null,
-    facets: { categoryTitle, categories, brands, price, inStockCount, onSaleCount, narrowingInStock: inStockCount > 0 && inStockCount < stockBase.length, types, platforms, regions, genres, languages, years },
+    facets: {
+      categoryTitle,
+      categories,
+      brands: params.brand ? [{ name: params.brand, count: brandRow?.n ?? 0 }] : [],
+      price: priceRow && priceRow.n > 0 && priceRow.lo !== null && priceRow.hi !== null ? { min: priceRow.lo, max: priceRow.hi } : null,
+      inStockCount,
+      onSaleCount: single("onSale")?.n ?? 0,
+      narrowingInStock: inStockCount > 0 && inStockCount < stockBase,
+      types: listFacet("types", (key) => productTypeDef(key)?.label ?? key, (key) => PRODUCT_TYPES.findIndex((t) => t.key === key)),
+      platforms: listFacet("platforms", (key) => platformDef(key)?.label ?? key, (key) => PLATFORMS.findIndex((p) => p.key === key)),
+      regions: listFacet("regions", (key) => regionDef(key)?.label ?? key, (key) => REGIONS.findIndex((r) => r.key === key)),
+      genres: listFacet("genres", (key) => genreDef(key)?.label ?? key, (key) => GENRES.findIndex((g) => g.key === key)),
+      languages: listFacet("languages", (key) => key, (key) => (key === "english" ? -1 : 0), slugify),
+      years: listFacet("years", (key) => key, (key) => -Number(key)),
+    },
   };
 }
 
@@ -418,35 +501,54 @@ export interface CategoryStats {
 }
 
 export async function categoryStats(categoryIds: string[]): Promise<CategoryStats> {
-  const rows = await prisma.product.findMany({
-    where: { status: "ACTIVE", categories: { some: { categoryId: { in: categoryIds } } } },
-    select: { price: true, quantity: true, trackInventory: true },
-  });
-  const prices = rows.map((r) => Number(r.price));
-  return {
-    count: rows.length,
-    inStock: rows.filter((r) => !r.trackInventory || r.quantity > 0).length,
-    minPrice: prices.length ? Math.min(...prices) : null,
-    maxPrice: prices.length ? Math.max(...prices) : null,
-  };
+  const [row] = await prisma.$queryRaw<{ count: number; inStock: number; min: number | null; max: number | null }[]>`
+    SELECT COUNT(*)::int AS "count", COUNT(*) FILTER (WHERE ${AVAILABLE})::int AS "inStock", MIN(p."price")::float AS "min", MAX(p."price")::float AS "max"
+    FROM "Product" p LEFT JOIN "KeyItem" k ON k."productId" = p."id"
+    WHERE ${ACTIVE} AND ${categoryCondition(categoryIds)}`;
+  return { count: row?.count ?? 0, inStock: row?.inStock ?? 0, minPrice: row?.min ?? null, maxPrice: row?.max ?? null };
 }
 
-export async function categoryCounts(tree: CategoryTree): Promise<Map<string, number>> {
-  const links = await prisma.productCategory.findMany({
-    where: { product: { status: "ACTIVE" }, category: { isActive: true } },
-    select: { productId: true, categoryId: true },
+let countsCache: { at: number; ids: string; value: Promise<Map<string, number>> } | null = null;
+
+export function categoryCounts(tree: CategoryTree): Promise<Map<string, number>> {
+  const ids = tree.all.map((c) => c.id).join(",");
+  if (countsCache && countsCache.ids === ids && Date.now() - countsCache.at < 60_000) return countsCache.value;
+  const value = computeCategoryCounts(tree);
+  countsCache = { at: Date.now(), ids, value };
+  value.catch(() => {
+    if (countsCache?.value === value) countsCache = null;
   });
-  const byCategory = new Map<string, Set<string>>();
-  for (const link of links) {
-    const set = byCategory.get(link.categoryId) ?? new Set<string>();
-    set.add(link.productId);
-    byCategory.set(link.categoryId, set);
+  return value;
+}
+
+async function computeCategoryCounts(tree: CategoryTree): Promise<Map<string, number>> {
+  if (tree.all.length === 0) return new Map();
+  const synced = tree.all.filter((c) => tree.subtreeIds(c.id).every((id) => SYNC_CATEGORIES.has(id)));
+  const manual = tree.all.filter((c) => !synced.includes(c));
+  const pairs = manual.flatMap((c) => tree.subtreeIds(c.id).map((member) => Prisma.sql`(${c.id}, ${member})`));
+  const [groups, manualRows] = await Promise.all([
+    prisma.$queryRaw<{ type: string; platform: string; n: number }[]>`
+      SELECT k."productType" AS "type", k."platform", COUNT(*)::int AS "n"
+      FROM "Product" p JOIN "KeyItem" k ON k."productId" = p."id"
+      WHERE ${ACTIVE}
+      GROUP BY 1, 2`,
+    pairs.length
+      ? prisma.$queryRaw<{ id: string; n: number }[]>`
+        SELECT t."root" AS "id", COUNT(DISTINCT pc."productId")::int AS "n"
+        FROM (VALUES ${Prisma.join(pairs)}) AS t("root", "member")
+        JOIN "ProductCategory" pc ON pc."categoryId" = t."member"
+        JOIN "Product" p ON p."id" = pc."productId"
+        WHERE ${ACTIVE}
+        GROUP BY t."root"`
+      : Promise.resolve([] as { id: string; n: number }[]),
+  ]);
+  const counts = new Map(manualRows.map((r) => [r.id, r.n]));
+  for (const c of synced) {
+    const members = tree.subtreeIds(c.id).map((id) => SYNC_CATEGORIES.get(id)!);
+    const types = new Set(members.filter((m) => !m.platform).map((m) => m.type));
+    const leaves = new Set(members.filter((m) => m.platform && !types.has(m.type)).map((m) => `${m.type}/${m.platform}`));
+    counts.set(c.id, groups.filter((g) => types.has(g.type) || leaves.has(`${g.type}/${g.platform}`)).reduce((sum, g) => sum + g.n, 0));
   }
-  const counts = new Map<string, number>();
-  for (const c of tree.all) {
-    const ids = new Set<string>();
-    for (const id of tree.subtreeIds(c.id)) for (const pid of byCategory.get(id) ?? []) ids.add(pid);
-    counts.set(c.id, ids.size);
-  }
+  for (const c of tree.all) if (!counts.has(c.id)) counts.set(c.id, 0);
   return counts;
 }

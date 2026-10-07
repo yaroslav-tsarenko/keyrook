@@ -10,7 +10,7 @@ export function DemoHeader({ device, query = "", placeholder = "Search keys", fo
   return (
     <div className="shrink-0 border-b border-line bg-rig">
       <div className={cn("flex items-center gap-5", phone ? "h-14 px-4" : "h-16 px-6")}>
-        <Wordmark className={cn("shrink-0 text-ink", phone ? "h-[17px] w-auto" : "h-[20px] w-auto")} ticks={!phone} />
+        <Wordmark className={cn("shrink-0 text-ink", phone ? "h-[25px] w-auto" : "h-[29px] w-auto")} detail={phone ? "small" : "full"} />
         {phone ? <span className="flex-1" /> : null}
         <div
           data-demo="search"

@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
         { sku: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
+        ...(adminView ? [{ description: { contains: search, mode: "insensitive" as const } }] : []),
       ];
     }
 

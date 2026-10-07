@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { pageMetadata, pagedDescription } from "@/lib/seo/metadata";
-import { prisma } from "@/lib/prisma";
+import { platformMinPrice, platformTypeCounts, stockedPlatformCounts } from "@/lib/catalog/live-stock";
 import { PLATFORMS, platformBySlug, PRODUCT_TYPES, categorySlugFor } from "@/lib/keys/taxonomy";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs/Breadcrumbs";
 import { CatalogBrowser } from "@/components/catalog/CatalogBrowser";
@@ -18,27 +18,13 @@ interface PlatformPageProps {
   searchParams: Promise<RawSearchParams>;
 }
 
-async function platformStats(platform: string) {
-  const rows = await prisma.keyItem.groupBy({
-    by: ["productType"],
-    where: { platform, product: { status: "ACTIVE", quantity: { gt: 0 } } },
-    _count: { _all: true },
-  });
-  return new Map(rows.map((r) => [r.productType, r._count._all]));
-}
-
-async function platformMinPrice(platform: string): Promise<number | null> {
-  const row = await prisma.product.aggregate({ where: { status: "ACTIVE", quantity: { gt: 0 }, item: { platform } }, _min: { price: true } });
-  return row._min.price != null ? Number(row._min.price) : null;
-}
-
 export async function generateMetadata({ params, searchParams }: PlatformPageProps): Promise<Metadata> {
   const { platform: slug } = await params;
   const platform = platformBySlug(slug);
   if (!platform) return { title: "Platform not found", robots: { index: false, follow: true } };
   const t = await getTranslations("catalog");
   const query = parseCatalogParams(await searchParams, "popular");
-  const counts = await platformStats(platform.key);
+  const counts = await platformTypeCounts(platform.key);
   const total = [...counts.values()].reduce((a, b) => a + b, 0);
   const title = query.page > 1 ? t("titleWithPage", { title: `${platform.label} keys`, page: query.page }) : `${platform.label} keys`;
   const description = pagedDescription(`Games, DLC and other products that activate on ${platform.label}: ${total} products, each with its activation region and languages listed.`, query.page, (text, page) => t("descriptionWithPage", { description: text, page }));
@@ -56,7 +42,7 @@ export default async function PlatformPage({ params, searchParams }: PlatformPag
   const basePath = `/platform/${platform.slug}`;
   const info = platformInfo(platform.key);
   const guide = activationFor(platform.key);
-  const [counts, minPrice, result] = await Promise.all([platformStats(platform.key), platformMinPrice(platform.key), queryCatalog({ kind: "platform", platform }, { ...query, category: null }, { basePath, defaultSort: "popular" })]);
+  const [counts, minPrice, result] = await Promise.all([platformTypeCounts(platform.key), platformMinPrice(platform.key), queryCatalog({ kind: "platform", platform }, { ...query, category: null }, { basePath, defaultSort: "popular" })]);
   const total = [...counts.values()].reduce((a, b) => a + b, 0);
 
   const typeIndex = PRODUCT_TYPES.filter((type) => (counts.get(type.key) ?? 0) > 0).map((type) => ({
@@ -65,7 +51,7 @@ export default async function PlatformPage({ params, searchParams }: PlatformPag
     count: counts.get(type.key) ?? 0,
     href: `/catalog/${categorySlugFor(type.key, platform.key)}`,
   }));
-  const others = await prisma.keyItem.groupBy({ by: ["platform"], where: { product: { status: "ACTIVE", quantity: { gt: 0 } }, platform: { not: platform.key } }, _count: { _all: true } });
+  const others = (await stockedPlatformCounts()).filter((o) => o.platform !== platform.key);
   const related = PLATFORMS.filter((p) => p.key !== "other" && others.some((o) => o.platform === p.key)).map((p) => ({ name: platformInfo(p.key).short, href: `/platform/${p.slug}` }));
 
   return (

@@ -153,7 +153,7 @@ function StoreHeader() {
         >
           <div className="mx-auto flex h-full max-w-container items-center justify-between gap-4 px-gutter lg:gap-8">
             <Link href="/" aria-label={`${BRAND.name}, home`} className="flex shrink-0 items-center text-ink">
-              <Wordmark className="h-[22px] w-auto lg:h-[27px]" />
+              <Wordmark className="h-[32px] w-auto lg:h-[39px]" />
             </Link>
 
             <button
@@ -202,7 +202,7 @@ function StoreHeader() {
           inert={tierTwoHidden}
         >
           <div className="mx-auto flex h-full max-w-container items-center justify-between gap-6 px-gutter">
-            <nav aria-label="Main" className="flex h-full min-w-0 items-center gap-6">
+            <nav aria-label="Main" className="flex h-full shrink-0 items-center gap-6">
               <button
                 ref={mapTrigger}
                 type="button"
@@ -231,17 +231,18 @@ function StoreHeader() {
                 </Link>
               ))}
             </nav>
-            <div className="flex h-full items-center gap-3">
-              <p className="m-0 flex items-center gap-2 text-[0.8125rem] text-ink-muted">
+            <div className="@container flex h-full min-w-0 flex-1 items-center justify-end gap-3">
+              <Link
+                href="/policies/shipping"
+                className="flex min-w-0 items-center gap-2 text-[0.8125rem] text-ink-muted underline-offset-4 transition-colors duration-[120ms] hover-device:hover:text-ink hover-device:hover:underline"
+              >
                 <Lamp on />
-                <span className="max-2xl:hidden">{STORE_POLICY.delivery.headline.replace(/\.$/, "")}</span>
-                <Link href="/policies/shipping" className="underline-offset-4 hover-device:hover:underline 2xl:hidden">
-                  Delivery
-                </Link>
-              </p>
-              <span aria-hidden="true" className="h-5 w-px bg-line" />
-              <CurrencySelect />
-              <ThemeToggle />
+                <span className="hidden min-w-0 truncate whitespace-nowrap @min-[340px]:block">{STORE_POLICY.delivery.rail}</span>
+                <span className="whitespace-nowrap @min-[340px]:hidden">Delivery</span>
+              </Link>
+              <span aria-hidden="true" className="h-5 w-px shrink-0 bg-line" />
+              <CurrencySelect className="shrink-0" />
+              <ThemeToggle className="shrink-0" />
             </div>
           </div>
         </div>

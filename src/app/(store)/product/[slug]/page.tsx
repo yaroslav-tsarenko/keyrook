@@ -145,7 +145,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     await prisma.$queryRaw<SiblingRow[]>`
       SELECT p."id", p."slug", k."title", k."edition", k."platform", k."region", p."price"::float AS price
       FROM "Product" p JOIN "KeyItem" k ON k."productId" = p."id"
-      WHERE ${LIVE} AND k."productType" = ${kind} AND lower(k."title") LIKE ${`${base.toLowerCase().replace(/[%_]/g, "")}%`}
+      WHERE ${LIVE} AND k."productType" = ${kind} AND k."title" ILIKE ${`${base.replace(/[\\%_]/g, (c) => `\\${c}`)}%`}
       ORDER BY p."price" ASC LIMIT 60`
   ).filter((s) => normaliseTitle(baseTitle(s.title, s.edition)) === baseKey);
 
@@ -171,7 +171,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     if (head && head.length > 2 && head.toLowerCase() !== item.title.toLowerCase()) {
       const rows = await prisma.$queryRaw<{ slug: string; title: string }[]>`
         SELECT p."slug", k."title" FROM "Product" p JOIN "KeyItem" k ON k."productId" = p."id"
-        WHERE ${LIVE} AND k."productType" = 'game' AND k."platform" = ${item.platform} AND lower(k."title") = lower(${head})
+        WHERE ${LIVE} AND k."productType" = 'game' AND k."platform" = ${item.platform} AND k."title" ILIKE ${head.replace(/[\\%_]/g, (c) => `\\${c}`)}
         ORDER BY (k."region" = ${item.region}) DESC, p."price" ASC LIMIT 1`;
       baseGame = rows[0] ?? null;
     }
@@ -183,7 +183,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     await prisma.$queryRaw<{ id: string }[]>`
       SELECT p."id" FROM "Product" p JOIN "KeyItem" k ON k."productId" = p."id"
       WHERE ${LIVE} AND k."productType" = ${kind} AND k."platform" = ${item.platform}
-        ${genre ? Prisma.sql`AND ${genre} = ANY(k."genres")` : Prisma.empty}
+        ${genre ? Prisma.sql`AND k."genres" @> ARRAY[${genre}]::text[]` : Prisma.empty}
         AND p."id" NOT IN (${Prisma.join(exclude)})
       ORDER BY abs(p."price" - ${price}) ASC LIMIT 5`
   ).map((r) => r.id);

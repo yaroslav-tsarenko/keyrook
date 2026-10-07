@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { prisma } from "@/lib/prisma";
+import { genrePlatformCounts } from "@/lib/catalog/live-stock";
 import { pageMetadata, pagedDescription } from "@/lib/seo/metadata";
 import { GENRES, PLATFORMS, genreDef } from "@/lib/keys/taxonomy";
 import { platformInfo } from "@/lib/catalog/platforms";
@@ -16,18 +16,13 @@ interface GenrePageProps {
   searchParams: Promise<RawSearchParams>;
 }
 
-async function genrePlatforms(genre: string) {
-  const rows = await prisma.keyItem.groupBy({ by: ["platform"], where: { genres: { has: genre }, product: { status: "ACTIVE", quantity: { gt: 0 } } }, _count: { _all: true } });
-  return rows.map((r) => ({ platform: r.platform, count: r._count._all })).sort((a, b) => b.count - a.count);
-}
-
 export async function generateMetadata({ params, searchParams }: GenrePageProps): Promise<Metadata> {
   const { slug } = await params;
   const genre = genreDef(slug);
   if (!genre) return { title: "Genre not found", robots: { index: false, follow: true } };
   const t = await getTranslations("catalog");
   const query = parseCatalogParams(await searchParams, "popular");
-  const counts = await genrePlatforms(genre.key);
+  const counts = await genrePlatformCounts(genre.key);
   const total = counts.reduce((a, b) => a + b.count, 0);
   const title = query.page > 1 ? t("titleWithPage", { title: `${genre.label} game keys`, page: query.page }) : `${genre.label} game keys`;
   const description = pagedDescription(`${genre.label} games and DLC for Steam, Xbox, PlayStation and more: ${total} keys in stock, each with its platform, region and languages listed.`, query.page, (text, page) => t("descriptionWithPage", { description: text, page }));
@@ -46,7 +41,7 @@ export default async function GenrePage({ params, searchParams }: GenrePageProps
   const t = await getTranslations("catalog");
   const query = parseCatalogParams(await searchParams, "popular");
   const basePath = `/genre/${genre.key}`;
-  const [counts, result] = await Promise.all([genrePlatforms(genre.key), queryCatalog({ kind: "genre", genre }, { ...query, category: null, genres: [] }, { basePath, defaultSort: "popular" })]);
+  const [counts, result] = await Promise.all([genrePlatformCounts(genre.key), queryCatalog({ kind: "genre", genre }, { ...query, category: null, genres: [] }, { basePath, defaultSort: "popular" })]);
   const total = counts.reduce((a, b) => a + b.count, 0);
   const index = counts
     .filter((c) => PLATFORMS.some((p) => p.key === c.platform))

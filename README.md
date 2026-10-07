@@ -15,14 +15,14 @@ Storefront and admin for Keyrook (keyrook.com), a store for game keys, DLC, subs
 
 ### Catalogue
 
-`npm run catalog:sync` (`scripts/catalog-sync.ts` → `src/lib/esa/sync.ts`) pages through `GET /v1/products`, then:
+`npm run catalog:sync` (`scripts/catalog-sync.ts` → `src/lib/esa/sync.ts`) pages through the whole `GET /v1/products` catalogue (4 pages of 100 in parallel). Each page is classified as it arrives and staged as NDJSON in `.cache/catalog-sync/`, so memory stays flat at any catalogue size and an interrupted run (network error, closed laptop, Ctrl-C) resumes from the last staged page or written chunk when the same command is run again within 24 h (`-- --fresh` starts over). A lock file stops two syncs from running at once. Then it:
 
 1. **Classifies** every product (`src/lib/esa/classify.ts`): product type (game, DLC, subscription, gift card, top-up, software), platform (Steam, Epic Games Store, EA app, Ubisoft Connect, GOG, Battle.net, Xbox, PlayStation, Nintendo, Rockstar Games Launcher, other; the product name wins over the supplier's platform field, so "EA App Key" listed under Steam becomes EA app), region, edition, genres and languages. A clean English title is derived from the supplier name.
 2. **Rejects** what the store does not list: regions outside `include.regions` (RU/CIS, Asia, LATAM, Turkey, region-locked VPN keys), Russian-only language sets, accounts and gift links, adult and gambling/loot-box products, pre-orders, products without stock, without a cover image or without a usable English name, and excluded platforms. All terms live in `src/config/catalog.ts`.
 3. **Deduplicates** by type + title + edition + platform + region (+ card value or duration for prepaid products) and keeps the cheapest in-stock offer of each group.
 4. **Drops price anomalies**: prices above the per-type ceiling, above the 95th percentile × 1.6 of comparable products (same type and release age), more than 4× the same title's other offers, or gift cards priced far from their face value.
-5. **Selects** a balanced catalogue within `target` (5,000–7,000 by default) using per-type quotas, a per-platform share cap, genre and price-band interleaving and at most `maxPerTitle` variants of one game. Products already listed are preferred on re-sync.
-6. **Upserts** everything with deterministic ids, so re-running never duplicates. Products that drop out are archived, never deleted. Categories are product type → platform and are hidden when empty.
+5. **Selects** a balanced catalogue within `target` (65,000–75,000 by default, ~70,000 quota total) using per-type quotas, a per-platform share cap, genre and price-band interleaving and at most `maxPerTitle` variants of one game. Capacity a type cannot fill (prepaid products are scarcer) spills over to games and DLC. If the supplier has fewer eligible products than the target, all of them are taken and the run ends with a warning; nothing is padded.
+6. **Upserts** everything with deterministic ids in transactions of 500 products, so re-running never duplicates. Products that drop out are archived, never deleted. Categories are product type → platform and are hidden when empty. The run ends with `VACUUM (ANALYZE)` on the catalogue tables so the catalogue indexes are used straight away.
 
 Game attributes (genres, release date, developer, publisher, age rating, Metacritic score when supplied) are only stored for games and DLC; system requirements only for PC games and DLC. Subscriptions keep their duration, gift cards their face value.
 
@@ -30,7 +30,9 @@ Images are served through `/media/<id>` (`src/app/media/[id]/route.ts`), so the 
 
 Price history: every sync appends to `SupplyItem.priceLog`. A product shows a struck-through "previously" price only when its price is at least 10% below its lowest price of the previous 30 days; the "Price drop" filter uses the same rule.
 
-`npm run catalog:refresh` (and the daily cron) only re-checks price and stock of listed products in batches by `kinguinId`.
+`npm run catalog:refresh` (and the daily cron) only re-checks price and stock of listed products in batches of 100 `kinguinId`s (3 in parallel), stalest first, with one SQL update per batch. The cron stops after `refreshBudgetMs` and the next run continues where it stopped; the CLI runs to the end.
+
+Catalogue pages, facets, search and sitemaps are SQL-side: facet counts come from one grouping-sets query per page view (cached for 2 minutes per filter combination), name search uses `pg_trgm` GIN indexes, and product sitemaps are split into files of 5,000 URLs under `/sitemap.xml`. The schema enables `pg_trgm` (`postgresqlExtensions`); `npm run local:setup` creates it before `prisma db push`, and Neon supports it.
 
 ### Data model
 
@@ -100,7 +102,7 @@ To try a purchase end to end without a card provider, set `PAYMENT_PROVIDER=mock
 | `npm run dev` | Local dev server |
 | `npm run build` | `prisma generate` + production build |
 | `npm run local:setup` | Local database, schema, seed and first catalogue sync |
-| `npm run catalog:sync` | Full catalogue sync (`-- --max-pages 20` for a quick trial, `-- --fixture <file>` to read a local JSON file) |
+| `npm run catalog:sync` | Full catalogue sync, resumable (`-- --max-pages 20` for a quick trial, `-- --fixture <file>` to read a local `.json` or `.ndjson` file, `-- --fresh` to discard staged pages) |
 | `npm run catalog:refresh` | Price and stock refresh of listed products |
 
 ## Configuration

@@ -62,6 +62,21 @@ async function ensureDatabase(adminUrl) {
   await client.end();
 }
 
+async function ensureExtensions(dbUrl) {
+  const client = new pg.Client({ connectionString: dbUrl });
+  try {
+    await client.connect();
+    await client.query("CREATE EXTENSION IF NOT EXISTS pg_trgm");
+    console.log("✓ pg_trgm extension is available (fast catalogue search)");
+  } catch (error) {
+    console.error(`\n✗ Could not enable the pg_trgm extension: ${error.message}`);
+    console.error("  Catalogue search indexes need it. Run as a database owner: CREATE EXTENSION IF NOT EXISTS pg_trgm;");
+    process.exit(1);
+  } finally {
+    await client.end().catch(() => {});
+  }
+}
+
 async function main() {
   const env = readEnv();
   const fixture = process.env.CATALOG_FIXTURE_FILE || env.CATALOG_FIXTURE_FILE || "";
@@ -80,6 +95,7 @@ async function main() {
   }
 
   const dbEnv = { DATABASE_URL: dbUrl, DIRECT_URL: dbUrl };
+  await ensureExtensions(dbUrl);
   run("npx", ["prisma", "db", "push"], dbEnv);
   run("npx", ["prisma", "db", "seed"], dbEnv);
 

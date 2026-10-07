@@ -46,25 +46,30 @@ export interface CatalogConfig {
   selection: {
     keepExisting: boolean;
     maxPerTitle: number;
+    spillover: ProductTypeKey[];
   };
   sync: {
     pageSize: number;
     concurrency: number;
     maxPages: number | null;
     chunkSize: number;
+    stagingDir: string;
+    resumeMaxAgeHours: number;
     refreshBatch: number;
+    refreshConcurrency: number;
+    refreshBudgetMs: number;
   };
 }
 
 export const catalogConfig: CatalogConfig = {
-  target: { min: 5000, max: 7000 },
+  target: { min: 65000, max: 75000 },
   quotas: [
-    { type: "game", cap: 3700, platformShare: 0.55 },
-    { type: "dlc", cap: 1400, platformShare: 0.6 },
-    { type: "subscription", cap: 140 },
-    { type: "gift-card", cap: 320 },
-    { type: "top-up", cap: 320 },
-    { type: "software", cap: 240 },
+    { type: "game", cap: 42000, platformShare: 0.55 },
+    { type: "dlc", cap: 16500, platformShare: 0.6 },
+    { type: "subscription", cap: 1500 },
+    { type: "gift-card", cap: 3500 },
+    { type: "top-up", cap: 3500 },
+    { type: "software", cap: 2700 },
   ],
   pricing: {
     margin: 0.12,
@@ -110,13 +115,18 @@ export const catalogConfig: CatalogConfig = {
   selection: {
     keepExisting: true,
     maxPerTitle: 4,
+    spillover: ["game", "dlc"],
   },
   sync: {
     pageSize: 100,
     concurrency: 4,
     maxPages: null,
-    chunkSize: 400,
+    chunkSize: 500,
+    stagingDir: ".cache/catalog-sync",
+    resumeMaxAgeHours: 24,
     refreshBatch: 100,
+    refreshConcurrency: 3,
+    refreshBudgetMs: 240_000,
   },
 };
 

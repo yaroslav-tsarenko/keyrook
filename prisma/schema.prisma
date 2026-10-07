@@ -1,9 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider   = "postgresql"
+  extensions = [pg_trgm]
 }
 
 // ── Auth ────────────────────────────────────────
@@ -167,6 +169,10 @@ model Product {
   @@index([name])
   @@index([sku])
   @@index([status, createdAt])
+  @@index([status, updatedAt])
+  @@index([status, id, price, comparePrice, quantity, trackInventory, createdAt, name, brand], map: "Product_catalog_idx")
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "Product_name_trgm_idx")
+  @@index([sku(ops: raw("gin_trgm_ops"))], type: Gin, map: "Product_sku_trgm_idx")
 }
 
 enum ProductStatus {
@@ -553,6 +559,11 @@ model KeyItem {
   @@index([releaseYear])
   @@index([releaseDate])
   @@index([genres], type: Gin)
+  @@index([languages], type: Gin)
+  @@index([developers], type: Gin)
+  @@index([publishers], type: Gin)
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "KeyItem_title_trgm_idx")
+  @@index([productId, productType, platform, region, releaseYear, releaseDate, genres, languages], map: "KeyItem_catalog_idx")
 }
 
 model SupplyItem {
@@ -578,6 +589,7 @@ model SupplyItem {
   updatedAt    DateTime @updatedAt
 
   @@index([isAvailable])
+  @@index([syncedAt])
 }
 
 model MediaSource {

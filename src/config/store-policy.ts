@@ -20,6 +20,7 @@ export const STORE_POLICY = {
     usualTime: "usually within minutes after your payment is confirmed",
     headline: "Delivered to your account, usually within minutes after payment is confirmed.",
     short: "To your account, usually within minutes after payment is confirmed",
+    rail: "Delivery: usually within minutes",
     deadlineHours: 24,
     where: "on the order page in your account, behind a Reveal key button",
     emailNote: "We email you when your keys are ready. For security the email links to your account and does not contain the key itself.",

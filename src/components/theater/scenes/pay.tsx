@@ -33,7 +33,7 @@ const face = productFace(SAMPLE_ORDER.title, SAMPLE_ORDER.key);
 function CheckoutHeader({ phone }: { phone: boolean }) {
   return (
     <div className={cn("flex shrink-0 items-center justify-between border-b border-line bg-rig", phone ? "h-14 px-4" : "h-16 px-6")}>
-      <Wordmark className="h-[18px] w-auto text-ink" ticks={!phone} />
+      <Wordmark className="h-[26px] w-auto text-ink" detail={phone ? "small" : "full"} />
       <span className="inline-flex items-center gap-2 text-ui-sm font-[560] text-ink">
         <ShieldCheck size={18} aria-hidden="true" />
         Secure checkout

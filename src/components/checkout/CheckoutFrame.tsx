@@ -17,7 +17,7 @@ export function CheckoutHeader() {
     <header data-header="" data-header-state="checkout" data-print-hide="" className="shrink-0 border-b border-line bg-rig text-ink">
       <div className="mx-auto flex h-[var(--header-height-mobile)] max-w-narrow items-center justify-between gap-4 px-gutter lg:h-[var(--header-tier-1)]">
         <Link href="/" aria-label={t("home", { brand: BRAND.name })} className="flex shrink-0 items-center text-ink">
-          <Wordmark className="h-[22px] w-auto lg:h-[27px]" />
+          <Wordmark className="h-[32px] w-auto lg:h-[39px]" />
         </Link>
         <p className="label-caps m-0 flex items-center gap-2 whitespace-nowrap text-[0.75rem] text-ink sm:text-[0.8125rem]">
           <ShieldCheck size={16} aria-hidden="true" className="shrink-0" />
