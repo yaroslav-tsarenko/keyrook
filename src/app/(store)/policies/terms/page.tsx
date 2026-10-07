@@ -15,7 +15,7 @@ const sections: PolicySection[] = [
       <>
         <p>
           These terms apply to every order placed on {F.domain}. {F.brand} is a trading name of {F.company}. When these terms say
-          &ldquo;we&rdquo;, &ldquo;us&rdquo; or &ldquo;our&rdquo;, they mean {F.company}. &ldquo;You&rdquo; means the person placing the order.
+          “we”, “us” or “our”, they mean {F.company}. “You” means the person placing the order.
         </p>
         <SellerBlock />
         <p>
@@ -55,7 +55,7 @@ const sections: PolicySection[] = [
         <p>
           We supply consumers buying products for their own use. You may not buy products to resell them. The details you give us (name,
           email, phone, date of birth and billing address) must be accurate and your own, and the card you pay with must be yours or used with
-          its holder&rsquo;s permission.
+          its holder’s permission.
         </p>
       </>
     ),
@@ -73,7 +73,7 @@ const sections: PolicySection[] = [
           cancel it and refund the full amount paid.
         </p>
         <p>
-          You must not use a VPN, proxy, false address or someone else&rsquo;s card to hide where you are or to get around a restriction. We
+          You must not use a VPN, proxy, false address or someone else’s card to hide where you are or to get around a restriction. We
           do not offer keys that need a VPN to activate.
         </p>
       </>
@@ -107,7 +107,7 @@ const sections: PolicySection[] = [
     body: (
       <>
         <p>
-          Redeeming a key needs an account with the platform and acceptance of the platform&rsquo;s and publisher&rsquo;s own terms and licence.
+          Redeeming a key needs an account with the platform and acceptance of the platform’s and publisher’s own terms and licence.
           A game or software key gives you a licence to use the content under those terms; it does not transfer ownership of the content.
         </p>
         <p>
@@ -117,7 +117,7 @@ const sections: PolicySection[] = [
         </p>
         <p>
           {F.brand} is not affiliated with or endorsed by the platforms and publishers whose products it offers. We are not responsible for
-          platform outages, a platform&rsquo;s decision about your account for reasons unrelated to the key, or changes a publisher makes to a
+          platform outages, a platform’s decision about your account for reasons unrelated to the key, or changes a publisher makes to a
           game or service after you redeem it. This does not limit our duty to deliver a key that matches its description.
         </p>
       </>
@@ -133,7 +133,7 @@ const sections: PolicySection[] = [
           <li>At checkout you enter your contact details and billing address.</li>
           <li>We re-check the price and availability of each product. If a price has gone up, we show you the new total before you can pay.</li>
           <li>You tick the box to agree to these terms and our Refund policy and, separately, the box asking us to start delivery straight away, and select Pay.</li>
-          <li>You are taken to our payment provider&rsquo;s hosted page to pay by card.</li>
+          <li>You are taken to our payment provider’s hosted page to pay by card.</li>
           <li>Once the payment provider confirms the payment to us, we email you an order confirmation with your invoice. The contract between you and {F.company} is formed when we send that email.</li>
         </ol>
         <p>
@@ -217,8 +217,8 @@ const sections: PolicySection[] = [
           delivery has begun with your express request and your acknowledgement that you lose the right.
         </p>
         <p>
-          At checkout there is a separate box, which is not ticked in advance and is separate from accepting these terms: &ldquo;{F.waiverText}
-          &rdquo; You cannot place an order without ticking it. We record the time you ticked it and the wording you agreed to, and we repeat it
+          At checkout there is a separate box, which is not ticked in advance and is separate from accepting these terms: “{F.waiverText}
+          ” You cannot place an order without ticking it. We record the time you ticked it and the wording you agreed to, and we repeat it
           in your order confirmation email and on your invoice. Delivery begins when a key is issued to your account, which normally happens
           straight after your payment is confirmed.
         </p>
@@ -323,7 +323,7 @@ const sections: PolicySection[] = [
     body: (
       <p>
         Game titles, platform names, logos, cover art and screenshots belong to their owners and are shown to identify the products we offer.
-        Their use does not mean the owner sponsors or endorses {F.brand}. The rest of the site&rsquo;s text, design and software belongs to{" "}
+        Their use does not mean the owner sponsors or endorses {F.brand}. The rest of the site’s text, design and software belongs to{" "}
         {F.company}.
       </p>
     ),

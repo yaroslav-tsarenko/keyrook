@@ -54,7 +54,7 @@ const sections: PolicySection[] = [
         <p>Each product page states:</p>
         <ul>
           <li>the platform the key is redeemed on, and the account you need for it;</li>
-          <li>the activation region, and what it means for your account&rsquo;s country setting;</li>
+          <li>the activation region, and what it means for your account’s country setting;</li>
           <li>the languages the game or service supports, where the publisher states them;</li>
           <li>the edition, the duration of a subscription, or the value and currency of a gift card;</li>
           <li>system requirements, for PC games and DLC only.</li>

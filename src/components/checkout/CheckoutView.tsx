@@ -312,7 +312,7 @@ export function CheckoutView() {
 
   const accountPanel = !user ? (
     <div className="flex flex-col items-start gap-5">
-      <p className="m-0 max-w-[52ch] text-step-0 text-ink">Your keys are kept in your account, so you&apos;ll need one to receive them.</p>
+      <p className="m-0 max-w-[52ch] text-step-0 text-ink">Your keys are kept in your account, so you’ll need one to receive them.</p>
       <div className="flex flex-wrap items-center gap-3">
         <Button as={Link} href={`/auth/login?next=${encodeURIComponent(CHECKOUT_PATH)}`} size="lg">
           Sign in
@@ -328,7 +328,7 @@ export function CheckoutView() {
       <p className="m-0 text-step-0 text-ink">
         Signed in as <span className="font-[560]">{user.email}</span>
       </p>
-      <p className="m-0 max-w-[60ch] text-ui-sm text-ink-muted">{BRAND.name} keeps your keys in this account. They appear on the order page once your payment is confirmed, and we email you when they&apos;re ready.</p>
+      <p className="m-0 max-w-[60ch] text-ui-sm text-ink-muted">{BRAND.name} keeps your keys in this account. They appear on the order page once your payment is confirmed, and we email you when they’re ready.</p>
       <Link href={`/auth/login?next=${encodeURIComponent(CHECKOUT_PATH)}`} className="mt-1 w-fit text-ui-sm font-[560] text-ink underline underline-offset-4">
         Not you? Switch account
       </Link>
@@ -527,7 +527,7 @@ export function CheckoutView() {
           <PaymentLogos height={28} />
           {STORE_POLICY.payment.hostedPage ? (
             <p className="m-0 max-w-[60ch] text-ui-sm text-ink-muted">
-              You&apos;ll enter your card details on {providerPossessive} hosted payment page{STORE_POLICY.payment.threeDSecure ? " with 3-D Secure" : ""}. We never see or store your card number.
+              You’ll enter your card details on {providerPossessive} hosted payment page{STORE_POLICY.payment.threeDSecure ? " with 3-D Secure" : ""}. We never see or store your card number.
             </p>
           ) : (
             <p className="m-0 text-ui-sm text-ink-muted">Card payments are processed securely by {provider}. We never see or store your full card number.</p>

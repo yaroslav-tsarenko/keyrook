@@ -206,7 +206,7 @@ export function SearchDialog({ open, onClose, index }: { open: boolean; onClose:
 
           {empty ? (
             <div className="pt-6" role="status">
-              <p className="m-0 text-step-1 text-ink">Nothing matches &ldquo;{results?.q}&rdquo;.</p>
+              <p className="m-0 text-step-1 text-ink">Nothing matches “{results?.q}”.</p>
               <p className="m-0 mt-2 text-ui-md text-ink-muted">Try the title without the edition name, or start from a platform:</p>
             </div>
           ) : null}

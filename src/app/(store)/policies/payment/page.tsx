@@ -29,7 +29,7 @@ const sections: PolicySection[] = [
         <p>
           <strong>We do not store or process full payment card data.</strong>{" "}
           Your card number, expiry date and security code are entered on
-          the payment provider&rsquo;s page and never pass through our website. We receive only the result of the payment and a transaction
+          the payment provider’s page and never pass through our website. We receive only the result of the payment and a transaction
           reference.
         </p>
         <p>
@@ -70,7 +70,7 @@ const sections: PolicySection[] = [
     body: (
       <>
         <p>
-          Your card is charged when you complete payment on the provider&rsquo;s page. We confirm your order, send a confirmation email and
+          Your card is charged when you complete payment on the provider’s page. We confirm your order, send a confirmation email and
           request your keys only after the provider confirms the payment to us. If the payment is declined or cancelled, nothing is charged and
           no key is issued.
         </p>

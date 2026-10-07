@@ -194,7 +194,7 @@ export function ConfirmedView() {
           {heading(order.paymentStatus === "PAID" ? "Payment confirmed" : "Payment received")}
           <OrderId number={order.number} />
           <p className="measure m-0 text-step-1 text-ink-muted">
-            We&apos;ve sent a receipt to {order.email}. Your keys appear in Account → Keys as soon as they&apos;re issued.
+            We’ve sent a receipt to {order.email}. Your keys appear in Account → Keys as soon as they’re issued.
           </p>
         </div>
         <OrderSummary order={order} live />

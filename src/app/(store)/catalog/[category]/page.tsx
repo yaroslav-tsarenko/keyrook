@@ -126,7 +126,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           <h2 id="blanks-title" className="m-0 mb-2 text-step-3 leading-[1.1] text-ink">
             Card values by platform
           </h2>
-          <p className="m-0 mb-6 text-ui-md text-ink-muted">Check the card&apos;s region before you buy. A card adds balance only to an account set to that region.</p>
+          <p className="m-0 mb-6 text-ui-md text-ink-muted">Check the card’s region before you buy. A card adds balance only to an account set to that region.</p>
           <GiftCardShelf groups={giftGroups} />
         </section>
       ) : null}

@@ -63,7 +63,7 @@ const sections: PolicySection[] = [
           that keep data on your device only. This policy lists every cookie and storage key {F.brand} uses on {F.domain}.
         </p>
         <p>
-          The list is the same one shown under &ldquo;Show cookies&rdquo; in Cookie settings. Your saved items are kept in your account on
+          The list is the same one shown under “Show cookies” in Cookie settings. Your saved items are kept in your account on
           our server, not in your browser.
         </p>
       </>
@@ -123,8 +123,8 @@ const sections: PolicySection[] = [
     title: "The payment page",
     body: (
       <p>
-        When you pay, you are taken to our payment provider&rsquo;s hosted page. That page is run by the provider on its own domain and may
-        set its own cookies for security and fraud prevention, under the provider&rsquo;s own cookie policy. See our{" "}
+        When you pay, you are taken to our payment provider’s hosted page. That page is run by the provider on its own domain and may
+        set its own cookies for security and fraud prevention, under the provider’s own cookie policy. See our{" "}
         <Link href="/policies/payment">Payment policy</Link>.
       </p>
     ),

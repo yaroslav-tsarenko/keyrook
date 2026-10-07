@@ -25,7 +25,7 @@ const sections: PolicySection[] = [
       <ul>
         <li>You must be {F.minAge} or over to hold an account.</li>
         <li>One account per person, registered in your own name with accurate details.</li>
-        <li>Keep your password private. Do not share your account or use someone else&rsquo;s.</li>
+        <li>Keep your password private. Do not share your account or use someone else’s.</li>
         <li>
           Accounts may not be opened from, or used to order for delivery to, {F.restrictedCountries} or {F.restrictedTerritories}. Do not
           use a VPN, proxy or false address to get around this.
@@ -43,7 +43,7 @@ const sections: PolicySection[] = [
         <li>Reporting a working key as faulty, or opening a chargeback for keys you received and redeemed, to get them without paying.</li>
         <li>Sharing or publishing keys bought here, or using {F.brand} to redeem keys outside the region they are sold for.</li>
         <li>Automated access that puts load on the site, such as scraping, bulk account creation or repeated checkout attempts.</li>
-        <li>Trying to access other customers&rsquo; data, our admin area or systems you are not authorised to use, or testing for security weaknesses without our written permission.</li>
+        <li>Trying to access other customers’ data, our admin area or systems you are not authorised to use, or testing for security weaknesses without our written permission.</li>
         <li>Uploading or sending malware, spam or anything unlawful.</li>
       </ul>
     ),

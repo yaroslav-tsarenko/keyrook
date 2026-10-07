@@ -438,7 +438,7 @@ function EmptyState() {
     <div style={{ textAlign: "center", padding: "3rem", color: "#999", background: "#fafafa", borderRadius: "8px", border: "1px dashed #e0e0e0" }}>
       <LayoutGrid size={32} style={{ marginBottom: "0.5rem", opacity: 0.4 }} />
       <p style={{ margin: 0, fontWeight: 500 }}>No items yet</p>
-      <p style={{ margin: "0.25rem 0 0", fontSize: "0.8125rem" }}>Click &ldquo;Add New&rdquo; to create one, or &ldquo;Seed Default Data&rdquo; to populate all sections.</p>
+      <p style={{ margin: "0.25rem 0 0", fontSize: "0.8125rem" }}>Click “Add New” to create one, or “Seed Default Data” to populate all sections.</p>
     </div>
   );
 }

@@ -89,7 +89,7 @@ export default async function HowActivationWorksPage() {
         <section aria-labelledby="not-working" className="grid gap-x-10 gap-y-6 py-16 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <h2 id="not-working" data-anim="plate" className="m-0 text-step-4 leading-[1.06] text-ink">
-              If a key doesn&apos;t work
+              If a key doesn’t work
             </h2>
             <p className="m-0 mt-3 text-ui-md text-ink-muted">
               {g.headline}. We reply {STORE_POLICY.support.replyTime}.

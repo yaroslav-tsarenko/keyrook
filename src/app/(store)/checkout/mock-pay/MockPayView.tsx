@@ -49,7 +49,7 @@ export function MockPayView({ providerRef, orderNumber, amount, status }: MockPa
         <dd className="m-0 break-all font-mono text-ui-sm text-ink">{providerRef}</dd>
       </dl>
       <p className="m-0 text-ui-md text-ink-muted">
-        No card is charged. Pay or Fail sets this test payment&apos;s state and sends a signed webhook to the store, which re-checks the state before settling the order.
+        No card is charged. Pay or Fail sets this test payment’s state and sends a signed webhook to the store, which re-checks the state before settling the order.
       </p>
       {status !== "pending" ? <Alert tone="info">This test payment is already {status}. Sending again only re-delivers the webhook.</Alert> : null}
       {error ? <Alert tone="danger">{error}</Alert> : null}

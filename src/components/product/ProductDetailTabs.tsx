@@ -32,7 +32,7 @@ export interface ProductDetailTabsProps {
 function About({ blocks }: { blocks: string[] }) {
   const [open, setOpen] = useState(false);
   const long = blocks.join(" ").length > 900;
-  if (!blocks.length) return <p className="m-0 text-ink-muted">The publisher hasn&apos;t supplied a description for this key.</p>;
+  if (!blocks.length) return <p className="m-0 text-ink-muted">The publisher hasn’t supplied a description for this key.</p>;
   return (
     <div className="measure">
       <div className={cn("flex flex-col gap-4 text-step-0 leading-[1.65] text-ink", long && !open && "line-clamp-[12]")}>

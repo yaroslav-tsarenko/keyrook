@@ -386,7 +386,7 @@ export function KeyPlate({
       {effective === "reported" ? (
         <p className="m-0 mt-4 flex items-center gap-2 px-2 text-ui-md text-ink">
           <Lamp on={false} />
-          We&apos;re checking it. We reply {STORE_POLICY.support.replyTime}.
+          We’re checking it. We reply {STORE_POLICY.support.replyTime}.
         </p>
       ) : null}
 

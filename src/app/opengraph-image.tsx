@@ -17,7 +17,7 @@ export default async function Image() {
         <Wordmark size={64} />
         <div style={{ display: "flex", flexDirection: "column" }}>
           <Engraved>Game key store</Engraved>
-          <div style={{ display: "flex", marginTop: 18, fontFamily: "Hubot Sans", fontWeight: 700, fontSize: 60, lineHeight: 1.0, letterSpacing: -1 }}>Game keys, kept under lock until they&apos;re yours.</div>
+          <div style={{ display: "flex", marginTop: 18, fontFamily: "Hubot Sans", fontWeight: 700, fontSize: 60, lineHeight: 1.0, letterSpacing: -1 }}>Game keys, kept under lock until they’re yours.</div>
           <div style={{ display: "flex", marginTop: 24, maxWidth: 620, fontFamily: "Mona Sans", fontSize: 24, lineHeight: 1.45, color: P.inkMuted }}>{t("siteDescription")}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>

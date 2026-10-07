@@ -113,7 +113,7 @@ export function BuyBox({ product, alternatives = [], priceAvailable = true, demo
             <Button size="lg" isDisabled fullWidth>
               Out of stock
             </Button>
-            <p className="m-0 text-ui-md text-ink-muted">This key isn&apos;t in stock right now.</p>
+            <p className="m-0 text-ui-md text-ink-muted">This key isn’t in stock right now.</p>
             {alternatives.length ? (
               <ul className="m-0 flex list-none flex-wrap gap-x-5 gap-y-1 p-0">
                 {alternatives.map((alt) => (

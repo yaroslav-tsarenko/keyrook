@@ -32,8 +32,8 @@ const sections: PolicySection[] = [
           their acknowledgement that the right is lost.
         </p>
         <p>
-          Keys are issued straight after payment. At checkout you tick a separate box, which is not ticked in advance: &ldquo;
-          {F.waiverText}&rdquo; It is separate from accepting our terms and the order cannot be placed without it. We store the time and the
+          Keys are issued straight after payment. At checkout you tick a separate box, which is not ticked in advance: “
+          {F.waiverText}” It is separate from accepting our terms and the order cannot be placed without it. We store the time and the
           wording with your order and repeat it in your confirmation email and on your invoice.
         </p>
         <p>
@@ -76,7 +76,7 @@ const sections: PolicySection[] = [
           <li>your device does not meet the system requirements shown on the product page;</li>
           <li>you redeemed the key, or shared it with someone who did.</li>
         </ul>
-        <p>Changes publishers make to a game or service after you redeem it are covered by the publisher&rsquo;s own terms.</p>
+        <p>Changes publishers make to a game or service after you redeem it are covered by the publisher’s own terms.</p>
       </>
     ),
   },
@@ -91,8 +91,8 @@ const sections: PolicySection[] = [
           take a few further working days to show it on your statement.
         </p>
         <p>
-          Each product on your <Link href="/account/orders">order page</Link> shows its status, including &ldquo;Refund pending&rdquo; and
-          &ldquo;Refunded&rdquo;. We also email you when a refund is issued.
+          Each product on your <Link href="/account/orders">order page</Link> shows its status, including “Refund pending” and
+          “Refunded”. We also email you when a refund is issued.
         </p>
       </>
     ),
