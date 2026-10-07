@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { STORE_POLICY } from "@/config/store-policy";
 import { POLICY_SLUGS, policyHref } from "@/components/layout/PolicyLayout/policies";
 import { categoryCounts, getCategoryTree } from "@/components/catalog/catalog-query";
+import { GENRES, PLATFORMS } from "@/lib/keys/taxonomy";
 import { absoluteUrl, publicImageUrls } from "./url";
 
 export const SITEMAP_PRODUCTS_PER_FILE = 5000;
@@ -73,6 +74,9 @@ export async function staticPageEntries(): Promise<SitemapEntry[]> {
   return [
     { loc: absoluteUrl("/"), lastmod: latest },
     { loc: absoluteUrl("/catalog"), lastmod: latest },
+    { loc: absoluteUrl("/deals"), lastmod: latest },
+    { loc: absoluteUrl("/new-releases"), lastmod: latest },
+    { loc: absoluteUrl("/how-activation-works") },
     { loc: absoluteUrl("/about") },
     { loc: absoluteUrl("/contact") },
     { loc: absoluteUrl("/faq") },
@@ -89,6 +93,17 @@ export async function categoryEntries(): Promise<SitemapEntry[]> {
     prisma.category.findMany({ where: { isActive: true }, select: { id: true, updatedAt: true } }),
     prisma.productCategory.findMany({ where: { product: ACTIVE_PRODUCT }, select: { categoryId: true, product: { select: { updatedAt: true } } } }),
   ]);
+  const stocked = { status: "ACTIVE" as const, quantity: { gt: 0 } };
+  const [platformRows, genreRows, latest] = await Promise.all([
+    prisma.keyItem.groupBy({ by: ["platform"], where: { product: stocked }, _count: { _all: true } }),
+    Promise.all(GENRES.map(async (g) => ({ key: g.key, count: await prisma.keyItem.count({ where: { genres: { has: g.key }, product: stocked } }) }))),
+    latestProductUpdate(),
+  ]);
+  const stockedPlatforms = new Set(platformRows.filter((r) => r._count._all > 0).map((r) => r.platform));
+  const browse: SitemapEntry[] = [
+    ...PLATFORMS.filter((p) => stockedPlatforms.has(p.key)).map((p) => ({ loc: absoluteUrl(`/platform/${p.slug}`), lastmod: latest })),
+    ...genreRows.filter((g) => g.count > 0).map((g) => ({ loc: absoluteUrl(`/genre/${g.key}`), lastmod: latest })),
+  ];
   const updatedById = new Map(meta.map((c) => [c.id, c.updatedAt]));
   const latestByCategory = new Map<string, Date>();
   for (const link of links) {
@@ -99,7 +114,7 @@ export async function categoryEntries(): Promise<SitemapEntry[]> {
     const c = tree.byId.get(id);
     return c?.parentId ? 1 + depth(c.parentId) : 0;
   };
-  return tree.all
+  const categories = tree.all
     .filter((c) => (counts.get(c.id) ?? 0) > 0)
     .sort((a, b) => depth(a.id) - depth(b.id) || a.sortOrder - b.sortOrder)
     .map((c) => {
@@ -111,6 +126,7 @@ export async function categoryEntries(): Promise<SitemapEntry[]> {
         images: art ? publicImageUrls([art]) : [],
       };
     });
+  return [...categories, ...browse];
 }
 
 export async function productSitemapCount(): Promise<number> {

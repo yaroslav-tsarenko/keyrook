@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs/Breadcrumbs";
 import { buttonClasses } from "@/components/ui/button-classes";
-import { Plate } from "@/components/ui/Plate";
-import { OrderTimeline } from "@/components/account/OrderTimeline";
-import { KeySlots } from "@/components/account/KeyPlate";
+import { FeatureSpotlight } from "@/components/theater/spotlight";
 import { ActivationStepList, RedeemLink } from "@/components/product/ActivationSteps";
 import { ACTIVATION, ACTIVATION_ORDER, COMMON_PROBLEMS } from "@/config/activation";
 import { STORE_POLICY } from "@/config/store-policy";
@@ -23,7 +21,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const g = STORE_POLICY.guarantee;
-const SAMPLE_KEY = "7XK2Q-0OQD9-H1LMP";
 
 export default async function HowActivationWorksPage() {
   const stocked = await prisma.keyItem
@@ -57,48 +54,9 @@ export default async function HowActivationWorksPage() {
         </section>
       </div>
 
-      <section aria-labelledby="payment-to-key" data-theater-slot="decrypt" className="border-y border-line bg-surface-1">
-        <div className="mx-auto grid max-w-container gap-10 px-gutter py-16 lg:grid-cols-12 lg:py-20">
-          <div className="lg:col-span-5">
-            <h2 id="payment-to-key" data-anim="plate" className="m-0 text-step-4 leading-[1.06] text-ink">
-              From payment to key
-            </h2>
-            <ol className="m-0 mt-6 flex list-none flex-col border-t border-rule p-0">
-              {[
-                "Payment confirmed: your key is issued to your account.",
-                STORE_POLICY.security.keysEncryptedAtRest ? "It stays masked and encrypted until you choose Reveal." : "It stays masked until you choose Reveal.",
-                "Copy it, or open the platform's own redeem page.",
-              ].map((step, i) => (
-                <li key={step} className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 border-b border-line py-3">
-                  <span aria-hidden="true" className="tumbler-slot mt-px text-[0.8125rem]">
-                    {i + 1}
-                  </span>
-                  <span className="text-ui-md text-ink">{step}</span>
-                </li>
-              ))}
-            </ol>
-            <p className="m-0 mt-4 text-ui-sm text-ink-muted">{STORE_POLICY.delivery.emailNote}</p>
-          </div>
-          <figure className="m-0 flex flex-col gap-6 lg:col-span-7" aria-label="Illustration with sample data: an order timeline and a revealed key">
-            <OrderTimeline status="delivered" demo createdAt="2026-10-06T14:18:00Z" paidAt="2026-10-06T14:19:00Z" finishedAt="2026-10-06T14:21:00Z" revealedAt="2026-10-06T14:25:00Z" showRevealed />
-            <div className="plate bolted steel-grain relative p-6 sm:p-7">
-              <span data-bolt="tl" aria-hidden="true" />
-              <span data-bolt="tr" aria-hidden="true" />
-              <span data-bolt="bl" aria-hidden="true" />
-              <span data-bolt="br" aria-hidden="true" />
-              <div className="flex items-center justify-between gap-3 px-2">
-                <span className="eyebrow">Key 1 of 1</span>
-                <Plate variant="neutral" size="sm">
-                  Sample data
-                </Plate>
-              </div>
-              <p className="m-0 mt-3 px-2 text-step-1 font-[640] text-ink">Lantern Coast</p>
-              <div className="mt-4 px-2">
-                <KeySlots value={SAMPLE_KEY} masked={false} />
-              </div>
-              <p className="m-0 mt-4 px-2 font-mono text-[0.75rem] text-ink-muted">Sample key. The slashed zero and the letter O are drawn differently, so they can&apos;t be confused.</p>
-            </div>
-          </figure>
+      <section aria-labelledby="payment-to-key" className="border-y border-line bg-surface-1">
+        <div className="mx-auto max-w-container px-gutter py-16 lg:py-20">
+          <FeatureSpotlight scene="decrypt" headingId="payment-to-key" title="From payment to key" description={<p className="m-0">{STORE_POLICY.delivery.emailNote}</p>} />
         </div>
       </section>
 
@@ -122,18 +80,8 @@ export default async function HowActivationWorksPage() {
                 </Link>
               </div>
             </div>
-            <div className="measure lg:col-span-5">
+            <div className="measure lg:col-span-6 lg:col-start-6">
               <ActivationStepList guide={guide} />
-            </div>
-            <div className="lg:col-span-3">
-              <h3 className="eyebrow m-0 mb-2">Common problems</h3>
-              <ul className="m-0 list-none border-t border-line p-0">
-                {COMMON_PROBLEMS.map((p) => (
-                  <li key={p.title} className="border-b border-line py-2.5 text-ui-sm text-ink">
-                    {p.title}
-                  </li>
-                ))}
-              </ul>
             </div>
           </section>
         ))}

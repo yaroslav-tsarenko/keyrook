@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { catalogConfig, type CatalogConfig } from "@/config/catalog";
 import { GENRES, platformDef, productTypeDef, regionDef, showsSystemRequirements, type PlatformKey, type ProductTypeKey, type RegionKey } from "@/lib/keys/taxonomy";
-import { stripSupplierMentions } from "@/lib/utils/supplier";
+import { mentionsSupplier, stripSupplierMentions } from "@/lib/utils/supplier";
 import type { EsaOffer, EsaProduct } from "./types";
 
 export type RejectReason =
@@ -86,26 +86,41 @@ function termTest(terms: string[]): RegExp {
   return new RegExp(parts.join("|"), "i");
 }
 
+const PROMO_SENTENCE = /\b(?:buy cheap|cheap (?:cd )?keys?|instant(?:ly)? deliver\w*|instant download|best prices?|lowest prices?|100\s?%|official (?:cd )?keys?|original keys?|guaranteed)\b/i;
+
+function dropPromoSentences(text: string): string {
+  return text
+    .split("\n")
+    .map((line) =>
+      line
+        .split(/(?<=[.!?])\s+/)
+        .filter((sentence) => !PROMO_SENTENCE.test(sentence) && !mentionsSupplier(sentence))
+        .join(" "),
+    )
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export function plainText(html: string | null | undefined): string {
   if (!html) return "";
-  return stripSupplierMentions(
-    html
-      .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<\/(p|div|h[1-6]|li|ul|ol|tr)>/gi, "\n\n")
-      .replace(/<li[^>]*>/gi, "• ")
-      .replace(/<[^>]+>/g, "")
-      .replace(/&nbsp;/g, " ")
-      .replace(/&amp;/g, "&")
-      .replace(/&quot;/g, '"')
-      .replace(/&#0?39;|&apos;/g, "'")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&[a-z]+;/gi, " ")
-      .replace(/[ \t]+/g, " ")
-      .replace(/ *\n */g, "\n")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim(),
-  );
+  const text = html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|h[1-6]|li|ul|ol|tr)>/gi, "\n\n")
+    .replace(/<li[^>]*>/gi, "• ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&[a-z]+;/gi, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/ *\n */g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return stripSupplierMentions(dropPromoSentences(text));
 }
 
 const RAW_PLATFORMS: [RegExp, PlatformKey][] = [
@@ -146,7 +161,8 @@ export function detectPlatform(rawPlatform: string | null | undefined, name: str
 }
 
 const SOFTWARE = /\b(windows (?:1[01]|server)|microsoft office|office 20\d\d|office 365|microsoft 365|antivirus|anti-virus|internet security|total security|norton|bitdefender|eset|avast|avg|mcafee|adobe|autodesk|vmware|parallels|nero|corel|wondershare|cyberlink|ccleaner|malwarebytes|acronis|driver booster|iobit|project 20\d\d|visio)\b/i;
-const SUBSCRIPTION = /\b(game pass|ps plus|playstation plus|ea play|ubisoft\+|nintendo switch online|xbox live gold|subscription|membership)\b/i;
+const GAME_SUBSCRIPTION = /\b(game pass|ps plus|playstation plus|ea play|ubisoft\+|nintendo switch online|xbox live gold)(?=\W|$)/i;
+const SUBSCRIPTION = /\b(subscription|membership)\b/i;
 const DURATION = /\b(\d{1,2})\s*(day|days|month|months|year|years)\b/i;
 const GIFT_CARD = /\b(gift card|giftcard|gift code|wallet card|wallet code|eshop card|psn card|network card|store card|prepaid card|xbox card|steam wallet)\b/i;
 const MONEY = /(?:(€|\$|£)\s?(\d{1,4}(?:[.,]\d{1,2})?))|(?:(\d{1,4}(?:[.,]\d{1,2})?)\s?(€|\$|£|eur|usd|gbp)\b)|(?:\b(eur|usd|gbp)\s?(\d{1,4}(?:[.,]\d{1,2})?))/i;
@@ -156,6 +172,7 @@ const DLC = /\b(dlc|season pass|expansion|add-?on|soundtrack|ost|pack|upgrade|ch
 export function detectType(name: string, tags: string[], genres: string[]): ProductTypeKey {
   const t = tags.map((x) => x.toLowerCase());
   const g = genres.map((x) => x.toLowerCase());
+  if (GAME_SUBSCRIPTION.test(name)) return "subscription";
   if (t.includes("software") || g.includes("software") || SOFTWARE.test(name)) return "software";
   if (SUBSCRIPTION.test(name) || g.includes("subscription")) return "subscription";
   if (GIFT_CARD.test(name) || (t.includes("prepaid") && MONEY.test(name))) return "gift-card";

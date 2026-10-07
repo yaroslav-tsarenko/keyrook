@@ -24,6 +24,7 @@ export const FAQ_VALUES = {
   cardLimit24h: F.cardLimit24h,
   cardValue24h: F.cardValue24h,
   restricted: F.restrictedCountries,
+  territories: F.restrictedTerritories,
   usual: F.deliveryUsual,
   deadlineHours: F.deliveryDeadlineHours,
   claimDays: F.guaranteeClaimDays,

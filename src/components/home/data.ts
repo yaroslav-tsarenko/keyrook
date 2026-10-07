@@ -54,24 +54,9 @@ async function distinctCovers(where: Prisma.Sql, claimed: Set<string>, limit: nu
 
 const REGION_RANK = ["global", "europe", "uk", "us", "north-america"];
 
-function serviceLabel(service: string): string {
-  return service
-    .replace(/\b(?:EU|UK|US|NA|Global)\b/g, "")
-    .replace(/\b(?:Subscription|PSN Card|Time Card|Membership)\b/gi, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-}
-
 function homeTimetable(table: Timetable, limit: number): Timetable {
-  const merged = new Map<string, TimetableRow>();
-  for (const row of table.rows) {
-    const service = serviceLabel(row.service);
-    const key = `${service.toLowerCase()}|${row.region}`;
-    const prev = merged.get(key);
-    merged.set(key, prev ? { ...prev, cells: { ...row.cells, ...prev.cells } } : { ...row, key, service });
-  }
   const best = new Map<string, TimetableRow>();
-  for (const row of merged.values()) {
+  for (const row of table.rows) {
     const id = row.service.toLowerCase();
     const prev = best.get(id);
     const score = (r: TimetableRow) => Object.keys(r.cells).length * 10 - Math.max(0, REGION_RANK.indexOf(r.region));

@@ -51,6 +51,8 @@ model PasswordResetToken {
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Address {
@@ -70,6 +72,8 @@ model Address {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 // ── Store Settings ───────────────────────────────
@@ -114,6 +118,8 @@ model Category {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([parentId])
 }
 
 model Product {
@@ -176,6 +182,8 @@ model ProductImage {
   sortOrder Int     @default(0)
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, sortOrder])
 }
 
 model ProductCategory {
@@ -185,6 +193,7 @@ model ProductCategory {
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@id([productId, categoryId])
+  @@index([categoryId])
 }
 
 model ProductVariant {
@@ -196,6 +205,8 @@ model ProductVariant {
   options   Json
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
 }
 
 // ── Orders ───────────────────────────────────────
@@ -279,6 +290,9 @@ model OrderItem {
   productSku  String
   variantName String?
   keyOrder    KeyOrder?
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 // ── Content ──────────────────────────────────────
@@ -400,6 +414,7 @@ model Review {
   createdAt  DateTime @default(now())
 
   @@unique([userId, productId])
+  @@index([productId])
 }
 
 // ── Wishlist ─────────────────────────────────────
@@ -536,6 +551,8 @@ model KeyItem {
   @@index([platform])
   @@index([region])
   @@index([releaseYear])
+  @@index([releaseDate])
+  @@index([genres], type: Gin)
 }
 
 model SupplyItem {

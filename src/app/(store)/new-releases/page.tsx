@@ -38,7 +38,7 @@ export async function generateMetadata({ searchParams }: ReleasesPageProps): Pro
   const title = query.page > 1 ? t("titleWithPage", { title: "New releases", page: query.page }) : "New releases";
   const description = pagedDescription("Recently released games and DLC in stock now, newest first, with platform, region and languages on every key.", query.page, (text, page) => t("descriptionWithPage", { description: text, page }));
   const filtered = hasActiveFilters(query);
-  return pageMetadata({ title, description, path: query.page > 1 ? `/new-releases?page=${query.page}` : "/new-releases", canonical: !filtered, images: false, index: !filtered });
+  return pageMetadata({ title, description, path: query.page > 1 ? `/new-releases?page=${query.page}` : "/new-releases", canonical: !filtered, index: !filtered });
 }
 
 export default async function NewReleasesPage({ searchParams }: ReleasesPageProps) {

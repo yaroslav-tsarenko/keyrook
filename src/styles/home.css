@@ -21,6 +21,7 @@
   aspect-ratio: 1;
   width: 100%;
   perspective: 1400px;
+  --door-open: 50deg;
 }
 
 .door-interior {
@@ -67,7 +68,7 @@
 }
 
 .door-poster[data-door-state="ajar"] .door-leaf {
-  transform: rotateY(var(--door-angle, 35deg));
+  transform: rotateY(calc(var(--door-angle, var(--door-open)) + var(--door-sway, 0deg)));
 }
 
 .door-poster[data-door-state="open"] .door-leaf {
@@ -84,14 +85,18 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .door-poster {
+    --door-open: 46deg;
+  }
+
   [data-door] .door-poster[data-door-state="closed"] .door-leaf {
-    transform: rotateY(32deg);
+    transform: rotateY(var(--door-open));
   }
 }
 
 @media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
   [data-door] .door-poster[data-door-state="closed"] .door-leaf {
-    transform: rotateY(35deg);
+    transform: rotateY(var(--door-open));
   }
 }
 
@@ -146,6 +151,12 @@
   max-width: 140px;
   flex-direction: column;
   gap: 5px;
+}
+
+@media (max-width: 1023.98px) {
+  .locker-vents {
+    display: none;
+  }
 }
 
 .locker-vents > span {

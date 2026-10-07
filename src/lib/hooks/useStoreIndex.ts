@@ -46,6 +46,5 @@ export function useStoreIndex(): StoreIndex | null {
 
 export function searchCountLabel(total: number | null | undefined): string {
   if (!total) return "Search keys";
-  const shown = total > 1000 ? Math.floor(total / 10) * 10 : total;
-  return `Search ${shown.toLocaleString("en-GB")} keys`;
+  return `Search ${total.toLocaleString("en-GB")} keys`;
 }

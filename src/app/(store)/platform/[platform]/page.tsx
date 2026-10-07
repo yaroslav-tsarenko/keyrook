@@ -43,7 +43,7 @@ export async function generateMetadata({ params, searchParams }: PlatformPagePro
   const title = query.page > 1 ? t("titleWithPage", { title: `${platform.label} keys`, page: query.page }) : `${platform.label} keys`;
   const description = pagedDescription(`Games, DLC and other products that activate on ${platform.label}: ${total} products, each with its activation region and languages listed.`, query.page, (text, page) => t("descriptionWithPage", { description: text, page }));
   const filtered = hasActiveFilters(query);
-  return pageMetadata({ title, description, path: query.page > 1 ? `/platform/${platform.slug}?page=${query.page}` : `/platform/${platform.slug}`, canonical: !filtered, images: false, index: !filtered && total > 0 });
+  return pageMetadata({ title, description, path: query.page > 1 ? `/platform/${platform.slug}?page=${query.page}` : `/platform/${platform.slug}`, canonical: !filtered, index: !filtered && total > 0 });
 }
 
 export default async function PlatformPage({ params, searchParams }: PlatformPageProps) {

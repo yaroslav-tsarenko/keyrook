@@ -41,8 +41,8 @@ export function mountDepth(root: Document, env: MotionEnv): () => void {
   let stop: (() => void) | null = null;
 
   const write = (item: Item) => {
-    const s = item.scale !== 1 ? ` scale(${item.s.toFixed(4)})` : "";
-    item.target.style.transform = `translate3d(${item.x.toFixed(2)}px, ${item.y.toFixed(2)}px, 0)${s}`;
+    item.target.style.translate = `${item.x.toFixed(2)}px ${item.y.toFixed(2)}px`;
+    if (item.scale !== 1) item.target.style.scale = item.s.toFixed(4);
   };
 
   const tick = (dt: number) => {
@@ -92,6 +92,9 @@ export function mountDepth(root: Document, env: MotionEnv): () => void {
     window.removeEventListener("pointermove", onMove);
     io.disconnect();
     stop?.();
-    for (const item of items) item.target.style.transform = "";
+    for (const item of items) {
+      item.target.style.translate = "";
+      item.target.style.scale = "";
+    }
   };
 }

@@ -146,7 +146,7 @@
 }
 
 [data-door] .door-poster[data-door-poster][data-door-swing="open"] [data-door-leaf] {
-  transform: rotateY(-28deg);
+  transform: rotateY(var(--door-open));
 }
 
 @media (min-width: 1024px) {
@@ -222,25 +222,6 @@
   }
 
   @media (hover: hover) and (pointer: fine) {
-    [data-scene="lockers"] [data-locker-door] {
-      transform-origin: 0 50%;
-      transition: transform var(--dur-panel-close) var(--ease-latch);
-    }
-
-    [data-scene="lockers"] [data-locker]:is(:hover, :focus-visible, :focus-within) [data-locker-door] {
-      transform: perspective(900px) rotateY(-24deg);
-      transition-duration: var(--dur-panel);
-    }
-
-    [data-scene="lockers"] [data-locker-covers] {
-      transition: transform var(--dur-panel-close) var(--ease-latch);
-    }
-
-    [data-scene="lockers"] [data-locker]:is(:hover, :focus-visible, :focus-within) [data-locker-covers] {
-      transform: translateY(-8px);
-      transition-duration: var(--dur-panel);
-    }
-
     [data-peek] {
       opacity: 0;
       transform: translateX(16px);
@@ -252,13 +233,6 @@
     [data-peek-row]:is(:hover, :focus-within) [data-peek] {
       opacity: 1;
       transform: none;
-    }
-  }
-
-  @media (hover: none), (pointer: coarse) {
-    [data-scene="lockers"] [data-locker]:nth-child(-n + 2) [data-locker-door] {
-      transform: perspective(900px) rotateY(-14deg);
-      transform-origin: 0 50%;
     }
   }
 
@@ -278,13 +252,6 @@
     }
   }
 
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-scene="lockers"] [data-locker-door] {
-    transform: perspective(900px) rotateY(-14deg);
-    transform-origin: 0 50%;
-  }
 }
 
 @media (prefers-reduced-motion: no-preference) {

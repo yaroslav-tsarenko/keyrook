@@ -99,7 +99,7 @@ export async function SecurityLedger() {
               </div>
               {payStill ? (
                 <figure className="m-0 min-w-0 lg:col-span-4">
-                  <MiniStill scene="pay" state={{ step: "challenge", approving: 0.6, region: true, terms: true, consent: true, card: "4000 0000 0000 4821", exp: "09/29", cvc: "123" }} device="phone" className="th-mini-narrow" address="secure payment page" />
+                  <MiniStill scene="pay" state={{ step: "challenge", approving: 0.6, region: true, terms: true, consent: true, card: "•••• •••• •••• 4821", exp: "09/29", cvc: "•••" }} device="phone" className="th-mini-narrow" address="secure payment page" />
                   <figcaption className="mt-3 text-ui-sm text-ink-muted">{t("stillCaption")}</figcaption>
                 </figure>
               ) : null}

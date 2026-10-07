@@ -18,7 +18,7 @@ export function mountDoorAjar(section: HTMLElement, env: MotionEnv): () => void 
   const tick = (dt: number) => {
     x = lerpPerFrame(x, target, 0.1, dt);
     if (Math.abs(x - target) < 0.002) x = target;
-    leaf.style.transform = `perspective(900px) rotateY(${(-x * SWAY_DEG).toFixed(3)}deg)`;
+    leaf.style.setProperty("--door-sway", `${(-x * SWAY_DEG).toFixed(3)}deg`);
     if (covers) covers.style.transform = `translate3d(${(x * COVERS_PX).toFixed(2)}px, 0, 0)`;
     if (x === target) {
       running = false;
@@ -39,6 +39,7 @@ export function mountDoorAjar(section: HTMLElement, env: MotionEnv): () => void 
   const io = new IntersectionObserver((entries) => {
     visible = entries.some((e) => e.isIntersecting);
   });
+  leaf.style.transitionDuration = "0ms";
   io.observe(section);
   window.addEventListener("pointermove", onMove, { passive: true });
 
@@ -46,7 +47,8 @@ export function mountDoorAjar(section: HTMLElement, env: MotionEnv): () => void 
     window.removeEventListener("pointermove", onMove);
     io.disconnect();
     stop?.();
-    leaf.style.transform = "";
+    leaf.style.removeProperty("--door-sway");
+    leaf.style.transitionDuration = "";
     if (covers) covers.style.transform = "";
   };
 }

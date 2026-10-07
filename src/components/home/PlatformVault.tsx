@@ -34,7 +34,7 @@ function Locker({ p, keysLabel, fromLabel, label }: { p: HomePlatform; keysLabel
             </span>
             <span className={cn("label-caps block min-w-0 pr-4 leading-[1.1] text-ink text-shadow-engrave", wide ? "text-step-0 lg:text-step-2" : "text-[0.8125rem] lg:text-step-0")}>{p.short}</span>
           </span>
-          <span aria-hidden="true" className="locker-vents max-lg:hidden">
+          <span aria-hidden="true" className="locker-vents">
             {Array.from({ length: wide ? 9 : 6 }, (_, i) => (
               <span key={i} />
             ))}

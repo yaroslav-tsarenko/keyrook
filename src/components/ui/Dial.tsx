@@ -65,7 +65,7 @@ export function DialRuler({
   const pct = (i: number) => (i / last) * 100;
   return (
     <div aria-hidden="true" data-dial-ruler="" data-index={active} className={cn("relative select-none", className)}>
-      <div className="relative h-4">
+      <div className="relative h-4 overflow-x-clip [overflow-clip-margin:2px]">
         <TickBand className="absolute inset-x-0 bottom-px" />
         <div className="absolute inset-x-0 bottom-0 h-px bg-rule" />
         {detents.map((d, i) => (

@@ -37,13 +37,13 @@ export function LabelRow({ face, size = "sm", edition = false, extra, className,
         </span>
         <span className="font-mono leading-none text-ink-subtle">·</span>
         <span className="min-w-0 shrink truncate font-mono font-medium uppercase leading-none text-ink">{face.regionTag}</span>
-        {face.typeTag ? (
-          <>
-            <span className="font-mono leading-none text-ink-subtle">·</span>
-            <span className="eyebrow shrink-0 leading-none text-type [font-size:inherit]">{face.typeTag}</span>
-          </>
-        ) : null}
       </span>
+      {face.typeTag ? (
+        <span aria-hidden="true" className={cn("flex shrink-0 items-center", md ? "gap-2.5" : "gap-1.5 sm:gap-2")}>
+          <span className="font-mono leading-none text-ink-subtle">·</span>
+          <span className="eyebrow leading-none text-type [font-size:inherit]">{face.typeTag}</span>
+        </span>
+      ) : null}
       {edition && face.edition ? (
         <span aria-hidden="true" className="shrink-0">
           <Plate variant="edition" size="sm">

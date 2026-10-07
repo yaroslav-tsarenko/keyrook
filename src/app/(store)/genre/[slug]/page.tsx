@@ -32,7 +32,7 @@ export async function generateMetadata({ params, searchParams }: GenrePageProps)
   const title = query.page > 1 ? t("titleWithPage", { title: `${genre.label} game keys`, page: query.page }) : `${genre.label} game keys`;
   const description = pagedDescription(`${genre.label} games and DLC for Steam, Xbox, PlayStation and more: ${total} keys in stock, each with its platform, region and languages listed.`, query.page, (text, page) => t("descriptionWithPage", { description: text, page }));
   const filtered = hasActiveFilters(query);
-  return pageMetadata({ title, description, path: query.page > 1 ? `/genre/${genre.key}?page=${query.page}` : `/genre/${genre.key}`, canonical: !filtered, images: false, index: !filtered && total > 0 });
+  return pageMetadata({ title, description, path: query.page > 1 ? `/genre/${genre.key}?page=${query.page}` : `/genre/${genre.key}`, canonical: !filtered, index: !filtered && total > 0 });
 }
 
 export function generateStaticParams() {

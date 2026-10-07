@@ -43,7 +43,7 @@ Price history: every sync appends to `SupplyItem.priceLog`. A product shows a st
 
 ### Order flow
 
-1. `POST /api/checkout` requires a signed-in account, checks per-product and per-order limits (`src/config/store-policy.ts`: gift cards, top-ups and subscriptions have lower caps plus a 24-hour per-customer limit) and re-checks each product's live price. If the total changed beyond `CATALOG_PRICE_TOLERANCE`, the buyer sees the new total before paying (`TOTAL_CHANGED`).
+1. `POST /api/checkout` requires a signed-in account, checks per-product and per-order limits (`src/config/store-policy.ts`: gift cards, top-ups and subscriptions have lower per-order caps, and gift cards and top-ups also have a 24-hour per-customer limit) and re-checks each product's live price. If the total changed beyond `CATALOG_PRICE_TOLERANCE`, the buyer sees the new total before paying (`TOTAL_CHANGED`).
 2. One `Order` with one `KeyOrder` per line (`awaiting_payment`) is created with the buyer's request for immediate delivery and withdrawal acknowledgement (timestamp, text and version). The response contains only the order id and the payment link.
 3. The payment webhook (`/api/webhooks/payment/<provider>`) re-fetches the payment from the provider and calls `settlePayment`, which checks amount and currency, marks the order paid once, sends the confirmation and invoice, and submits each `KeyOrder` (`src/lib/esa/orders.ts`).
 4. Submission is single-flight (`paid → submitted` claim) and idempotent: the `orderExternalId` is the `KeyOrder` id, and an existing supplier order with that id is reused instead of creating a second one. The max price sent is cost × (1 + `orderPriceTolerance`).

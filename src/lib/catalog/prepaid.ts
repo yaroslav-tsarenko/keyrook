@@ -36,6 +36,8 @@ export function serviceName(title: string): string {
   return title
     .replace(/\((?:[^)]*)\)/g, "")
     .replace(/\b\d+\s*(?:day|days|month|months|year|years)\b/gi, "")
+    .replace(/\b(?:EU|UK|US|USA|NA|EMEA|ROW|Global|Worldwide|Europe|North America|United Kingdom|United States)\b/gi, "")
+    .replace(/\b(?:Subscription|PSN Card|Time Card|Membership)\b/gi, "")
     .replace(/\s{2,}/g, " ")
     .replace(/\s+[-–—:]\s*$/, "")
     .trim();

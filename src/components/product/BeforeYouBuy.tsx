@@ -33,7 +33,7 @@ export function BeforeYouBuy({ rows, className, headingId = "before-you-buy" }: 
           const Icon = ICONS[row.icon];
           return (
             <div key={row.key} className="grid grid-cols-[24px_minmax(0,1fr)] gap-x-3 border-b border-line py-3.5 sm:grid-cols-[24px_128px_minmax(0,1fr)]">
-              {row.icon === "age" ? <span /> : <Icon size={18} aria-hidden="true" className="mt-0.5 text-ink-muted" />}
+              {row.icon === "age" ? <span aria-hidden="true" /> : <Icon size={18} aria-hidden="true" className="mt-0.5 text-ink-muted" />}
               <dt className="eyebrow pt-[3px]">{row.label}</dt>
               <dd className="col-start-2 m-0 text-ui-md leading-[1.5] text-ink sm:col-start-3">
                 {row.value}

@@ -18,7 +18,7 @@ export async function generateMetadata({ searchParams }: DealsPageProps): Promis
   const title = query.page > 1 ? t("titleWithPage", { title: "Price cuts", page: query.page }) : "Price cuts";
   const description = pagedDescription(`Game keys priced below their recent price. The earlier price shown is the lowest price in the ${STORE_POLICY.deals.compareWindowDays} days before the cut.`, query.page, (text, page) => t("descriptionWithPage", { description: text, page }));
   const filtered = hasActiveFilters({ ...query, onSale: false });
-  return pageMetadata({ title, description, path: query.page > 1 ? `/deals?page=${query.page}` : "/deals", canonical: !filtered, images: false, index: !filtered });
+  return pageMetadata({ title, description, path: query.page > 1 ? `/deals?page=${query.page}` : "/deals", canonical: !filtered, index: !filtered });
 }
 
 export default async function DealsPage({ searchParams }: DealsPageProps) {

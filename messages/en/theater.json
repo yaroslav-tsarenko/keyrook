@@ -1,10 +1,10 @@
 {
   "sampleData": "Sample data",
-  "play": "Play demo",
-  "pause": "Pause demo",
-  "replay": "Replay demo",
+  "play": "Play walkthrough",
+  "pause": "Pause walkthrough",
+  "replay": "Replay walkthrough",
   "illustration": "Illustration with sample data.",
-  "tabsLabel": "Store demos",
+  "tabsLabel": "Store walkthroughs",
   "scenes": {
     "pick": {
       "label": "Pick",
@@ -51,9 +51,9 @@
       "receivedRows": ["Payment confirmed", "Amount", "Order number"],
       "notReceived": "Card number: stays with the payment provider",
       "tipConfirmation": "Keyrook receives: payment confirmed, amount, order number. The card number stays with the payment provider.",
-      "card": "4000 0000 0000 4821",
+      "card": "•••• •••• •••• 4821",
       "exp": "09/29",
-      "cvcValue": "123"
+      "cvcValue": "•••"
     },
     "decrypt": {
       "label": "Decrypt",

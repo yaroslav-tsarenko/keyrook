@@ -23,7 +23,7 @@ export async function DoorOpen({ data }: { data: HomeData }) {
         </div>
         <div className="min-w-0 lg:col-span-4 lg:col-start-9">
           <div data-door-ajar="" className="mx-auto w-[72vw] max-w-[420px] lg:w-full">
-            <DoorPoster uid="cta-door" state="ajar" angle={34} interior={data.ctaCovers.length ? <DoorContents covers={data.ctaCovers} label={t("contentsLabel")} mobileLimit={6} parallax className="door-contents-small" /> : null} />
+            <DoorPoster uid="cta-door" state="ajar" angle={56} interior={data.ctaCovers.length ? <DoorContents covers={data.ctaCovers} label={t("contentsLabel")} mobileLimit={6} parallax className="door-contents-small" /> : null} />
           </div>
         </div>
       </div>

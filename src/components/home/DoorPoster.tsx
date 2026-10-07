@@ -127,7 +127,7 @@ export function DoorPoster({ uid, state = "closed", angle, lit = false, interior
     <div
       data-door-poster=""
       data-door-state={state}
-      role={label ? "img" : undefined}
+      role={label ? "group" : undefined}
       aria-label={label}
       className={cn("door-poster", className)}
       style={angle !== undefined ? ({ ["--door-angle" as string]: `${angle}deg` } as CSSProperties) : undefined}

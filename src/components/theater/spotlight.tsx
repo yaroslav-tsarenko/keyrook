@@ -25,7 +25,7 @@ export function FeatureSpotlight({ scene, title, description, eyebrow, device = 
   return (
     <TheaterSync>
       <div className={cn("grid gap-x-16 gap-y-8 lg:grid-cols-12 lg:items-start", className)}>
-        <div className="lg:col-span-5 lg:pt-4">
+        <div className="min-w-0 lg:col-span-5 lg:pt-4">
           {eyebrow ? <p className="eyebrow m-0 mb-4">{eyebrow}</p> : null}
           <Heading id={headingId} className="m-0 text-step-4 leading-[1.06] text-ink">
             {title}
@@ -34,7 +34,7 @@ export function FeatureSpotlight({ scene, title, description, eyebrow, device = 
           <TheaterSteps steps={meta.captions} className="mt-8" />
           {children ? <div className="mt-6">{children}</div> : null}
         </div>
-        <div className="lg:col-span-7">
+        <div className="min-w-0 lg:col-span-7">
           <TheaterStage
             sceneId={scene}
             device={device}

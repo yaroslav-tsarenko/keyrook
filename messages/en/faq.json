@@ -139,7 +139,7 @@
       "items": {
         "who": {
           "q": "Who can open an account?",
-          "a": "Anyone aged {minAge} or over who lives in a country we serve. We don't take orders from or open accounts in {restricted}."
+          "a": "Anyone aged {minAge} or over who lives in a country we serve. We don't take orders from or open accounts in {restricted}, or in {territories}."
         },
         "password": {
           "q": "I forgot my password.",

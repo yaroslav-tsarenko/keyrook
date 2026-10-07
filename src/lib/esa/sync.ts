@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { catalogConfig, quotaTotal } from "@/config/catalog";
+import { STORE_POLICY } from "@/config/store-policy";
 import { slugify } from "@/lib/utils/slugify";
 import { PLATFORMS, PRODUCT_TYPES, categorySlugFor, platformDef, productTypeDef, regionDef } from "@/lib/keys/taxonomy";
 import { esaClient } from "./client";
@@ -32,8 +33,8 @@ interface PricePoint {
   price: number;
 }
 
-const HISTORY_DAYS = 30;
-const SALE_THRESHOLD = 0.9;
+const HISTORY_DAYS = STORE_POLICY.deals.compareWindowDays;
+const SALE_THRESHOLD = 1 - STORE_POLICY.deals.minPercent / 100;
 
 export function productIdFor(dedupeKey: string): string {
   return `kp_${stableHash(dedupeKey).slice(0, 24)}`;
@@ -113,13 +114,18 @@ interface Existing {
 }
 
 function nextPriceLog(previous: PricePoint[], price: number, now: Date): { log: PricePoint[]; compare: number | null } {
-  const cutoff = now.getTime() - HISTORY_DAYS * 86_400_000;
-  const recent = previous.filter((p) => new Date(p.at).getTime() >= cutoff && Number.isFinite(p.price));
-  const reference = recent.length ? Math.min(...recent.map((p) => p.price)) : null;
-  const last = recent[recent.length - 1];
-  const log = last && Math.abs(last.price - price) < 0.005 ? recent : [...recent, { at: now.toISOString(), price }];
-  const compare = reference !== null && price <= reference * SALE_THRESHOLD ? reference : null;
-  return { log: log.slice(-40), compare };
+  const day = 86_400_000;
+  const kept = previous.filter((p) => new Date(p.at).getTime() >= now.getTime() - 2 * HISTORY_DAYS * day && Number.isFinite(p.price));
+  const last = kept[kept.length - 1];
+  const log = last && Math.abs(last.price - price) < 0.005 ? kept : [...kept, { at: now.toISOString(), price }];
+  let start = log.length - 1;
+  while (start > 0 && Math.abs(log[start - 1].price - price) < 0.005) start--;
+  const since = new Date(log[start].at).getTime();
+  const before = log.slice(0, start).filter((p) => new Date(p.at).getTime() >= since - HISTORY_DAYS * day);
+  const reference = before.length ? Math.min(...before.map((p) => p.price)) : null;
+  const current = now.getTime() - since <= HISTORY_DAYS * day;
+  const compare = current && reference !== null && price <= reference * SALE_THRESHOLD ? reference : null;
+  return { log: log.slice(-60), compare };
 }
 
 async function writeChunk(chunk: Candidate[], categories: Map<string, string>, slugs: Map<string, string>, existing: Map<string, Existing>, now: Date): Promise<number> {

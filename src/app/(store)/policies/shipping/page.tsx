@@ -101,7 +101,7 @@ const sections: PolicySection[] = [
     title: "Where we deliver",
     body: (
       <p>
-        We serve customers in the {F.marketCountries}. We do not take orders from {F.restrictedCountries}, or to {F.restrictedTerritories}, and we
+        We serve customers in the {F.marketCountries}. We do not take orders from {F.restrictedCountries}, or from {F.restrictedTerritories}, and we
         do not list keys whose activation region is limited to any of them. Do not use a VPN or proxy to redeem a key outside its region:
         the platform can block the key or your account.
       </p>

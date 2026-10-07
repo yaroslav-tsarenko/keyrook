@@ -96,7 +96,7 @@ export const STORE_POLICY = {
   },
   deals: {
     compareWindowDays: 30,
-    minPercent: 5,
+    minPercent: 10,
   },
   preorders: false,
   complaints: {
