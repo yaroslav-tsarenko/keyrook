@@ -1,8 +1,3 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "crons": [
-    { "path": "/api/cron/catalog-refresh", "schedule": "17 3 * * *" },
-    { "path": "/api/cron/key-poll", "schedule": "47 3 * * *" },
-    { "path": "/api/cron/key-monitor", "schedule": "27 4 * * *" }
-  ]
+  "$schema": "https://openapi.vercel.sh/vercel.json"
 }
