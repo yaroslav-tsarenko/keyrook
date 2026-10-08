@@ -2,9 +2,13 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { sanitizeSupplierData } from "@/lib/utils/supplier";
 
-const connectionString =
-  process.env.DIRECT_URL ||
-  "postgres://postgres:postgres@localhost:51214/template1?sslmode=disable";
+// Serverless runtimes open a connection per invocation, so the pooled DATABASE_URL
+// is the right one here; DIRECT_URL stays for migrations and the CLI scripts.
+const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL (or DIRECT_URL) must be set to reach Postgres.");
+}
 
 function createPrismaClient() {
   return new PrismaClient({
