@@ -1,6 +1,6 @@
 export const BRAND = {
   name: "Keyrook",
-  domain: "keyrook.com",
+  domain: "keyroook.com",
   tagline: "Game keys, DLC, subscriptions and gift cards, delivered to your account",
 } as const;
 

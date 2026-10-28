@@ -57,3 +57,6 @@ invoice-sample*.pdf
 
 # catalogue sync staging
 /.cache/
+
+# local credentials
+/addons
