@@ -1,49 +1,70 @@
 import Link from "next/link";
 import { PolicyLayout, policyMetadata, type PolicySection } from "@/components/layout/PolicyLayout/PolicyLayout";
 import { POLICY_FACTS as F } from "@/lib/policy-facts";
-import { PLATFORMS } from "@/lib/keys/taxonomy";
 
 export const generateMetadata = policyMetadata(
   "shipping",
-  `How ${F.brand} delivers game keys, subscription codes and gift cards: to your account after payment is confirmed, ${F.deliveryUsual}. Regions, languages and redeeming.`,
+  `How ${F.brand} delivers game keys, subscriptions and gift cards to your account, ${F.deliveryUsual}, and how to activate them.`,
 );
 
 const sections: PolicySection[] = [
+  {
+    id: "operator",
+    title: "Operator and scope",
+    body: (
+      <>
+        <p>
+          This Policy explains electronic delivery and activation of Products purchased through {F.brand}. It forms part of our{" "}
+          <Link href="/policies/terms">Terms and conditions</Link> and works with our <Link href="/policies/returns">Refund and Cancellation Policy</Link>.
+        </p>
+        <p>
+          {F.brand} is operated by {F.company}, company number {F.companyNumber}, registered office {F.registeredOffice}, {F.companyCountry}.
+          Website: {F.domain}. Email: {F.email}.
+        </p>
+      </>
+    ),
+  },
   {
     id: "how",
     title: "How keys are delivered",
     body: (
       <>
         <p>
-          Everything we offer is digital: activation keys for games and DLC, subscription codes, gift card and top-up codes, and software
-          licence keys. Nothing is posted and there is no delivery charge.
+          No physical shipment is provided. Each key is issued to your Account, {F.deliveryWhere}. {F.deliveryEmailNote} Payment confirmation
+          and delivery are separate events.
         </p>
         <p>
-          We request your key from our distribution partner only after our payment provider confirms your payment to us. The key then
-          appears {F.deliveryWhere}, {F.deliveryUsual}. {F.deliveryEmailNote}
-        </p>
-        <p>
-          Orders with several products, or several keys of one product, are delivered product by product. Your order page shows the status of
-          each one: payment confirmed, issuing key, delivered, or refunded.
+          Keys are sourced from authorised distribution partners and publishers. Commercial supplier arrangements are confidential except where
+          disclosure is required by law or necessary to resolve an Order. We remain responsible for contractual obligations owed to you.
         </p>
       </>
     ),
   },
   {
-    id: "timing",
-    title: "How long it takes",
+    id: "process",
+    title: "Typical process",
     body: (
       <>
-        <p>
-          Most keys are issued within minutes of payment confirmation. We do not promise a fixed number of minutes: a payment check by your
-          bank, a security review of the order or a delay at our distribution partner can make it take longer.
-        </p>
-        <p>
-          If we cannot deliver a key within {F.deliveryDeadlineHours} hours of payment confirmation, we refund the price you paid for it
-          within {F.refundDays} days to {F.refundMethod} and email you when we do.
-        </p>
-        <p>We do not offer pre-orders. Every product in the catalogue can be delivered straight after payment.</p>
+        <ol>
+          <li>You submit an Order and authorise payment.</li>
+          <li>We check availability, payment and eligibility.</li>
+          <li>The key is requested from our distribution partner.</li>
+          <li>The key is issued to your Account and we email you.</li>
+          <li>You reveal the key and activate it on the Platform named on the product page.</li>
+        </ol>
+        <p>Some steps are automated. Reserving or requesting a key is not completed delivery and does not by itself remove statutory cancellation rights.</p>
       </>
+    ),
+  },
+  {
+    id: "timing",
+    title: "Timing",
+    body: (
+      <p>
+        Keys arrive {F.deliveryUsual}. This is an estimate, not a guarantee: availability, payment checks, Platform or partner interruptions
+        and technical problems may affect timing. If a key cannot be issued within {F.deliveryDeadlineHours} hours of payment confirmation, we
+        refund it, as described in our <Link href="/policies/returns#when-we-refund">Refund and Cancellation Policy</Link>.
+      </p>
     ),
   },
   {
@@ -51,49 +72,57 @@ const sections: PolicySection[] = [
     title: "Check before you buy",
     body: (
       <>
-        <p>Each product page states:</p>
-        <ul>
-          <li>the platform the key is redeemed on, and the account you need for it;</li>
-          <li>the activation region, and what it means for your account’s country setting;</li>
-          <li>the languages the game or service supports, where the publisher states them;</li>
-          <li>the edition, the duration of a subscription, or the value and currency of a gift card;</li>
-          <li>system requirements, for PC games and DLC only.</li>
-        </ul>
         <p>
-          A key for one region only activates on an account set to that region. A DLC needs the base game on the same platform and
-          region. Please check these points against your account before ordering.
+          Review the Platform, region or activation restrictions, edition, language and system requirements on the product page. Make sure you
+          have, or can create, an account on that Platform. Products for a specific region may not activate elsewhere.
         </p>
+        <p>We will never ask for your password, a Platform password or an authentication code to deliver a Product.</p>
       </>
     ),
   },
   {
     id: "redeem",
-    title: "Redeeming your key",
+    title: "Activating your key",
     body: (
       <>
-        <p>Open the order in your account, select Reveal key, copy it and redeem it on the platform:</p>
-        <ul>
-          {PLATFORMS.filter((p) => p.key !== "other").map((p) => (
-            <li key={p.key}>
-              <strong>{p.label}:</strong> {p.redeem[0]} {p.redeem[1] ?? ""}
-            </li>
-          ))}
-        </ul>
         <p>
-          Keep the key private until you redeem it: anyone who sees it can use it. We never ask for your platform password or two-factor
-          codes. Full steps are on <Link href="/how-activation-works">How activation works</Link>.
+          Redeem the key only on the official Platform or publisher service named on the product page; activation instructions are on your
+          order page. Compare the key’s Product, Platform, region and edition with your Order before redeeming.
+        </p>
+        <p>
+          Keep a revealed key private: anyone who sees it can redeem it. Avoid suspicious links, unknown extensions and anyone who asks for a
+          key, payment or password in exchange for help.
         </p>
       </>
     ),
   },
   {
-    id: "not-working",
-    title: "If a key does not work",
+    id: "multiple",
+    title: "Multiple-item Orders",
     body: (
       <p>
-        Contact us within {F.guaranteeClaimDays} days of delivery with your order number and a screenshot of the error. We check the key and
-        replace it or refund it. The procedure is in our <Link href="/policies/warranty">Key guarantee</Link>.
+        Products in one Order may be issued at different times. Receipt of one does not confirm receipt of the others. Full delivery requires
+        all confirmed Products to be issued, or the remaining part to be cancelled, refunded or otherwise agreed.
       </p>
+    ),
+  },
+  {
+    id: "not-working",
+    title: "Problems, unavailable keys and revocations",
+    body: (
+      <>
+        <p>
+          If a key does not activate, is for the wrong Product, Platform, region or edition, or was already used, do not try workarounds;
+          email us with the Order number and a screenshot of the error. Our <Link href="/policies/warranty">Key guarantee</Link> explains
+          replacement and refund.
+        </p>
+        <p>
+          Inventory may lag or a partner may fail to supply a key. We may offer a replacement, but you need not accept materially different
+          attributes; otherwise the affected Product is cancelled and refunded. If a publisher later revokes a key for a reason that existed at
+          delivery and that you did not cause, tell us and we will arrange a replacement or refund.
+        </p>
+        <p>Temporary failures may require another attempt. We will not treat a failed issue as proof of completed delivery.</p>
+      </>
     ),
   },
   {
@@ -101,16 +130,27 @@ const sections: PolicySection[] = [
     title: "Where we deliver",
     body: (
       <p>
-        We serve customers in the {F.marketCountries}. We do not take orders from {F.restrictedCountries}, or from {F.restrictedTerritories}, and we
-        do not list keys whose activation region is limited to any of them. Do not use a VPN or proxy to redeem a key outside its region:
-        the platform can block the key or your account.
+        We do not accept Orders from persons located in {F.restrictedCountries} or the other countries listed in our{" "}
+        <Link href="/policies/terms#who-can-order">Terms and conditions</Link>. {F.restrictedTerritoriesStatement}
       </p>
     ),
   },
   {
     id: "contact",
-    title: "Questions about a delivery",
-    body: <p>Email {F.email} with your order number. We reply {F.replyTime}.</p>,
+    title: "Reporting issues",
+    body: (
+      <>
+        <p>
+          Email {F.email} or use the <Link href="/contact">contact form</Link> if no key arrives, a key seems wrong, activation fails, a key is
+          revoked, or the displayed status is inaccurate. Provide the Order number, the Platform, the approximate time and screenshots if
+          available. Never send passwords, security codes or full card data.
+        </p>
+        <p>
+          To investigate, we may review Order, payment and key records and logs, and exchange the minimum necessary details with our
+          distribution partner, as described in our <Link href="/policies/privacy">Privacy policy</Link>.
+        </p>
+      </>
+    ),
   },
 ];
 

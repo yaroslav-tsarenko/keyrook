@@ -1,6 +1,6 @@
 import { COMPANY } from "@/lib/company";
 
-const POLICY_DATE = "2026-10-06";
+const POLICY_DATE = "2026-10-30";
 
 export type LimitedType = "game" | "dlc" | "subscription" | "gift-card" | "top-up" | "software";
 

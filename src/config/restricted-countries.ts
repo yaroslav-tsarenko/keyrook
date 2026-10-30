@@ -5,6 +5,19 @@ export const RESTRICTED_COUNTRIES = [
   { code: "KP", name: "North Korea" },
   { code: "SY", name: "Syria" },
   { code: "CU", name: "Cuba" },
+  { code: "AF", name: "Afghanistan" },
+  { code: "CF", name: "Central African Republic" },
+  { code: "CD", name: "Democratic Republic of the Congo" },
+  { code: "HT", name: "Haiti" },
+  { code: "IQ", name: "Iraq" },
+  { code: "ML", name: "Mali" },
+  { code: "MM", name: "Myanmar (Burma)" },
+  { code: "SO", name: "Somalia" },
+  { code: "SS", name: "South Sudan" },
+  { code: "SD", name: "Sudan" },
+  { code: "VE", name: "Venezuela" },
+  { code: "YE", name: "Yemen" },
+  { code: "ZW", name: "Zimbabwe" },
 ] as const;
 
 export const RESTRICTED_TERRITORIES = [
